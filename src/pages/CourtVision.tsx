@@ -816,4 +816,123 @@ export default function CourtVision() {
                     onClick={() => setShowFloatingPanel(!showFloatingPanel)}
                     title={showFloatingPanel ? "Minimize Panel" : "Expand Panel"}
                   >
-                    {showFloating
+                    {showFloatingPanel ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+                  </button>
+                </div>
+              </div>
+              
+              {showFloatingPanel && (
+                <>
+                  <div className="mb-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <span className="text-sm font-medium">Court Types:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-ath-red-clay rounded-full"></span>
+                        <span className="text-sm">Tennis (Clay)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-ath-black rounded-full"></span>
+                        <span className="text-sm">Tennis (Hard)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-green-500 rounded-full"></span>
+                        <span className="text-sm">Padel</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Tabs defaultValue="courts" className="w-full">
+                    <TabsList className="w-full justify-start mb-4 bg-gray-100 p-1 rounded-md">
+                      <TabsTrigger value="courts" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Layers className="h-4 w-4 mr-1" />
+                        Courts
+                      </TabsTrigger>
+                      <TabsTrigger value="people" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Users className="h-4 w-4 mr-1" />
+                        People
+                      </TabsTrigger>
+                      <TabsTrigger value="activities" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Film className="h-4 w-4 mr-1" />
+                        Activities
+                      </TabsTrigger>
+                      <TabsTrigger value="time-slots" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Clock className="h-4 w-4 mr-1" />
+                        Time Slots
+                      </TabsTrigger>
+                      <TabsTrigger value="templates" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Templates
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Main content area */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Courts grid */}
+          <div className="flex-1 overflow-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courts.map((court) => (
+                <Court 
+                  key={court.id} 
+                  court={court} 
+                  timeSlots={timeSlots}
+                  onDrop={handleDrop}
+                  onActivityDrop={handleActivityDrop}
+                  onRemovePerson={handleRemovePerson}
+                  onRemoveActivity={handleRemoveActivity}
+                  onAssignPerson={handleAssignPerson}
+                  onAssignActivity={handleAssignActivity}
+                  people={people}
+                  activities={activities}
+                  programs={programs}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Side panels */}
+          <div className="w-80 bg-gray-50 p-4 flex flex-col gap-4 overflow-auto border-l border-gray-200">
+            <AssignmentsDashboard 
+              courts={courts}
+              people={people}
+              programs={programs}
+              onChangeTimeSlot={handleChangePersonTimeSlot}
+              onChangeCourt={handleChangePersonCourt}
+              onRemovePerson={handleRemovePerson}
+            />
+            
+            <AvailablePeople
+              people={people}
+              programs={programs}
+              onAddPerson={handleAddPerson}
+              onRemovePerson={handleRemovePerson}
+            />
+            
+            <AvailableActivities 
+              activities={activities}
+              onAddActivity={handleAddActivity}
+              onRemoveActivity={handleRemoveActivity}
+            />
+            
+            <TimeSlotSelector 
+              timeSlots={timeSlots}
+              onAddTimeSlot={handleAddTimeSlot}
+              onRemoveTimeSlot={handleRemoveTimeSlot}
+            />
+            
+            <ScheduleTemplates 
+              templates={templates}
+              onSaveTemplate={saveAsTemplate}
+              onApplyTemplate={applyTemplate}
+            />
+          </div>
+        </div>
+      </div>
+    </DndProvider>
+  );
+}
