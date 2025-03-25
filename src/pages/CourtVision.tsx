@@ -17,6 +17,7 @@ import {
 
 // Import court vision components
 import { Court } from "@/components/court-vision/Court";
+import { Person } from "@/components/court-vision/Person";
 import { AvailablePeople } from "@/components/court-vision/AvailablePeople";
 import { AvailableActivities } from "@/components/court-vision/AvailableActivities";
 import { ScheduleTemplates } from "@/components/court-vision/ScheduleTemplates";
@@ -698,6 +699,22 @@ export default function CourtVision() {
       observer.disconnect();
     };
   }, []);
+
+  const handleChangePersonTimeSlot = (personId: string, timeSlot: string) => {
+    const person = courts.flatMap(c => c.occupants).find(p => p.id === personId);
+    if (person && onRemovePerson && handleDrop) {
+      handleRemovePerson(personId, person.timeSlot);
+      handleDrop(person.courtId || "", {...person, timeSlot}, person.position, timeSlot);
+    }
+  };
+
+  const handleChangePersonCourt = (personId: string, courtId: string) => {
+    const person = courts.flatMap(c => c.occupants).find(p => p.id === personId);
+    if (person && courtId !== person.courtId && handleRemovePerson) {
+      handleRemovePerson(personId, person.timeSlot);
+      handleDrop(courtId, {...person}, {x: 0.5, y: 0.5}, person.timeSlot);
+    }
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
