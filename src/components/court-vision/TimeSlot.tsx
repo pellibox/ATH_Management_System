@@ -41,7 +41,7 @@ export const TimeSlot = memo(function TimeSlot({
     drop: (item: any) => {
       if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
         onDrop(courtId, time, item);
-      } else {
+      } else if (item.type === "activity") {
         onActivityDrop(courtId, time, item);
       }
     },
@@ -56,6 +56,7 @@ export const TimeSlot = memo(function TimeSlot({
       className={`border-t border-gray-200 p-2 min-h-[80px] relative ${
         isOver ? "bg-ath-red-clay-dark/40" : ""
       }`}
+      data-time={time}  // Add a data attribute for easier debugging
     >
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-medium">{time}</span>

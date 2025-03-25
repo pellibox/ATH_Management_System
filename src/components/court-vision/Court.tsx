@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -52,14 +51,18 @@ export function Court({
         };
         
         if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
-          onDrop(court.id, item as PersonData, position);
-        } else {
+          if (viewMode === "layout") {
+            onDrop(court.id, item as PersonData, position);
+          } else {
+            onDrop(court.id, item as PersonData);
+          }
+        } else if (item.type === "activity") {
           onActivityDrop(court.id, item as ActivityData);
         }
       } else {
         if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
           onDrop(court.id, item as PersonData);
-        } else {
+        } else if (item.type === "activity") {
           onActivityDrop(court.id, item as ActivityData);
         }
       }
@@ -67,7 +70,7 @@ export function Court({
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
-  }));
+  }), [court.id, onDrop, onActivityDrop, viewMode]);
 
   const getCourtStyles = () => {
     switch (court.type) {
@@ -93,9 +96,7 @@ export function Court({
   };
 
   const isTimeSlotOccupied = (object: PersonData | ActivityData, timeSlot: string): boolean => {
-    // Type guard to check if the object has timeSlot property (PersonData)
     const isPerson = 'timeSlot' in object;
-    // Type guard to check if the object has startTime property (ActivityData)
     const isActivity = 'startTime' in object;
     
     let startSlot: string | undefined;
@@ -339,8 +340,14 @@ export function Court({
                   time={time}
                   occupants={getOccupantsForTimeSlot(time)}
                   activities={getActivitiesForTimeSlot(time)}
-                  onDrop={(courtId, time, person) => onDrop(courtId, person, undefined, time)}
-                  onActivityDrop={(courtId, time, activity) => onActivityDrop(courtId, activity, time)}
+                  onDrop={(courtId, time, person) => {
+                    console.log("Dropping at time:", time);
+                    onDrop(courtId, person, undefined, time);
+                  }}
+                  onActivityDrop={(courtId, time, activity) => {
+                    console.log("Dropping activity at time:", time);
+                    onActivityDrop(courtId, activity, time);
+                  }}
                   onRemovePerson={(personId, time) => onRemovePerson && onRemovePerson(personId, time)}
                   onRemoveActivity={(activityId, time) => onRemoveActivity && onRemoveActivity(activityId, time)}
                 />
