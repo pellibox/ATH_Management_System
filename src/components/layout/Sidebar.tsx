@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Calendar, Settings, Home, Users, BookOpen, Layers, Trophy, BarChart3, Video, Link, View } from 'lucide-react';
+import { Calendar, Settings, Home, Users, BookOpen, Layers, Trophy, BarChart3, Video, Link, View, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -44,6 +43,7 @@ export default function Sidebar() {
     { name: "Courts", href: "/courts", icon: Layers },
     { name: "Court Vision", href: "/court-vision", icon: View },
     { name: "Staff", href: "/staff", icon: Users },
+    { name: "Players", href: "/players", icon: UserCircle },
     { name: "Programs", href: "/programs", icon: BookOpen },
     { name: "Tournaments", href: "/tournaments", icon: Trophy },
     { name: "Reports", href: "/reports", icon: BarChart3 },
