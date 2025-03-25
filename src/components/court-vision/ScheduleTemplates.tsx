@@ -1,41 +1,25 @@
-
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Calendar, Copy, CopyCheck } from "lucide-react";
-import { ScheduleTemplate } from "./types";
-import { format } from "date-fns";
+import { useState } from 'react';
+import { Calendar, Plus, Check } from 'lucide-react';
+import { ScheduleTemplate } from './types';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 export interface ScheduleTemplatesProps {
   templates: ScheduleTemplate[];
-  onApplyTemplate: (template: ScheduleTemplate) => void;
   onSaveTemplate: (name: string) => void;
-  onCopyToNextDay?: () => void;
-  onCopyToWeek?: () => void;
+  onApplyTemplate: (template: ScheduleTemplate) => void;
 }
 
-export function ScheduleTemplates({ 
-  templates, 
-  onApplyTemplate, 
-  onSaveTemplate,
-  onCopyToNextDay,
-  onCopyToWeek 
-}: ScheduleTemplatesProps) {
-  const [newTemplateName, setNewTemplateName] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+export function ScheduleTemplates({ templates, onSaveTemplate, onApplyTemplate }: ScheduleTemplatesProps) {
+  const [open, setOpen] = useState(false);
+  const [templateName, setTemplateName] = useState('');
 
-  const handleSave = () => {
-    if (newTemplateName.trim() !== "") {
-      onSaveTemplate(newTemplateName);
-      setNewTemplateName("");
-      setIsSaving(false);
+  const handleSaveTemplate = () => {
+    if (templateName.trim() !== '') {
+      onSaveTemplate(templateName);
+      setOpen(false);
+      setTemplateName('');
     }
   };
 
@@ -44,96 +28,63 @@ export function ScheduleTemplates({
       <h2 className="font-medium mb-3 flex items-center">
         <Calendar className="h-4 w-4 mr-2" /> Schedule Templates
       </h2>
-
-      <div className="space-y-2">
-        {isSaving ? (
+      
+      <div className="max-h-[180px] overflow-y-auto">
+        {templates.length > 0 ? (
           <div className="space-y-2">
-            <Input
-              placeholder="Template name"
-              value={newTemplateName}
-              onChange={(e) => setNewTemplateName(e.target.value)}
-            />
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => setIsSaving(false)}
+            {templates.map((template) => (
+              <div 
+                key={template.id} 
+                className="flex items-center justify-between p-2 rounded bg-gray-50 hover:bg-gray-100 transition-colors"
               >
-                Cancel
-              </Button>
-              <Button size="sm" className="flex-1" onClick={handleSave}>
-                Save
-              </Button>
-            </div>
+                <span className="text-sm">{template.name}</span>
+                <Button variant="ghost" size="sm" onClick={() => onApplyTemplate(template)}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
           </div>
         ) : (
-          <Button
-            variant="outline"
-            className="w-full text-sm"
-            onClick={() => setIsSaving(true)}
-          >
-            Save Current Layout as Template
-          </Button>
-        )}
-
-        {templates.length > 0 && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full text-sm mt-2"
-              >
-                Apply Template
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Select Template</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-2 mt-4 max-h-60 overflow-y-auto">
-                {templates.map((template) => (
-                  <div
-                    key={template.id}
-                    className="flex justify-between items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
-                    onClick={() => onApplyTemplate(template)}
-                  >
-                    <div>
-                      <div className="font-medium">{template.name}</div>
-                      <div className="text-xs text-gray-500">
-                        Created: {format(new Date(template.date), "MMM d, yyyy")}
-                      </div>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      Apply
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-
-        {onCopyToNextDay && (
-          <Button
-            variant="outline"
-            className="w-full text-sm"
-            onClick={onCopyToNextDay}
-          >
-            <Copy className="h-4 w-4 mr-2" /> Copy to Next Day
-          </Button>
-        )}
-
-        {onCopyToWeek && (
-          <Button
-            variant="outline"
-            className="w-full text-sm"
-            onClick={onCopyToWeek}
-          >
-            <CopyCheck className="h-4 w-4 mr-2" /> Copy to Next Week
-          </Button>
+          <div className="text-sm text-gray-500 italic p-2">
+            No templates saved yet
+          </div>
         )}
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button className="w-full mt-4">
+            <Plus className="h-4 w-4 mr-2" />
+            Save as Template
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Save Schedule as Template</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="name" className="text-right text-sm font-medium text-gray-700">
+                Template Name
+              </label>
+              <Input 
+                id="name" 
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                className="col-span-3" 
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSaveTemplate}>
+              Save Template
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

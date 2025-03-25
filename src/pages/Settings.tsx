@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Save, User, Building, LinkIcon, Bell, Shield, Server, Upload, Download, FileText, AlertCircle, CalendarIcon } from "lucide-react";
-import { read, utils } from 'xlsx';
+import { read, utils, writeFile } from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -127,17 +127,7 @@ export default function Settings() {
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, "Persone");
     
-    const excelBuffer = utils.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'template_importazione_persone.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    writeFile(workbook, 'template_importazione_persone.xlsx');
   };
   
   return (
