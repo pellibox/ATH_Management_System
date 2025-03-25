@@ -3,9 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserPlus, User, UserCog } from "lucide-react";
+import { Users, UserPlus, User, UserCog, Phone, Mail, Calendar } from "lucide-react";
 import { PersonData } from "./types";
 import { PERSON_TYPES } from "./constants";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export interface PeopleManagementProps {
   playersList: PersonData[];
@@ -24,6 +26,8 @@ export function PeopleManagement({
 }: PeopleManagementProps) {
   const [newPersonName, setNewPersonName] = useState("");
   const [selectedTab, setSelectedTab] = useState("players");
+  const [selectedPerson, setSelectedPerson] = useState<PersonData | null>(null);
+  const { toast } = useToast();
   
   const handleAddPerson = (type: string) => {
     if (newPersonName.trim() === "") return;
@@ -38,6 +42,22 @@ export function PeopleManagement({
   
   const handleAddToDragArea = (person: PersonData) => {
     onAddToDragArea(person);
+  };
+
+  const handleSendSchedule = (person: PersonData) => {
+    // Simulate sending a schedule via WhatsApp
+    toast({
+      title: "Schedule Sent",
+      description: `Schedule has been sent to ${person.name} via WhatsApp.`,
+    });
+  };
+
+  const handleSendEmail = (person: PersonData) => {
+    // Simulate sending a schedule via Email
+    toast({
+      title: "Email Sent",
+      description: `Schedule has been sent to ${person.name} via Email.`,
+    });
   };
 
   return (
@@ -82,12 +102,51 @@ export function PeopleManagement({
               className="flex items-center justify-between p-2 mb-1 rounded bg-gray-50 hover:bg-gray-100"
             >
               <div className="flex items-center">
-                <div className="w-6 h-6 rounded-full bg-ath-red-clay text-white flex items-center justify-center text-xs font-medium mr-2">
+                <div className="w-6 h-6 rounded-full bg-ath-red-clay-dark text-white flex items-center justify-center text-xs font-medium mr-2">
                   {player.name.substring(0, 2)}
                 </div>
                 <span className="text-sm">{player.name}</span>
               </div>
-              <div className="flex">
+              <div className="flex gap-1">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                    >
+                      <Calendar className="h-3 w-3" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[450px]">
+                    <DialogHeader>
+                      <DialogTitle>Send Schedule to {player.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Schedule Period</h3>
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSendSchedule(player)} size="sm">Day</Button>
+                          <Button onClick={() => handleSendSchedule(player)} size="sm">Week</Button>
+                          <Button onClick={() => handleSendSchedule(player)} size="sm">Month</Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Contact Methods</h3>
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSendSchedule(player)} variant="outline" size="sm" className="w-full">
+                            <Phone className="h-4 w-4 mr-2" />
+                            WhatsApp
+                          </Button>
+                          <Button onClick={() => handleSendEmail(player)} variant="outline" size="sm" className="w-full">
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -113,7 +172,47 @@ export function PeopleManagement({
                 </div>
                 <span className="text-sm">{coach.name}</span>
               </div>
-              <div className="flex">
+              <div className="flex gap-1">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                    >
+                      <Calendar className="h-3 w-3" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[450px]">
+                    <DialogHeader>
+                      <DialogTitle>Coach: {coach.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Set Objectives</h3>
+                        <div className="flex gap-2">
+                          <Button size="sm">Daily</Button>
+                          <Button size="sm">Weekly</Button>
+                          <Button size="sm">Monthly</Button>
+                          <Button size="sm">Season</Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Notify Players</h3>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Phone className="h-4 w-4 mr-2" />
+                            WhatsApp
+                          </Button>
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Button 
                   variant="ghost" 
                   size="sm" 

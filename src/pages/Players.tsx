@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Phone, Mail, Calendar, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -33,6 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 // Define player types and interfaces
 interface Player {
@@ -46,6 +50,13 @@ interface Player {
   email: string;
   joinDate: string;
   notes: string;
+  objectives?: {
+    daily?: string;
+    weekly?: string;
+    monthly?: string;
+    seasonal?: string;
+  };
+  preferredContactMethod?: "WhatsApp" | "Email" | "Phone";
 }
 
 // Mock data for players
@@ -155,6 +166,15 @@ export default function Players() {
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [coachFilter, setCoachFilter] = useState<string>("all");
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [messagePlayer, setMessagePlayer] = useState<Player | null>(null);
+  const [messageContent, setMessageContent] = useState("");
+  const [scheduleType, setScheduleType] = useState<"day" | "week" | "month">("week");
+  const [objectives, setObjectives] = useState({
+    daily: "",
+    weekly: "",
+    monthly: "",
+    seasonal: ""
+  });
   const [newPlayer, setNewPlayer] = useState<Omit<Player, "id">>({
     name: "",
     age: 0,
@@ -164,7 +184,14 @@ export default function Players() {
     phone: "",
     email: "",
     joinDate: new Date().toISOString().split("T")[0],
-    notes: ""
+    notes: "",
+    preferredContactMethod: "WhatsApp",
+    objectives: {
+      daily: "",
+      weekly: "",
+      monthly: "",
+      seasonal: ""
+    }
   });
 
   // Get unique coaches for filter dropdown
@@ -205,7 +232,14 @@ export default function Players() {
       phone: "",
       email: "",
       joinDate: new Date().toISOString().split("T")[0],
-      notes: ""
+      notes: "",
+      preferredContactMethod: "WhatsApp",
+      objectives: {
+        daily: "",
+        weekly: "",
+        monthly: "",
+        seasonal: ""
+      }
     });
     
     toast({
@@ -241,12 +275,48 @@ export default function Players() {
     });
   };
 
+  // Handle sending a message or schedule
+  const handleSendMessage = () => {
+    if (!messagePlayer) return;
+    
+    const method = messagePlayer.preferredContactMethod || "WhatsApp";
+    
+    toast({
+      title: `Message Sent via ${method}`,
+      description: `Your ${scheduleType}ly schedule has been sent to ${messagePlayer.name}.`,
+    });
+    
+    setMessagePlayer(null);
+    setMessageContent("");
+  };
+
+  // Handle setting player objectives
+  const handleSetObjectives = () => {
+    if (!editingPlayer) return;
+    
+    const updatedPlayer = {
+      ...editingPlayer,
+      objectives: objectives
+    };
+    
+    setPlayers(players.map(player => 
+      player.id === updatedPlayer.id ? updatedPlayer : player
+    ));
+    
+    setEditingPlayer(null);
+    
+    toast({
+      title: "Objectives Set",
+      description: `Training objectives for ${updatedPlayer.name} have been updated.`,
+    });
+  };
+
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Player Database</h1>
-          <p className="text-gray-600 mt-1">Manage player profiles and information</p>
+          <p className="text-gray-600 mt-1">Manage player profiles and schedule communication</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -338,6 +408,7 @@ export default function Players() {
                   <Input 
                     value={newPlayer.phone} 
                     onChange={(e) => setNewPlayer({...newPlayer, phone: e.target.value})}
+                    placeholder="+1 (555) 123-4567"
                   />
                 </div>
                 
@@ -347,6 +418,7 @@ export default function Players() {
                     type="email" 
                     value={newPlayer.email} 
                     onChange={(e) => setNewPlayer({...newPlayer, email: e.target.value})}
+                    placeholder="player@example.com"
                   />
                 </div>
                 
@@ -358,6 +430,26 @@ export default function Players() {
                     onChange={(e) => setNewPlayer({...newPlayer, joinDate: e.target.value})}
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Preferred Contact Method</label>
+                  <Select
+                    value={newPlayer.preferredContactMethod}
+                    onValueChange={(value) => setNewPlayer({
+                      ...newPlayer, 
+                      preferredContactMethod: value as any
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Contact Method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                      <SelectItem value="Email">Email</SelectItem>
+                      <SelectItem value="Phone">Phone</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 
                 <div className="space-y-2 col-span-2">
                   <label className="text-sm font-medium">Notes</label>
@@ -365,6 +457,7 @@ export default function Players() {
                     className="w-full p-2 border rounded-md text-sm min-h-[80px]"
                     value={newPlayer.notes} 
                     onChange={(e) => setNewPlayer({...newPlayer, notes: e.target.value})}
+                    placeholder="Player notes, special requirements, etc."
                   />
                 </div>
               </div>
@@ -432,10 +525,10 @@ export default function Players() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Age</TableHead>
               <TableHead>Level</TableHead>
               <TableHead>Coach</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -444,7 +537,6 @@ export default function Players() {
               filteredPlayers.map((player) => (
                 <TableRow key={player.id}>
                   <TableCell className="font-medium">{player.name}</TableCell>
-                  <TableCell>{player.age}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       player.level === "Beginner" ? "bg-gray-100 text-gray-700" :
@@ -457,143 +549,299 @@ export default function Players() {
                   </TableCell>
                   <TableCell>{player.coach}</TableCell>
                   <TableCell>{player.email}</TableCell>
+                  <TableCell>{player.phone}</TableCell>
                   <TableCell className="text-right">
-                    <Dialog>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
+                    <div className="flex justify-end gap-1">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Calendar className="h-4 w-4" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem onClick={() => setEditingPlayer(player)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => handleDeletePlayer(player.id, player.name)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Send Schedule to {player.name}</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                              <Label>Schedule Type</Label>
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant={scheduleType === "day" ? "default" : "outline"} 
+                                  onClick={() => setScheduleType("day")}
+                                  size="sm"
+                                >
+                                  Daily
+                                </Button>
+                                <Button 
+                                  variant={scheduleType === "week" ? "default" : "outline"} 
+                                  onClick={() => setScheduleType("week")}
+                                  size="sm"
+                                >
+                                  Weekly
+                                </Button>
+                                <Button 
+                                  variant={scheduleType === "month" ? "default" : "outline"} 
+                                  onClick={() => setScheduleType("month")}
+                                  size="sm"
+                                >
+                                  Monthly
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Message</Label>
+                              <Textarea 
+                                placeholder={`${scheduleType}ly schedule and objectives for ${player.name}`}
+                                value={messageContent}
+                                onChange={(e) => setMessageContent(e.target.value)}
+                                className="min-h-[100px]"
+                              />
+                            </div>
+                            <div className="flex justify-between">
+                              <div>
+                                <span className="text-sm text-gray-500">Will be sent via: {player.preferredContactMethod || "WhatsApp"}</span>
+                              </div>
+                              <Button onClick={() => {
+                                setMessagePlayer(player);
+                                handleSendMessage();
+                              }} className="flex gap-2">
+                                <Send className="h-4 w-4" />
+                                Send Schedule
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
 
-                      <DialogContent className="sm:max-w-[550px]">
-                        <DialogHeader>
-                          <DialogTitle>Edit Player</DialogTitle>
-                        </DialogHeader>
-                        {editingPlayer && (
-                          <>
-                            <div className="grid grid-cols-2 gap-4 py-4">
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Name</label>
-                                <Input 
-                                  value={editingPlayer.name} 
-                                  onChange={(e) => setEditingPlayer({...editingPlayer, name: e.target.value})}
-                                />
-                              </div>
+                      <Dialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem onClick={() => setEditingPlayer(player)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => handleDeletePlayer(player.id, player.name)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DialogContent className="sm:max-w-[650px]">
+                          <DialogHeader>
+                            <DialogTitle>Edit Player</DialogTitle>
+                          </DialogHeader>
+                          {editingPlayer && (
+                            <Tabs defaultValue="details">
+                              <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="details">Player Details</TabsTrigger>
+                                <TabsTrigger value="objectives">Training Objectives</TabsTrigger>
+                              </TabsList>
                               
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Age</label>
-                                <Input 
-                                  type="number" 
-                                  value={editingPlayer.age} 
-                                  onChange={(e) => setEditingPlayer({...editingPlayer, age: parseInt(e.target.value) || 0})}
-                                />
-                              </div>
+                              <TabsContent value="details">
+                                <div className="grid grid-cols-2 gap-4 py-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Name</label>
+                                    <Input 
+                                      value={editingPlayer.name} 
+                                      onChange={(e) => setEditingPlayer({...editingPlayer, name: e.target.value})}
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Age</label>
+                                    <Input 
+                                      type="number" 
+                                      value={editingPlayer.age} 
+                                      onChange={(e) => setEditingPlayer({...editingPlayer, age: parseInt(e.target.value) || 0})}
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Gender</label>
+                                    <Select 
+                                      value={editingPlayer.gender} 
+                                      onValueChange={(value) => setEditingPlayer({...editingPlayer, gender: value as any})}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select gender" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Male">Male</SelectItem>
+                                        <SelectItem value="Female">Female</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Level</label>
+                                    <Select 
+                                      value={editingPlayer.level} 
+                                      onValueChange={(value) => setEditingPlayer({...editingPlayer, level: value as any})}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select level" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Beginner">Beginner</SelectItem>
+                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                        <SelectItem value="Advanced">Advanced</SelectItem>
+                                        <SelectItem value="Professional">Professional</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Coach</label>
+                                    <Input 
+                                      value={editingPlayer.coach} 
+                                      onChange={(e) => setEditingPlayer({...editingPlayer, coach: e.target.value})}
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Phone</label>
+                                    <Input 
+                                      value={editingPlayer.phone} 
+                                      onChange={(e) => setEditingPlayer({...editingPlayer, phone: e.target.value})}
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Email</label>
+                                    <Input 
+                                      type="email" 
+                                      value={editingPlayer.email} 
+                                      onChange={(e) => setEditingPlayer({...editingPlayer, email: e.target.value})}
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Join Date</label>
+                                    <Input 
+                                      type="date" 
+                                      value={editingPlayer.joinDate} 
+                                      onChange={(e) => setEditingPlayer({...editingPlayer, joinDate: e.target.value})}
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Preferred Contact Method</label>
+                                    <Select
+                                      value={editingPlayer.preferredContactMethod || "WhatsApp"}
+                                      onValueChange={(value) => setEditingPlayer({
+                                        ...editingPlayer, 
+                                        preferredContactMethod: value as any
+                                      })}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Contact Method" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                                        <SelectItem value="Email">Email</SelectItem>
+                                        <SelectItem value="Phone">Phone</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <div className="space-y-2 col-span-2">
+                                    <label className="text-sm font-medium">Notes</label>
+                                    <textarea 
+                                      className="w-full p-2 border rounded-md text-sm min-h-[80px]"
+                                      value={editingPlayer.notes} 
+                                      onChange={(e) => setEditingPlayer({...editingPlayer, notes: e.target.value})}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                  <DialogClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                  </DialogClose>
+                                  <Button onClick={handleUpdatePlayer}>Update Player</Button>
+                                </div>
+                              </TabsContent>
                               
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Gender</label>
-                                <Select 
-                                  value={editingPlayer.gender} 
-                                  onValueChange={(value) => setEditingPlayer({...editingPlayer, gender: value as any})}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select gender" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Male">Male</SelectItem>
-                                    <SelectItem value="Female">Female</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Level</label>
-                                <Select 
-                                  value={editingPlayer.level} 
-                                  onValueChange={(value) => setEditingPlayer({...editingPlayer, level: value as any})}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select level" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Beginner">Beginner</SelectItem>
-                                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                    <SelectItem value="Advanced">Advanced</SelectItem>
-                                    <SelectItem value="Professional">Professional</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Coach</label>
-                                <Input 
-                                  value={editingPlayer.coach} 
-                                  onChange={(e) => setEditingPlayer({...editingPlayer, coach: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Phone</label>
-                                <Input 
-                                  value={editingPlayer.phone} 
-                                  onChange={(e) => setEditingPlayer({...editingPlayer, phone: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Email</label>
-                                <Input 
-                                  type="email" 
-                                  value={editingPlayer.email} 
-                                  onChange={(e) => setEditingPlayer({...editingPlayer, email: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Join Date</label>
-                                <Input 
-                                  type="date" 
-                                  value={editingPlayer.joinDate} 
-                                  onChange={(e) => setEditingPlayer({...editingPlayer, joinDate: e.target.value})}
-                                />
-                              </div>
-                              
-                              <div className="space-y-2 col-span-2">
-                                <label className="text-sm font-medium">Notes</label>
-                                <textarea 
-                                  className="w-full p-2 border rounded-md text-sm min-h-[80px]"
-                                  value={editingPlayer.notes} 
-                                  onChange={(e) => setEditingPlayer({...editingPlayer, notes: e.target.value})}
-                                />
-                              </div>
-                            </div>
-                            <div className="flex justify-end gap-2">
-                              <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                              </DialogClose>
-                              <Button onClick={handleUpdatePlayer}>Update Player</Button>
-                            </div>
-                          </>
-                        )}
-                      </DialogContent>
-                    </Dialog>
+                              <TabsContent value="objectives">
+                                <div className="grid gap-4 py-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Daily Objectives</label>
+                                    <textarea 
+                                      className="w-full p-2 border rounded-md text-sm min-h-[60px]"
+                                      value={objectives.daily} 
+                                      onChange={(e) => setObjectives({...objectives, daily: e.target.value})}
+                                      placeholder="Daily training focus and goals"
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Weekly Objectives</label>
+                                    <textarea 
+                                      className="w-full p-2 border rounded-md text-sm min-h-[60px]"
+                                      value={objectives.weekly} 
+                                      onChange={(e) => setObjectives({...objectives, weekly: e.target.value})}
+                                      placeholder="Weekly training schedule and goals"
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Monthly Objectives</label>
+                                    <textarea 
+                                      className="w-full p-2 border rounded-md text-sm min-h-[60px]"
+                                      value={objectives.monthly} 
+                                      onChange={(e) => setObjectives({...objectives, monthly: e.target.value})}
+                                      placeholder="Monthly improvement goals"
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Seasonal Objectives</label>
+                                    <textarea 
+                                      className="w-full p-2 border rounded-md text-sm min-h-[60px]"
+                                      value={objectives.seasonal} 
+                                      onChange={(e) => setObjectives({...objectives, seasonal: e.target.value})}
+                                      placeholder="Season-long development goals"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex justify-between gap-2">
+                                  <div>
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => {
+                                        setMessagePlayer(editingPlayer);
+                                        setMessageContent(`Training objectives for ${editingPlayer.name}:\n\nDaily: ${objectives.daily}\n\nWeekly: ${objectives.weekly}\n\nMonthly: ${objectives.monthly}\n\nSeasonal: ${objectives.seasonal}`);
+                                      }}
+                                    >
+                                      <Phone className="h-4 w-4 mr-2" />
+                                      Send to Player
+                                    </Button>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <DialogClose asChild>
+                                      <Button variant="outline">Cancel</Button>
+                                    </DialogClose>
+                                    <Button onClick={handleSetObjectives}>Save Objectives</Button>
+                                  </div>
+                                </div>
+                              </TabsContent>
+                            </Tabs>
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -607,6 +855,32 @@ export default function Players() {
           </TableBody>
         </Table>
       </div>
+      
+      {/* Message Dialog - Hidden unless triggered */}
+      {messagePlayer && (
+        <Dialog open={!!messagePlayer} onOpenChange={(open) => !open && setMessagePlayer(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Send Message to {messagePlayer.name}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label>Message</Label>
+                <Textarea 
+                  value={messageContent}
+                  onChange={(e) => setMessageContent(e.target.value)}
+                  className="min-h-[150px]"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleSendMessage}>
+                Send Message
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
