@@ -148,35 +148,33 @@ export default function CourtVision() {
   }, [courts]);
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
+    const personDuration = person.durationHours || 1;
+    
     const personWithCourtInfo = { 
       ...person, 
       courtId,
       position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
       timeSlot,
-      date: selectedDate.toISOString().split('T')[0]
+      date: selectedDate.toISOString().split('T')[0],
+      durationHours: personDuration
     };
+
+    if (timeSlot) {
+      const timeSlotIndex = timeSlots.indexOf(timeSlot);
+      if (timeSlotIndex >= 0 && personDuration > 1) {
+        const endSlotIndex = Math.min(timeSlotIndex + personDuration - 1, timeSlots.length - 1);
+        personWithCourtInfo.endTimeSlot = timeSlots[endSlotIndex];
+      }
+    }
 
     let updatedCourts = [...courts];
 
-    if (timeSlot) {
-      updatedCourts = updatedCourts.map((court) => {
-        return {
-          ...court,
-          occupants: court.occupants.filter((p) => {
-            return !(p.id === person.id && p.timeSlot === timeSlot);
-          })
-        };
-      });
-    } else {
-      updatedCourts = updatedCourts.map((court) => {
-        return {
-          ...court,
-          occupants: court.occupants.filter((p) => {
-            return !(p.id === person.id && !p.timeSlot);
-          })
-        };
-      });
-    }
+    updatedCourts = updatedCourts.map((court) => {
+      return {
+        ...court,
+        occupants: court.occupants.filter((p) => p.id !== person.id)
+      };
+    });
 
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
@@ -197,7 +195,7 @@ export default function CourtVision() {
 
     toast({
       title: "Persona Assegnata",
-      description: `${person.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}`,
+      description: `${person.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${personDuration > 1 ? ` per ${personDuration} ore` : ''}`,
     });
   };
 
@@ -207,34 +205,42 @@ export default function CourtVision() {
     
     if (!draggableActivity) return;
 
+    let durationHours = 1;
+    if (draggableActivity.duration) {
+      const durationMatch = draggableActivity.duration.match(/(\d+(\.\d+)?)(h|m)/);
+      if (durationMatch) {
+        if (durationMatch[3] === 'h') {
+          durationHours = parseFloat(durationMatch[1]);
+        } else if (durationMatch[3] === 'm') {
+          durationHours = parseFloat(durationMatch[1]) / 60;
+        }
+      }
+    }
+
     const activityCopy = { 
       ...draggableActivity, 
       courtId, 
       startTime: timeSlot,
-      date: selectedDate.toISOString().split('T')[0]
+      date: selectedDate.toISOString().split('T')[0],
+      durationHours
     };
+
+    if (timeSlot) {
+      const timeSlotIndex = timeSlots.indexOf(timeSlot);
+      if (timeSlotIndex >= 0 && durationHours > 1) {
+        const endSlotIndex = Math.min(timeSlotIndex + Math.ceil(durationHours) - 1, timeSlots.length - 1);
+        activityCopy.endTimeSlot = timeSlots[endSlotIndex];
+      }
+    }
 
     let updatedCourts = [...courts];
 
-    if (timeSlot) {
-      updatedCourts = updatedCourts.map((court) => {
-        return {
-          ...court,
-          activities: court.activities.filter(a => 
-            !(a.id === activity.id && a.startTime === timeSlot)
-          )
-        };
-      });
-    } else {
-      updatedCourts = updatedCourts.map((court) => {
-        return {
-          ...court,
-          activities: court.activities.filter(a => 
-            !(a.id === activity.id && !a.startTime)
-          )
-        };
-      });
-    }
+    updatedCourts = updatedCourts.map((court) => {
+      return {
+        ...court,
+        activities: court.activities.filter(a => a.id !== activity.id)
+      };
+    });
 
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
@@ -258,16 +264,24 @@ export default function CourtVision() {
 
     toast({
       title: "Attività Assegnata",
-      description: `${draggableActivity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}`,
+      description: `${draggableActivity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${durationHours > 1 ? ` per ${durationHours} ore` : ''}`,
     });
   };
 
-  const handleAssignPerson = (courtId: string, person: PersonData, timeSlot?: string) => {
-    handleDrop(courtId, person, { x: 0.5, y: 0.5 }, timeSlot);
+  const handleAssignPerson = (courtId: string, person: PersonData, timeSlot?: string, durationHours?: number) => {
+    const updatedPerson = {
+      ...person,
+      durationHours: durationHours || 1
+    };
+    handleDrop(courtId, updatedPerson, { x: 0.5, y: 0.5 }, timeSlot);
   };
 
-  const handleAssignActivity = (courtId: string, activity: ActivityData, timeSlot?: string) => {
-    handleActivityDrop(courtId, activity, timeSlot);
+  const handleAssignActivity = (courtId: string, activity: ActivityData, timeSlot?: string, durationHours?: number) => {
+    const updatedActivity = {
+      ...activity,
+      durationHours: durationHours || 1
+    };
+    handleActivityDrop(courtId, updatedActivity, timeSlot);
   };
 
   const handleRemovePerson = (personId: string, timeSlot?: string) => {

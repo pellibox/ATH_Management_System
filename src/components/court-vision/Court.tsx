@@ -91,15 +91,36 @@ export function Court({
     return `${type[0].charAt(0).toUpperCase() + type[0].slice(1)}${surface}`;
   };
 
+  const isTimeSlotOccupied = (object: PersonData | ActivityData, timeSlot: string): boolean => {
+    if (!object.timeSlot && !object.startTime) return false;
+    
+    const startSlot = object.timeSlot || object.startTime;
+    if (!startSlot) return false;
+    
+    const startIndex = timeSlots.indexOf(startSlot);
+    const currentIndex = timeSlots.indexOf(timeSlot);
+    
+    if (startIndex === -1 || currentIndex === -1) return false;
+    
+    const duration = object.durationHours || 1;
+    const endIndex = startIndex + Math.ceil(duration) - 1;
+    
+    return currentIndex >= startIndex && currentIndex <= endIndex;
+  };
+
   const getOccupantsForTimeSlot = (time: string) => {
     return court.occupants.filter(person => 
-      person.timeSlot === time || (!person.timeSlot && time === timeSlots[0])
+      isTimeSlotOccupied(person, time) || 
+      (person.timeSlot === time) || 
+      (!person.timeSlot && time === timeSlots[0])
     );
   };
 
   const getActivitiesForTimeSlot = (time: string) => {
     return court.activities.filter(activity => 
-      activity.startTime === time || (!activity.startTime && time === timeSlots[0])
+      isTimeSlotOccupied(activity, time) ||
+      (activity.startTime === time) || 
+      (!activity.startTime && time === timeSlots[0])
     );
   };
 
@@ -416,6 +437,8 @@ export function Court({
                       <p className="text-xs text-gray-500">
                         {person.type === PERSON_TYPES.PLAYER ? "Giocatore" : "Allenatore"}
                         {person.timeSlot && ` - ${person.timeSlot}`}
+                        {person.durationHours && person.durationHours > 1 && 
+                         ` (${person.durationHours}h${person.endTimeSlot ? ` fino ${person.endTimeSlot}` : ''})`}
                       </p>
                     </div>
                   </div>
@@ -453,8 +476,10 @@ export function Court({
                     <div>
                       <div className="font-medium">{activity.name}</div>
                       <div className="text-xs">
-                        Durata: {activity.duration}
+                        {activity.duration && `Durata: ${activity.duration}`}
                         {activity.startTime && ` - Inizio: ${activity.startTime}`}
+                        {activity.durationHours && activity.durationHours > 1 && 
+                         ` (${activity.durationHours}h${activity.endTimeSlot ? ` fino ${activity.endTimeSlot}` : ''})`}
                       </div>
                     </div>
                     <button
