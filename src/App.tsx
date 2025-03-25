@@ -16,6 +16,8 @@ import Reports from "./pages/Reports";
 import Tournaments from "./pages/Tournaments";
 import Videos from "./pages/Videos";
 import Integrations from "./pages/Integrations";
+import "./App.css";
+import "./index.css";
 
 const queryClient = new QueryClient();
 
