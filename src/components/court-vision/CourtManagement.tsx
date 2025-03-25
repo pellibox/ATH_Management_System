@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { COURT_TYPES } from "./constants";
@@ -50,7 +49,6 @@ export function CourtManagement({
       number: newCourtNumber,
     });
 
-    // Reset form
     setNewCourtName("Tennis");
     setNewCourtType(COURT_TYPES.TENNIS_CLAY);
     setNewCourtNumber(courts.length + 1);
