@@ -38,12 +38,25 @@ export default function MainLayout() {
     <div className="min-h-screen flex bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 ml-16 md:ml-64 transition-all duration-300">
+      <div className="flex-1 ml-16 md:ml-64 transition-all duration-300 flex flex-col">
         <Header />
         
-        <main className="p-6">
+        <main className="p-6 flex-1">
           <Outlet />
         </main>
+        
+        <footer className="mt-auto border-t py-4 px-6 bg-white text-sm">
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="font-bold text-ath-blue">ATH</span>
+              <span className="text-gray-600"> Management System</span>
+              <span className="ml-2 text-gray-500">© 2024 All rights reserved</span>
+            </div>
+            <div className="text-gray-500">
+              Version 1.0.0
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

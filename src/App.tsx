@@ -12,6 +12,10 @@ import Staff from "./pages/Staff";
 import Programs from "./pages/Programs";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Reports from "./pages/Reports";
+import Tournaments from "./pages/Tournaments";
+import Videos from "./pages/Videos";
+import Integrations from "./pages/Integrations";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +32,10 @@ const App = () => (
             <Route path="/courts" element={<Courts />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/programs" element={<Programs />} />
+            <Route path="/tournaments" element={<Tournaments />} />
+            <Route path="/videos" element={<Videos />} />
+            <Route path="/integrations" element={<Integrations />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />

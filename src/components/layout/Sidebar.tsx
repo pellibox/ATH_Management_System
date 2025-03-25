@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Calendar, Settings, Home, Users, BookOpen, MapPin, ChartBar } from 'lucide-react';
+import { Calendar, Settings, Home, Users, BookOpen, MapPin, ChartBar, Video, Award, GitMerge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItemProps {
@@ -91,6 +91,9 @@ export default function Sidebar() {
         <NavItem to="/courts" icon={MapPin} label="Courts" isCollapsed={isCollapsed} />
         <NavItem to="/staff" icon={Users} label="Staff" isCollapsed={isCollapsed} />
         <NavItem to="/programs" icon={BookOpen} label="Programs" isCollapsed={isCollapsed} />
+        <NavItem to="/tournaments" icon={Award} label="Tournaments" isCollapsed={isCollapsed} />
+        <NavItem to="/videos" icon={Video} label="Video Archive" isCollapsed={isCollapsed} />
+        <NavItem to="/integrations" icon={GitMerge} label="Integrations" isCollapsed={isCollapsed} />
         <NavItem to="/reports" icon={ChartBar} label="Reports" isCollapsed={isCollapsed} />
       </nav>
       

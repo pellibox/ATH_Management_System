@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { Bell, User, Search } from 'lucide-react';
+import { Bell, User, Search, Mail, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +23,11 @@ export default function Header() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+  
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+    // In a real implementation, we would also update the document class or CSS variables
+  };
   
   return (
     <header className={cn(
@@ -43,6 +49,22 @@ export default function Header() {
         </div>
         
         <div className="flex items-center gap-4">
+          <button 
+            className="rounded-full p-2 text-gray-500 hover:bg-gray-100 transition-colors"
+            onClick={toggleTheme}
+          >
+            {theme === 'light' ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </button>
+          
+          <button className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 transition-colors">
+            <Mail className="h-5 w-5" />
+            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-ath-orange"></span>
+          </button>
+          
           <button className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 transition-colors">
             <Bell className="h-5 w-5" />
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-ath-blue"></span>
@@ -50,11 +72,11 @@ export default function Header() {
           
           <div className="flex items-center gap-3">
             <div className="hidden md:block text-right">
-              <p className="text-sm font-medium">John Doe</p>
-              <p className="text-xs text-gray-500">Administrator</p>
+              <p className="text-sm font-medium">Marco Rossi</p>
+              <p className="text-xs text-gray-500">Head Coach</p>
             </div>
             <div className="h-9 w-9 rounded-full bg-ath-blue-light flex items-center justify-center text-ath-blue font-medium">
-              JD
+              MR
             </div>
           </div>
         </div>
