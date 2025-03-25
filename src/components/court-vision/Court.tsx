@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -92,9 +93,21 @@ export function Court({
   };
 
   const isTimeSlotOccupied = (object: PersonData | ActivityData, timeSlot: string): boolean => {
-    if (!object.timeSlot && !object.startTime) return false;
+    // Type guard to check if the object has timeSlot property (PersonData)
+    const isPerson = 'timeSlot' in object;
+    // Type guard to check if the object has startTime property (ActivityData)
+    const isActivity = 'startTime' in object;
     
-    const startSlot = object.timeSlot || object.startTime;
+    let startSlot: string | undefined;
+    
+    if (isPerson && object.timeSlot) {
+      startSlot = object.timeSlot;
+    } else if (isActivity && object.startTime) {
+      startSlot = object.startTime;
+    } else {
+      return false;
+    }
+    
     if (!startSlot) return false;
     
     const startIndex = timeSlots.indexOf(startSlot);
