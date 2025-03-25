@@ -57,7 +57,7 @@ export function Activity({ activity, onRemove }: ActivityProps) {
       ref={drag}
       className={`flex items-center p-2 rounded-md mb-1 ${
         isDragging ? "opacity-40" : "opacity-100"
-      } ${getActivityColor()}`}
+      } ${getActivityColor()} cursor-move`}
     >
       {getActivityIcon()}
       <span className="text-sm">{activity.name}</span>
@@ -67,7 +67,7 @@ export function Activity({ activity, onRemove }: ActivityProps) {
       <button
         onClick={onRemove}
         className="ml-auto text-gray-500 hover:text-red-500"
-        aria-label="Remove activity"
+        aria-label="Rimuovi attività"
       >
         ×
       </button>
