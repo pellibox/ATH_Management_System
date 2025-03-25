@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -323,7 +322,11 @@ export default function CourtVision() {
       description: `Le assegnazioni del campo sono state copiate alla settimana che inizia ${format(nextWeekStart, "MMMM d, yyyy")}`,
     });
   };
-  
+
+  const handleAddToDragArea = (person: PersonData) => {
+    setPeople(prev => [...prev, person]);
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="container mx-auto py-4">
@@ -333,7 +336,7 @@ export default function CourtVision() {
           <div className="md:col-span-2">
             <DateSelector 
               selectedDate={selectedDate} 
-              setSelectedDate={setSelectedDate} 
+              onDateChange={setSelectedDate} 
             />
           </div>
           <div>
@@ -368,22 +371,30 @@ export default function CourtVision() {
               onRemoveActivity={handleRemoveActivity}
             />
             
-            <AvailablePeople people={people} />
+            <AvailablePeople 
+              people={people} 
+              onAddPerson={handleAddPerson}
+              onRemovePerson={handleRemovePerson}
+            />
             
-            <AvailableActivities activities={activities} />
+            <AvailableActivities 
+              activities={activities}
+              onAddActivity={handleAddActivity}
+              onRemoveActivity={handleRemoveActivity}
+            />
             
             <PeopleManagement 
               playersList={playersList} 
               coachesList={coachesList} 
-              onAddPerson={handleAddPerson} 
+              onAddPerson={handleAddPerson}
+              onRemovePerson={handleRemovePerson}
+              onAddToDragArea={handleAddToDragArea}
             />
             
             <ScheduleTemplates 
               templates={templates} 
               onApplyTemplate={applyTemplate} 
               onSaveTemplate={saveAsTemplate}
-              onCopyToNextDay={copyToNextDay}
-              onCopyToWeek={copyToWeek}
             />
           </div>
         </div>

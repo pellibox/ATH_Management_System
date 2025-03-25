@@ -5,7 +5,7 @@ import { Person } from "./Person";
 import { PersonData } from "./types";
 import { PERSON_TYPES } from "./constants";
 
-interface AvailablePeopleProps {
+export interface AvailablePeopleProps {
   people: PersonData[];
   onAddPerson: (person: {name: string, type: string}) => void;
   onRemovePerson: (id: string) => void;
