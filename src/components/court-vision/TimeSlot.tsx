@@ -55,7 +55,7 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
 // Create a draggable activity component for the time slot
 function DraggableActivity({ activity, time, onRemove }: { activity: ActivityData, time: string, onRemove: () => void }) {
   const [{ isDragging }, drag] = useDrag(() => ({
-    type: "activity",
+    type: activity.type,
     item: { 
       ...activity, 
       sourceTimeSlot: time,  // Include the source time slot for tracking movement
@@ -113,7 +113,7 @@ export const TimeSlot = memo(function TimeSlot({
 
   // Optimize the drag & drop logic
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
+    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, ACTIVITY_TYPES.MATCH, ACTIVITY_TYPES.TRAINING, ACTIVITY_TYPES.BASKET_DRILL, ACTIVITY_TYPES.GAME, "activity"],
     drop: (item: any) => {
       console.log("Dropping in time slot:", time, "Item:", item);
       
@@ -129,7 +129,14 @@ export const TimeSlot = memo(function TimeSlot({
         
         // Update with the new time slot
         onDrop(courtId, time, personItem);
-      } else if (item.type && (item.type === "activity" || item.type.toString().startsWith("activity"))) {
+      } else if (item.type && (
+        item.type === "activity" || 
+        item.type === ACTIVITY_TYPES.MATCH || 
+        item.type === ACTIVITY_TYPES.TRAINING || 
+        item.type === ACTIVITY_TYPES.BASKET_DRILL || 
+        item.type === ACTIVITY_TYPES.GAME || 
+        item.type.toString().startsWith("activity")
+      )) {
         // Handle activity drop
         const activityItem = item as ActivityData;
         
