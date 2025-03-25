@@ -40,17 +40,17 @@ export default function Sidebar() {
   
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Calendar", href: "/calendar", icon: Calendar },
-    { name: "Courts", href: "/courts", icon: Layers },
-    { name: "Court Vision", href: "/court-vision", icon: View },
+    { name: "Calendario", href: "/calendar", icon: Calendar },
+    { name: "Campi", href: "/courts", icon: Layers },
+    { name: "Visione Campo", href: "/court-vision", icon: View },
     { name: "Staff", href: "/staff", icon: Users },
-    { name: "Players", href: "/players", icon: UserCircle },
-    { name: "Programs", href: "/programs", icon: BookOpen },
-    { name: "Tournaments", href: "/tournaments", icon: Trophy },
-    { name: "Reports", href: "/reports", icon: BarChart3 },
-    { name: "Videos", href: "/videos", icon: Video },
-    { name: "Integrations", href: "/integrations", icon: Link },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Giocatori", href: "/players", icon: UserCircle },
+    { name: "Programmi", href: "/programs", icon: BookOpen },
+    { name: "Tornei", href: "/tournaments", icon: Trophy },
+    { name: "Rapporti", href: "/reports", icon: BarChart3 },
+    { name: "Video", href: "/videos", icon: Video },
+    { name: "Integrazioni", href: "/integrations", icon: Link },
+    { name: "Impostazioni", href: "/settings", icon: Settings },
   ];
 
   // Handle window resize to collapse sidebar on mobile
@@ -91,14 +91,14 @@ export default function Sidebar() {
         {!isCollapsed && (
           <div className="flex items-center gap-2">
             <span className="text-xl font-bold text-ath-red-clay">ATH</span>
-            <span className="text-xl font-medium">System</span>
+            <span className="text-xl font-medium">Sistema</span>
           </div>
         )}
         {!isMobile && (
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="rounded-full p-1 hover:bg-gray-100"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
           >
             {isCollapsed ? (
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
@@ -120,7 +120,7 @@ export default function Sidebar() {
       </nav>
       
       <div className="mt-auto pt-3 md:pt-4 border-t">
-        <NavItem to="/settings" icon={Settings} label="Settings" isCollapsed={isCollapsed} />
+        <NavItem to="/settings" icon={Settings} label="Impostazioni" isCollapsed={isCollapsed} />
       </div>
     </aside>
   );
