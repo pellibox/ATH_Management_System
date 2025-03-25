@@ -235,7 +235,7 @@ export function AssignmentsDashboard({ courts, selectedDate, programs = [] }: As
                       {coach.totalHours > COACH_MAX_HOURS && (
                         <AlertTriangle 
                           className="h-3 w-3 ml-1 text-red-500" 
-                          title="Carico di lavoro eccessivo"
+                          aria-label="Carico di lavoro eccessivo"
                         />
                       )}
                     </div>
