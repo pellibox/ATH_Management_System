@@ -1,7 +1,13 @@
 
-import { useState } from "react";
-import { Plus, Filter } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Filter, Layers, Eye } from "lucide-react";
 import CourtCard from "@/components/ui/CourtCard";
+import { Link } from "react-router-dom";
+import { COURT_TYPES } from "@/components/court-vision/constants";
+import { useToast } from "@/hooks/use-toast";
+
+// Shared court state management (in a real app, this would be in a global state store)
+import { CourtProps } from "@/components/court-vision/types";
 
 // Mock data
 const mockCourts = [
@@ -88,15 +94,40 @@ const mockCourts = [
 ];
 
 export default function Courts() {
+  const { toast } = useToast();
   const [filter, setFilter] = useState<string>("all");
+  const [showAddCourtModal, setShowAddCourtModal] = useState(false);
+  const [newCourtName, setNewCourtName] = useState("Court");
+  const [newCourtType, setNewCourtType] = useState("clay");
+  const [newCourtIndoor, setNewCourtIndoor] = useState(false);
+  
+  const [courts, setCourts] = useState(mockCourts);
   
   const filteredCourts = filter === "all" 
-    ? mockCourts 
+    ? courts 
     : filter === "available" 
-      ? mockCourts.filter(court => court.available)
+      ? courts.filter(court => court.available)
       : filter === "occupied"
-        ? mockCourts.filter(court => !court.available)
-        : mockCourts.filter(court => court.type === filter);
+        ? courts.filter(court => !court.available)
+        : courts.filter(court => court.type === filter);
+  
+  const handleAddCourt = () => {
+    const newCourt = {
+      id: courts.length + 1,
+      name: newCourtName,
+      type: newCourtType as "clay" | "grass" | "hard" | "central",
+      indoor: newCourtIndoor,
+      available: true,
+    };
+    
+    setCourts([...courts, newCourt]);
+    setShowAddCourtModal(false);
+    
+    toast({
+      title: "Court Added",
+      description: `${newCourtName} has been added successfully`,
+    });
+  };
   
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
@@ -107,7 +138,14 @@ export default function Courts() {
         </div>
         
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors">
+          <Link to="/court-vision" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue-light text-ath-blue hover:bg-ath-blue-light/80 transition-colors">
+            <Eye className="h-4 w-4" />
+            <span className="text-sm font-medium">Court Vision</span>
+          </Link>
+          <button 
+            onClick={() => setShowAddCourtModal(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-red-clay text-white hover:bg-ath-red-clay-dark transition-colors"
+          >
             <Plus className="h-4 w-4" />
             <span className="text-sm font-medium">Add Court</span>
           </button>
@@ -194,6 +232,67 @@ export default function Courts() {
           >
             View all courts
           </button>
+        </div>
+      )}
+      
+      {/* Add Court Modal */}
+      {showAddCourtModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Add New Court</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Court Name</label>
+                <input
+                  type="text"
+                  value={newCourtName}
+                  onChange={(e) => setNewCourtName(e.target.value)}
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Court Type</label>
+                <select
+                  value={newCourtType}
+                  onChange={(e) => setNewCourtType(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="clay">Clay</option>
+                  <option value="grass">Grass</option>
+                  <option value="hard">Hard</option>
+                  <option value="central">Central</option>
+                </select>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="indoor"
+                  checked={newCourtIndoor}
+                  onChange={(e) => setNewCourtIndoor(e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="indoor" className="text-sm font-medium">Indoor Court</label>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowAddCourtModal(false)}
+                className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddCourt}
+                className="px-4 py-2 bg-ath-red-clay text-white rounded hover:bg-ath-red-clay-dark"
+              >
+                Add Court
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

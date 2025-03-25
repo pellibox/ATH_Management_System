@@ -43,7 +43,7 @@ export function TimeSlot({
   return (
     <div 
       ref={drop}
-      className={`border-t border-gray-200 p-2 min-h-[60px] relative ${
+      className={`border-t border-gray-200 p-2 min-h-[80px] relative ${
         isOver ? "bg-ath-red-clay/10" : ""
       }`}
     >

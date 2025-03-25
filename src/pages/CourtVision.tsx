@@ -4,7 +4,18 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek, addWeeks, parseISO } from "date-fns";
-import { CalendarIcon, Clock, Plus, MenuIcon, Settings } from "lucide-react";
+import { 
+  CalendarIcon, 
+  Clock, 
+  Plus, 
+  MenuIcon, 
+  Settings, 
+  Users, 
+  PlusCircle, 
+  Calendar, 
+  Film,
+  Layers 
+} from "lucide-react";
 
 // Import court vision components
 import { Court } from "@/components/court-vision/Court";
@@ -21,6 +32,9 @@ import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vi
 import { PersonData, ActivityData, CourtProps, ScheduleTemplate, DateSchedule } from "@/components/court-vision/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+// Tabs
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 export default function CourtVision() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -28,7 +42,7 @@ export default function CourtVision() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [dateSchedules, setDateSchedules] = useState<DateSchedule[]>([]);
-  const [activeTab, setActiveTab] = useState<"courts" | "management">("courts");
+  const [activeTab, setActiveTab] = useState<"courts" | "people" | "activities" | "time-slots" | "templates">("courts");
   
   // Define time slots
   const [timeSlots, setTimeSlots] = useState<string[]>([
@@ -584,38 +598,126 @@ export default function CourtVision() {
       <div className="container mx-auto py-4">
         <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
         
-        {/* Top navigation and controls */}
+        {/* Top navigation and date controls */}
         <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:flex md:justify-between md:items-center gap-4 mb-4">
+            <div className="flex-grow max-w-md">
               <DateSelector 
                 selectedDate={selectedDate} 
                 onDateChange={setSelectedDate} 
               />
             </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-2">
-                  <button 
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "courts" ? "bg-ath-black text-white" : "bg-gray-100 text-gray-700"}`}
-                    onClick={() => setActiveTab("courts")}
-                  >
-                    Campi
-                  </button>
-                  <button 
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "management" ? "bg-ath-black text-white" : "bg-gray-100 text-gray-700"}`}
-                    onClick={() => setActiveTab("management")}
-                  >
-                    Gestione
-                  </button>
-                </div>
+            <div className="flex space-x-2">
+              <button 
+                className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
+                onClick={copyToNextDay}
+              >
+                <span className="flex items-center justify-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Copia Giorno
+                </span>
+              </button>
+              <button 
+                className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
+                onClick={copyToWeek}
+              >
+                <span className="flex items-center justify-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Copia Settimana
+                </span>
+              </button>
+            </div>
+          </div>
+          
+          {/* Court Type Legend */}
+          <div className="mb-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="text-sm font-medium">Court Types:</span>
+              <div className="flex items-center gap-1">
+                <span className="w-4 h-4 bg-ath-red-clay rounded-full"></span>
+                <span className="text-sm">Tennis (Clay)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-4 h-4 bg-ath-black rounded-full"></span>
+                <span className="text-sm">Tennis (Hard)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-4 h-4 bg-green-500 rounded-full"></span>
+                <span className="text-sm">Padel</span>
               </div>
             </div>
           </div>
           
-          {/* Top Tools Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div>
+          {/* Top Tab Navigation */}
+          <Tabs defaultValue="courts" className="w-full">
+            <TabsList className="w-full justify-start mb-4 bg-gray-100 p-1 rounded-md">
+              <TabsTrigger value="courts" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                <Layers className="h-4 w-4 mr-1" />
+                Courts
+              </TabsTrigger>
+              <TabsTrigger value="people" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                <Users className="h-4 w-4 mr-1" />
+                People
+              </TabsTrigger>
+              <TabsTrigger value="activities" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                <Film className="h-4 w-4 mr-1" />
+                Activities
+              </TabsTrigger>
+              <TabsTrigger value="time-slots" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                <Clock className="h-4 w-4 mr-1" />
+                Time Slots
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                <CalendarIcon className="h-4 w-4 mr-1" />
+                Templates
+              </TabsTrigger>
+            </TabsList>
+            
+            <div className="flex justify-between items-center mb-4">
+              <TabsContent value="courts" className="mt-0 w-full">
+                <CourtManagement 
+                  courts={courts}
+                  onAddCourt={handleAddCourt}
+                  onRemoveCourt={handleRemoveCourt}
+                  onRenameCourt={handleRenameCourt}
+                  onChangeCourtType={handleChangeCourtType}
+                />
+              </TabsContent>
+              
+              <TabsContent value="people" className="mt-0 w-full">
+                <AvailablePeople 
+                  people={people} 
+                  onAddPerson={handleAddPerson}
+                  onRemovePerson={(personId) => handleRemovePerson(personId)}
+                />
+              </TabsContent>
+              
+              <TabsContent value="activities" className="mt-0 w-full">
+                <AvailableActivities 
+                  activities={activities}
+                  onAddActivity={handleAddActivity}
+                  onRemoveActivity={(activityId) => handleRemoveActivity(activityId)}
+                />
+              </TabsContent>
+              
+              <TabsContent value="time-slots" className="mt-0 w-full">
+                <TimeSlotSelector
+                  timeSlots={timeSlots}
+                  onAddTimeSlot={handleAddTimeSlot}
+                  onRemoveTimeSlot={handleRemoveTimeSlot}
+                />
+              </TabsContent>
+              
+              <TabsContent value="templates" className="mt-0 w-full">
+                <ScheduleTemplates 
+                  templates={templates} 
+                  onApplyTemplate={applyTemplate} 
+                  onSaveTemplate={saveAsTemplate}
+                />
+              </TabsContent>
+            </div>
+            
+            <div className="flex justify-between items-center mb-4">
               <CourtAssignmentDialog 
                 courts={courts}
                 availablePeople={people}
@@ -627,99 +729,27 @@ export default function CourtVision() {
                 onRemoveActivity={handleRemoveActivity}
               />
             </div>
-            <div>
-              <TimeSlotSelector
-                timeSlots={timeSlots}
-                onAddTimeSlot={handleAddTimeSlot}
-                onRemoveTimeSlot={handleRemoveTimeSlot}
-              />
-            </div>
-            <div className="flex space-x-2">
-              <button 
-                className="flex-1 bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
-                onClick={copyToNextDay}
-              >
-                Copia Giorno
-              </button>
-              <button 
-                className="flex-1 bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
-                onClick={copyToWeek}
-              >
-                Copia Settimana
-              </button>
-            </div>
-          </div>
+          </Tabs>
         </div>
         
-        {activeTab === "courts" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {courts.map((court) => (
-                  <Court
-                    key={court.id}
-                    court={court}
-                    date={selectedDate}
-                    timeSlots={timeSlots}
-                    onDrop={handleDrop}
-                    onActivityDrop={handleActivityDrop}
-                    onRemovePerson={handleRemovePerson}
-                    onRemoveActivity={handleRemoveActivity}
-                    onCourtRename={handleRenameCourt}
-                    onCourtTypeChange={handleChangeCourtType}
-                    onCourtRemove={handleRemoveCourt}
-                  />
-                ))}
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <CourtLegend />
-              
-              <AvailablePeople 
-                people={people} 
-                onAddPerson={handleAddPerson}
-                onRemovePerson={(personId) => handleRemovePerson(personId)}
-              />
-              
-              <AvailableActivities 
-                activities={activities}
-                onAddActivity={handleAddActivity}
-                onRemoveActivity={(activityId) => handleRemoveActivity(activityId)}
-              />
-              
-              <ScheduleTemplates 
-                templates={templates} 
-                onApplyTemplate={applyTemplate} 
-                onSaveTemplate={saveAsTemplate}
-              />
-            </div>
-          </div>
-        )}
-        
-        {activeTab === "management" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <CourtManagement 
-                courts={courts}
-                onAddCourt={handleAddCourt}
-                onRemoveCourt={handleRemoveCourt}
-                onRenameCourt={handleRenameCourt}
-                onChangeCourtType={handleChangeCourtType}
-              />
-            </div>
-            
-            <div className="space-y-4">
-              <PeopleManagement 
-                playersList={playersList} 
-                coachesList={coachesList} 
-                onAddPerson={handleAddPerson}
-                onRemovePerson={handleRemovePerson}
-                onAddToDragArea={handleAddToDragArea}
-              />
-            </div>
-          </div>
-        )}
+        {/* Courts Grid - Make courts larger */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {courts.map((court) => (
+            <Court
+              key={court.id}
+              court={court}
+              date={selectedDate}
+              timeSlots={timeSlots}
+              onDrop={handleDrop}
+              onActivityDrop={handleActivityDrop}
+              onRemovePerson={handleRemovePerson}
+              onRemoveActivity={handleRemoveActivity}
+              onCourtRename={handleRenameCourt}
+              onCourtTypeChange={handleChangeCourtType}
+              onCourtRemove={handleRemoveCourt}
+            />
+          ))}
+        </div>
       </div>
     </DndProvider>
   );
