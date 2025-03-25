@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -14,8 +13,35 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-// Court types and their properties
 const COURT_TYPES = {
   TENNIS_CLAY: "tennis-clay",
   TENNIS_HARD: "tennis-hard",
@@ -24,13 +50,11 @@ const COURT_TYPES = {
   TOUCH_TENNIS: "touch-tennis",
 };
 
-// Draggable person types
 const PERSON_TYPES = {
   PLAYER: "player",
   COACH: "coach",
 };
 
-// Activity types
 const ACTIVITY_TYPES = {
   MATCH: "match",
   TRAINING: "training",
@@ -72,7 +96,6 @@ interface ScheduleTemplate {
   courts: CourtProps[];
 }
 
-// Draggable Person component
 const Person = ({ person, onRemove }: { person: PersonData; onRemove: () => void }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
@@ -106,7 +129,6 @@ const Person = ({ person, onRemove }: { person: PersonData; onRemove: () => void
   );
 };
 
-// Draggable Activity component
 const Activity = ({ activity, onRemove }: { activity: ActivityData; onRemove: () => void }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "activity",
@@ -173,7 +195,6 @@ const Activity = ({ activity, onRemove }: { activity: ActivityData; onRemove: ()
   );
 };
 
-// Court component
 const Court = ({ 
   court, 
   onDrop, 
@@ -252,53 +273,48 @@ const Court = ({
         <span className="text-xs bg-white/80 px-2 py-1 rounded">{getCourtLabel()}</span>
       </div>
 
-      {/* Court markings */}
-      <div className="flex-1 flex items-center justify-center relative">
-        {(court.type === COURT_TYPES.TENNIS_CLAY || court.type === COURT_TYPES.TENNIS_HARD) && (
-          <div className="w-3/4 h-3/4 border border-white/70 relative flex items-center justify-center">
-            <div className="absolute left-0 right-0 h-[1px] bg-white/70"></div>
-            <div className="absolute top-0 bottom-0 w-[1px] bg-white/70"></div>
-          </div>
-        )}
-        
-        {court.type === COURT_TYPES.PADEL && (
-          <div className="w-3/4 h-3/4 border border-white/70 relative">
-            <div className="absolute left-0 right-0 top-1/3 h-[1px] bg-white/70"></div>
-            <div className="absolute inset-0 border-4 border-transparent border-b-white/70 -mb-4"></div>
-          </div>
-        )}
-        
-        {court.type === COURT_TYPES.PICKLEBALL && (
-          <div className="w-2/3 h-3/4 border border-white/70 relative">
-            <div className="absolute left-0 right-0 top-1/3 bottom-1/3 border-t border-b border-white/70"></div>
-          </div>
-        )}
-        
-        {court.type === COURT_TYPES.TOUCH_TENNIS && (
-          <div className="w-2/3 h-2/3 border border-white/70 relative">
-            <div className="absolute left-0 right-0 h-[1px] top-1/2 bg-white/70"></div>
-          </div>
-        )}
+      {(court.type === COURT_TYPES.TENNIS_CLAY || court.type === COURT_TYPES.TENNIS_HARD) && (
+        <div className="w-3/4 h-3/4 border border-white/70 relative flex items-center justify-center">
+          <div className="absolute left-0 right-0 h-[1px] bg-white/70"></div>
+          <div className="absolute top-0 bottom-0 w-[1px] bg-white/70"></div>
+        </div>
+      )}
+      
+      {court.type === COURT_TYPES.PADEL && (
+        <div className="w-3/4 h-3/4 border border-white/70 relative">
+          <div className="absolute left-0 right-0 top-1/3 h-[1px] bg-white/70"></div>
+          <div className="absolute inset-0 border-4 border-transparent border-b-white/70 -mb-4"></div>
+        </div>
+      )}
+      
+      {court.type === COURT_TYPES.PICKLEBALL && (
+        <div className="w-2/3 h-3/4 border border-white/70 relative">
+          <div className="absolute left-0 right-0 top-1/3 bottom-1/3 border-t border-b border-white/70"></div>
+        </div>
+      )}
+      
+      {court.type === COURT_TYPES.TOUCH_TENNIS && (
+        <div className="w-2/3 h-2/3 border border-white/70 relative">
+          <div className="absolute left-0 right-0 h-[1px] top-1/2 bg-white/70"></div>
+        </div>
+      )}
 
-        {/* Display people on the court at their positions */}
-        {court.occupants.map((person) => (
-          <div
-            key={person.id}
-            className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
-              person.type === PERSON_TYPES.PLAYER ? "bg-blue-500 text-white" : "bg-orange-500 text-white"
-            }`}
-            style={{
-              left: `${(person.position?.x || 0.5) * 100}%`,
-              top: `${(person.position?.y || 0.5) * 100}%`,
-            }}
-            title={person.name}
-          >
-            {person.name.substring(0, 2)}
-          </div>
-        ))}
-      </div>
+      {court.occupants.map((person) => (
+        <div
+          key={person.id}
+          className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
+            person.type === PERSON_TYPES.PLAYER ? "bg-blue-500 text-white" : "bg-orange-500 text-white"
+          }`}
+          style={{
+            left: `${(person.position?.x || 0.5) * 100}%`,
+            top: `${(person.position?.y || 0.5) * 100}%`,
+          }}
+          title={person.name}
+        >
+          {person.name.substring(0, 2)}
+        </div>
+      ))}
 
-      {/* Court activities */}
       {court.activities.length > 0 && (
         <div className="absolute top-10 left-2 right-2 bg-black/10 p-1 rounded">
           <div className="flex flex-wrap gap-1">
@@ -324,7 +340,6 @@ const Court = ({
         </div>
       )}
 
-      {/* Court occupants */}
       <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/5 max-h-20 overflow-y-auto">
         {court.occupants.length > 0 ? (
           <div className="flex flex-wrap gap-1">
@@ -355,40 +370,27 @@ export default function CourtVision() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [courts, setCourts] = useState<CourtProps[]>([
-    // Tennis courts (6) - alternating clay and hard
-    { id: "court1", type: COURT_TYPES.TENNIS_CLAY, name: "Tennis", number: 1, occupants: [], activities: [] },
-    { id: "court2", type: COURT_TYPES.TENNIS_HARD, name: "Tennis", number: 2, occupants: [], activities: [] },
+    { id: "court1", type: COURT_TYPES.TENNIS_CLAY, name: "Center Court", number: 1, occupants: [], activities: [] },
+    { id: "court2", type: COURT_TYPES.TENNIS_CLAY, name: "Tennis", number: 2, occupants: [], activities: [] },
     { id: "court3", type: COURT_TYPES.TENNIS_CLAY, name: "Tennis", number: 3, occupants: [], activities: [] },
-    { id: "court4", type: COURT_TYPES.TENNIS_HARD, name: "Tennis", number: 4, occupants: [], activities: [] },
-    { id: "court5", type: COURT_TYPES.TENNIS_CLAY, name: "Tennis", number: 5, occupants: [], activities: [] },
+    { id: "court5", type: COURT_TYPES.TENNIS_HARD, name: "Tennis", number: 5, occupants: [], activities: [] },
     { id: "court6", type: COURT_TYPES.TENNIS_HARD, name: "Tennis", number: 6, occupants: [], activities: [] },
-    // Padel courts (2)
     { id: "padel1", type: COURT_TYPES.PADEL, name: "Padel", number: 1, occupants: [], activities: [] },
     { id: "padel2", type: COURT_TYPES.PADEL, name: "Padel", number: 2, occupants: [], activities: [] },
-    // Pickleball court
-    { id: "pickleball", type: COURT_TYPES.PICKLEBALL, name: "Pickleball", number: 1, occupants: [], activities: [] },
-    // Touch tennis court
-    { id: "touch", type: COURT_TYPES.TOUCH_TENNIS, name: "Touch Tennis", number: 1, occupants: [], activities: [] },
   ]);
 
   const [people, setPeople] = useState<PersonData[]>([
     { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
     { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER },
     { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER },
-    { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER },
-    { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER },
-    { id: "player6", name: "Olivia Moore", type: PERSON_TYPES.PLAYER },
     { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH },
     { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH },
-    { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH },
   ]);
 
   const [activities, setActivities] = useState<ActivityData[]>([
     { id: "activity1", name: "Singles Match", type: ACTIVITY_TYPES.MATCH, duration: "1h" },
     { id: "activity2", name: "Group Training", type: ACTIVITY_TYPES.TRAINING, duration: "1.5h" },
     { id: "activity3", name: "Basket Drill", type: ACTIVITY_TYPES.BASKET_DRILL, duration: "45m" },
-    { id: "activity4", name: "Practice Game", type: ACTIVITY_TYPES.GAME, duration: "1h" },
-    { id: "activity5", name: "Private Lesson", type: ACTIVITY_TYPES.LESSON, duration: "1h" },
   ]);
 
   const [newPerson, setNewPerson] = useState({ name: "", type: PERSON_TYPES.PLAYER });
@@ -399,14 +401,27 @@ export default function CourtVision() {
   });
   const [newTemplateName, setNewTemplateName] = useState("");
 
+  const [showAddPersonDialog, setShowAddPersonDialog] = useState(false);
+  const [showManagePeopleDialog, setShowManagePeopleDialog] = useState(false);
+  const [playersList, setPlayersList] = useState<PersonData[]>([
+    { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
+    { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER },
+    { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER },
+    { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER },
+    { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER },
+  ]);
+  const [coachesList, setCoachesList] = useState<PersonData[]>([
+    { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH },
+    { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH },
+    { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH },
+  ]);
+
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }) => {
-    // Find the person in our list (could be from another court)
     const draggablePerson = people.find((p) => p.id === person.id) || 
                             courts.flatMap(c => c.occupants).find(p => p.id === person.id);
     
     if (!draggablePerson) return;
 
-    // If moving from another court, remove from old court
     const updatedCourts = courts.map((court) => {
       if (court.id !== courtId && court.occupants.some((p) => p.id === person.id)) {
         return {
@@ -417,11 +432,9 @@ export default function CourtVision() {
       return court;
     });
 
-    // Move to new court
     const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
     
     if (targetCourtIndex !== -1) {
-      // Check if person is already on this court
       if (!updatedCourts[targetCourtIndex].occupants.some(p => p.id === person.id)) {
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
@@ -431,7 +444,6 @@ export default function CourtVision() {
           ],
         };
       } else {
-        // Update position if the person is already on the court
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
           occupants: updatedCourts[targetCourtIndex].occupants.map(p => 
@@ -441,7 +453,6 @@ export default function CourtVision() {
       }
     }
 
-    // Remove from available people list if it's coming from there
     setPeople(people.filter((p) => p.id !== person.id));
     setCourts(updatedCourts);
 
@@ -452,13 +463,11 @@ export default function CourtVision() {
   };
 
   const handleActivityDrop = (courtId: string, activity: ActivityData) => {
-    // Find the activity in our list (could be from another court)
     const draggableActivity = activities.find((a) => a.id === activity.id) || 
                               courts.flatMap(c => c.activities).find(a => a.id === activity.id);
     
     if (!draggableActivity) return;
 
-    // If moving from another court, remove from old court
     const updatedCourts = courts.map((court) => {
       if (court.id !== courtId && court.activities.some((a) => a.id === activity.id)) {
         return {
@@ -469,11 +478,9 @@ export default function CourtVision() {
       return court;
     });
 
-    // Move to new court
     const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
     
     if (targetCourtIndex !== -1) {
-      // Check if activity is already on this court
       if (!updatedCourts[targetCourtIndex].activities.some(a => a.id === activity.id)) {
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
@@ -485,7 +492,6 @@ export default function CourtVision() {
       }
     }
 
-    // Remove from available activities list if it's coming from there
     setActivities(activities.filter((a) => a.id !== activity.id));
     setCourts(updatedCourts);
 
@@ -496,13 +502,11 @@ export default function CourtVision() {
   };
 
   const handleRemovePerson = (personId: string) => {
-    // Add back to available list
     const personToRemove = courts.flatMap(c => c.occupants).find(p => p.id === personId);
     
     if (personToRemove) {
       setPeople([...people, { ...personToRemove, courtId: undefined, position: undefined }]);
       
-      // Remove from court
       setCourts(
         courts.map((court) => ({
           ...court,
@@ -518,13 +522,11 @@ export default function CourtVision() {
   };
 
   const handleRemoveActivity = (activityId: string) => {
-    // Add back to available list
     const activityToRemove = courts.flatMap(c => c.activities).find(a => a.id === activityId);
     
     if (activityToRemove) {
       setActivities([...activities, { ...activityToRemove, courtId: undefined }]);
       
-      // Remove from court
       setCourts(
         courts.map((court) => ({
           ...court,
@@ -648,6 +650,75 @@ export default function CourtVision() {
     });
   };
 
+  const handleAddPersonToSystem = () => {
+    if (!newPerson.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const id = `${newPerson.type === PERSON_TYPES.PLAYER ? 'player' : 'coach'}-${Date.now()}`;
+    const newPersonData = {
+      id,
+      name: newPerson.name,
+      type: newPerson.type
+    };
+
+    if (newPerson.type === PERSON_TYPES.PLAYER) {
+      setPlayersList([...playersList, newPersonData]);
+    } else {
+      setCoachesList([...coachesList, newPersonData]);
+    }
+
+    setPeople([...people, newPersonData]);
+    setNewPerson({ name: "", type: PERSON_TYPES.PLAYER });
+    setShowAddPersonDialog(false);
+
+    toast({
+      title: `${newPerson.type === PERSON_TYPES.PLAYER ? 'Player' : 'Coach'} Added`,
+      description: `${newPersonData.name} has been added to the system`,
+    });
+  };
+
+  const handleRemovePersonFromSystem = (personToRemove: PersonData) => {
+    if (personToRemove.type === PERSON_TYPES.PLAYER) {
+      setPlayersList(playersList.filter(p => p.id !== personToRemove.id));
+    } else {
+      setCoachesList(coachesList.filter(c => c.id !== personToRemove.id));
+    }
+
+    setPeople(people.filter(p => p.id !== personToRemove.id));
+
+    setCourts(courts.map(court => ({
+      ...court,
+      occupants: court.occupants.filter(p => p.id !== personToRemove.id)
+    })));
+
+    toast({
+      title: `${personToRemove.type === PERSON_TYPES.PLAYER ? 'Player' : 'Coach'} Removed`,
+      description: `${personToRemove.name} has been removed from the system`,
+    });
+  };
+
+  const addPersonToDragArea = (personToAdd: PersonData) => {
+    if (!people.some(p => p.id === personToAdd.id)) {
+      setPeople([...people, personToAdd]);
+      
+      toast({
+        title: "Added to Available",
+        description: `${personToAdd.name} is now available for court assignment`,
+      });
+    } else {
+      toast({
+        title: "Already Available",
+        description: `${personToAdd.name} is already in the available list`,
+      });
+    }
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="max-w-7xl mx-auto animate-fade-in p-4">
@@ -656,7 +727,6 @@ export default function CourtVision() {
           <p className="text-gray-600 mt-1">Drag and drop players, coaches, and activities to assign them to courts</p>
         </div>
 
-        {/* Date Selector and Schedule Controls */}
         <div className="flex flex-wrap items-center gap-3 mb-6 bg-white p-3 rounded-xl shadow-soft">
           <div className="flex items-center">
             <Calendar className="h-5 w-5 text-ath-blue mr-2" />
@@ -709,15 +779,160 @@ export default function CourtVision() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Left sidebar - Available people & activities */}
           <div className="md:col-span-3 lg:col-span-2 space-y-4">
-            {/* Available people */}
+            <div className="bg-white rounded-xl shadow-soft p-4">
+              <h2 className="font-medium mb-3 flex items-center">
+                <Users className="h-4 w-4 mr-2" /> People Management
+              </h2>
+              
+              <div className="flex flex-col space-y-2">
+                <Dialog open={showAddPersonDialog} onOpenChange={setShowAddPersonDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="default" className="w-full">
+                      Add New Person
+                    </Button>
+                  </DialogTrigger>
+                  
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Add New Person</DialogTitle>
+                      <DialogDescription>
+                        Add a new player or coach to the system
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input
+                          id="name"
+                          placeholder="Enter name"
+                          value={newPerson.name}
+                          onChange={(e) => setNewPerson({ ...newPerson, name: e.target.value })}
+                        />
+                      </div>
+                      
+                      <div className="grid gap-2">
+                        <Label>Type</Label>
+                        <div className="flex space-x-2">
+                          <Button
+                            type="button"
+                            variant={newPerson.type === PERSON_TYPES.PLAYER ? "default" : "outline"}
+                            onClick={() => setNewPerson({ ...newPerson, type: PERSON_TYPES.PLAYER })}
+                            className="flex-1"
+                          >
+                            <User className="mr-1.5 h-4 w-4" />
+                            Player
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={newPerson.type === PERSON_TYPES.COACH ? "default" : "outline"}
+                            onClick={() => setNewPerson({ ...newPerson, type: PERSON_TYPES.COACH })}
+                            className="flex-1"
+                          >
+                            <Users className="mr-1.5 h-4 w-4" />
+                            Coach
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button type="button" onClick={handleAddPersonToSystem}>Add Person</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog open={showManagePeopleDialog} onOpenChange={setShowManagePeopleDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      Manage People
+                    </Button>
+                  </DialogTrigger>
+                  
+                  <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                      <DialogTitle>Manage Players & Coaches</DialogTitle>
+                      <DialogDescription>
+                        View and manage all people in the system
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="py-4 max-h-[400px] overflow-y-auto">
+                      <h3 className="font-medium mb-2 flex items-center">
+                        <User className="h-4 w-4 mr-1.5" /> Players
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+                        {playersList.map((player) => (
+                          <Card key={player.id} className="overflow-hidden">
+                            <div className="flex justify-between items-center p-3">
+                              <div>
+                                <p className="font-medium text-sm truncate">{player.name}</p>
+                              </div>
+                              <div className="flex space-x-1">
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => addPersonToDragArea(player)}
+                                >
+                                  Assign
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => handleRemovePersonFromSystem(player)}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                      
+                      <h3 className="font-medium mb-2 flex items-center">
+                        <Users className="h-4 w-4 mr-1.5" /> Coaches
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {coachesList.map((coach) => (
+                          <Card key={coach.id} className="overflow-hidden">
+                            <div className="flex justify-between items-center p-3">
+                              <div>
+                                <p className="font-medium text-sm truncate">{coach.name}</p>
+                              </div>
+                              <div className="flex space-x-1">
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => addPersonToDragArea(coach)}
+                                >
+                                  Assign
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => handleRemovePersonFromSystem(coach)}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+            
             <div className="bg-white rounded-xl shadow-soft p-4">
               <h2 className="font-medium mb-3 flex items-center">
                 <Users className="h-4 w-4 mr-2" /> Available People
               </h2>
               
-              {/* Add new person form */}
               <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <h3 className="text-sm font-medium mb-2">Add New Person</h3>
                 <div className="space-y-2">
@@ -776,13 +991,11 @@ export default function CourtVision() {
               </div>
             </div>
             
-            {/* Available activities */}
             <div className="bg-white rounded-xl shadow-soft p-4">
               <h2 className="font-medium mb-3 flex items-center">
                 <ChartBar className="h-4 w-4 mr-2" /> Available Activities
               </h2>
               
-              {/* Add new activity form */}
               <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <h3 className="text-sm font-medium mb-2">Add New Activity</h3>
                 <div className="space-y-2">
@@ -844,7 +1057,6 @@ export default function CourtVision() {
               </div>
             </div>
             
-            {/* Templates */}
             <div className="bg-white rounded-xl shadow-soft p-4">
               <h2 className="font-medium mb-3 flex items-center">
                 <Clock className="h-4 w-4 mr-2" /> Schedule Templates
@@ -896,7 +1108,6 @@ export default function CourtVision() {
             </div>
           </div>
 
-          {/* Courts grid */}
           <div className="md:col-span-9 lg:col-span-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {courts.map((court) => (
@@ -909,7 +1120,6 @@ export default function CourtVision() {
               ))}
             </div>
             
-            {/* Color legend */}
             <div className="mt-6 p-3 bg-white rounded-lg shadow-sm">
               <h3 className="text-sm font-medium mb-2">Court Types</h3>
               <div className="flex flex-wrap gap-3">
@@ -924,14 +1134,6 @@ export default function CourtVision() {
                 <div className="flex items-center">
                   <span className="w-3 h-3 rounded-full bg-ath-grass mr-1.5"></span>
                   <span className="text-xs text-gray-600">Padel</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-3 h-3 rounded-full bg-yellow-400 mr-1.5"></span>
-                  <span className="text-xs text-gray-600">Pickleball</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-3 h-3 rounded-full bg-purple-400 mr-1.5"></span>
-                  <span className="text-xs text-gray-600">Touch Tennis</span>
                 </div>
               </div>
             </div>
