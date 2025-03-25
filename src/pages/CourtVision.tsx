@@ -191,6 +191,34 @@ export default function CourtVision() {
   
   const [courts, setCourts] = useState<CourtProps[]>(defaultCourts);
 
+  // Sort courts by type and number whenever they change
+  useEffect(() => {
+    const sortedCourts = [...courts].sort((a, b) => {
+      // First sort by court type
+      if (a.type !== b.type) {
+        // Define the type order: Clay first, then Hard, then Padel, etc.
+        const typeOrder = {
+          [COURT_TYPES.TENNIS_CLAY]: 1,
+          [COURT_TYPES.TENNIS_HARD]: 2,
+          [COURT_TYPES.PADEL]: 3,
+          [COURT_TYPES.PICKLEBALL]: 4,
+          [COURT_TYPES.TOUCH_TENNIS]: 5,
+        };
+        
+        return (typeOrder[a.type as keyof typeof typeOrder] || 99) - 
+               (typeOrder[b.type as keyof typeof typeOrder] || 99);
+      }
+      
+      // If same type, sort by number
+      return a.number - b.number;
+    });
+    
+    // Only update if the order has changed
+    if (JSON.stringify(sortedCourts.map(c => c.id)) !== JSON.stringify(courts.map(c => c.id))) {
+      setCourts(sortedCourts);
+    }
+  }, [courts]);
+
   const [people, setPeople] = useState<PersonData[]>([
     { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
     { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER },
@@ -717,6 +745,16 @@ export default function CourtVision() {
     );
   };
 
+  const handleChangeCourtNumber = (courtId: string, number: number) => {
+    setCourts(
+      courts.map(court => 
+        court.id === courtId 
+          ? { ...court, number } 
+          : court
+      )
+    );
+  };
+
   const [showFloatingPanel, setShowFloatingPanel] = useState(true);
 
   return (
@@ -814,6 +852,7 @@ export default function CourtVision() {
                         onRemoveCourt={handleRemoveCourt}
                         onRenameCourt={handleRenameCourt}
                         onChangeCourtType={handleChangeCourtType}
+                        onChangeCourtNumber={handleChangeCourtNumber}
                       />
                     </TabsContent>
                     
@@ -924,4 +963,3 @@ export default function CourtVision() {
     </DndProvider>
   );
 }
-

@@ -155,8 +155,8 @@ html, body {
 
 /* Court type styles updated to match the constants.ts COURT_TYPES and new darker colors */
 .court-tennis-clay {
-  background-color: rgba(196, 22, 42, 0.2);
-  border-left: 3px solid #c4162a;
+  background-color: rgba(176, 12, 32, 0.2);
+  border-left: 3px solid #b00c20;
 }
 
 .court-tennis-hard {

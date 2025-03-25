@@ -44,7 +44,7 @@ export function TimeSlot({
     <div 
       ref={drop}
       className={`border-t border-gray-200 p-2 min-h-[80px] relative ${
-        isOver ? "bg-ath-red-clay/30" : ""
+        isOver ? "bg-ath-red-clay-dark/30" : ""
       }`}
     >
       <div className="flex items-center justify-between mb-1">

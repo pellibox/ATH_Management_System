@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { COURT_TYPES } from "./constants";
 import { CourtProps } from "./types";
-import { Plus, Trash2, Edit, Save } from "lucide-react";
+import { Plus, Trash2, Edit, Save, ArrowUp, ArrowDown } from "lucide-react";
 
 interface CourtManagementProps {
   courts: CourtProps[];
@@ -11,6 +11,7 @@ interface CourtManagementProps {
   onRemoveCourt: (courtId: string) => void;
   onRenameCourt: (courtId: string, name: string) => void;
   onChangeCourtType: (courtId: string, type: string) => void;
+  onChangeCourtNumber: (courtId: string, number: number) => void;
 }
 
 export function CourtManagement({
@@ -19,6 +20,7 @@ export function CourtManagement({
   onRemoveCourt,
   onRenameCourt,
   onChangeCourtType,
+  onChangeCourtNumber
 }: CourtManagementProps) {
   const { toast } = useToast();
   const [newCourtName, setNewCourtName] = useState("Tennis");
@@ -27,6 +29,8 @@ export function CourtManagement({
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingCourt, setEditingCourt] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [editingNumber, setEditingNumber] = useState<string | null>(null);
+  const [editNumber, setEditNumber] = useState(0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +88,39 @@ export function CourtManagement({
       toast({
         title: "Campo Rinominato",
         description: `Il campo è stato rinominato in ${editName}`,
+      });
+    }
+  };
+
+  const handleSaveNumberEdit = (courtId: string) => {
+    if (editNumber > 0) {
+      onChangeCourtNumber(courtId, editNumber);
+      setEditingNumber(null);
+      setEditNumber(0);
+      
+      toast({
+        title: "Numero Campo Aggiornato",
+        description: `Il numero del campo è stato cambiato in ${editNumber}`,
+      });
+    }
+  };
+
+  const increaseCourtNumber = (courtId: string, currentNumber: number) => {
+    const newNumber = currentNumber + 1;
+    onChangeCourtNumber(courtId, newNumber);
+    toast({
+      title: "Numero Campo Aumentato",
+      description: `Il numero del campo è stato aumentato a ${newNumber}`,
+    });
+  };
+
+  const decreaseCourtNumber = (courtId: string, currentNumber: number) => {
+    if (currentNumber > 1) {
+      const newNumber = currentNumber - 1;
+      onChangeCourtNumber(courtId, newNumber);
+      toast({
+        title: "Numero Campo Diminuito",
+        description: `Il numero del campo è stato diminuito a ${newNumber}`,
       });
     }
   };
@@ -223,8 +260,53 @@ export function CourtManagement({
                     <option value={COURT_TYPES.TOUCH_TENNIS}>Touch Tennis</option>
                   </select>
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm">
-                  {court.number}
+                <td className="px-3 py-2 whitespace-nowrap">
+                  {editingNumber === court.id ? (
+                    <div className="flex items-center">
+                      <input
+                        type="number"
+                        min="1"
+                        value={editNumber}
+                        onChange={(e) => setEditNumber(parseInt(e.target.value) || 1)}
+                        className="border border-gray-300 rounded px-2 py-1 text-sm w-20"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleSaveNumberEdit(court.id)}
+                        className="ml-2 text-ath-black"
+                      >
+                        <Save className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <span className="text-sm mr-2">{court.number}</span>
+                      <div className="flex flex-col">
+                        <button 
+                          onClick={() => increaseCourtNumber(court.id, court.number)}
+                          className="text-gray-500 hover:text-gray-700 mb-1"
+                        >
+                          <ArrowUp className="h-3 w-3" />
+                        </button>
+                        <button 
+                          onClick={() => decreaseCourtNumber(court.id, court.number)}
+                          className="text-gray-500 hover:text-gray-700"
+                          disabled={court.number <= 1}
+                        >
+                          <ArrowDown className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingNumber(court.id);
+                          setEditNumber(court.number);
+                        }}
+                        className="ml-2 text-gray-400 hover:text-gray-600"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-right text-sm">
                   <button
