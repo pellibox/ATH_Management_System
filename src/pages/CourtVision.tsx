@@ -245,7 +245,15 @@ export default function CourtVision() {
       type: personData.type,
     };
 
-    setPeople([...people, personToAdd]);
+    // Add to people list
+    setPeople(prevPeople => [...prevPeople, personToAdd]);
+    
+    // Also add to the appropriate list based on type
+    if (personData.type === PERSON_TYPES.PLAYER) {
+      setPlayersList(prevList => [...prevList, personToAdd]);
+    } else if (personData.type === PERSON_TYPES.COACH) {
+      setCoachesList(prevList => [...prevList, personToAdd]);
+    }
 
     toast({
       title: "Persona Aggiunta",
@@ -343,7 +351,7 @@ export default function CourtVision() {
       );
       
       if (!isOnCourt) {
-        setPeople([...people, person]);
+        setPeople(prevPeople => [...prevPeople, person]);
         
         toast({
           title: "Persona Aggiunta",
