@@ -1,9 +1,26 @@
 
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Calendar, Settings, Home, Users, BookOpen, Layers, Trophy, BarChart3, Video, Link, View, UserCircle } from 'lucide-react';
+import { 
+  Calendar, 
+  Settings, 
+  Home, 
+  Users, 
+  BookOpen, 
+  Layers, 
+  Trophy, 
+  BarChart3, 
+  Video, 
+  Link as LinkIcon, 
+  View, 
+  UserCircle,
+  ChevronRight,
+  ChevronLeft,
+  MenuIcon
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface NavItemProps {
   to: string;
@@ -49,11 +66,11 @@ const SubNavItem = ({ to, label, isCollapsed, sportType }: SubNavItemProps) => {
     <NavLink
       to={sportType ? `${to}?sport=${sportType}` : to}
       className={({ isActive }) => cn(
-        "flex items-center rounded-md px-3 py-2 text-sm transition-all duration-300 ml-8",
+        "flex items-center rounded-md px-3 py-2 text-sm transition-all duration-300",
         isActive 
           ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
           : "text-gray-600 hover:bg-gray-100",
-        isCollapsed ? "justify-center ml-0" : ""
+        isCollapsed ? "justify-center ml-0" : "ml-8"
       )}
     >
       {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
@@ -64,6 +81,7 @@ const SubNavItem = ({ to, label, isCollapsed, sportType }: SubNavItemProps) => {
 export default function Sidebar() {
   const isMobile = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
@@ -91,7 +109,7 @@ export default function Sidebar() {
     { name: "Tornei", href: "/tournaments", icon: Trophy },
     { name: "Rapporti", href: "/reports", icon: BarChart3 },
     { name: "Video", href: "/videos", icon: Video },
-    { name: "Integrazioni", href: "/integrations", icon: Link },
+    { name: "Integrazioni", href: "/integrations", icon: LinkIcon },
     { name: "Impostazioni", href: "/settings", icon: Settings },
   ];
 
@@ -117,7 +135,12 @@ export default function Sidebar() {
     // Dispatch a custom event when sidebar state changes
     const event = new CustomEvent('sidebarStateChange', { detail: { isCollapsed } });
     window.dispatchEvent(event);
-  }, [isCollapsed]);
+
+    // Close mobile menu when route changes
+    if (isMobile) {
+      setIsMenuOpen(false);
+    }
+  }, [isCollapsed, location.pathname, isMobile]);
 
   // Toggle submenu expansion
   const toggleSubmenu = (path: string) => {
@@ -133,7 +156,121 @@ export default function Sidebar() {
     return expandedMenus.includes(path) || location.pathname.startsWith(path);
   };
 
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   if (!mounted) return null; // Prevent hydration mismatch
+  
+  if (isMobile) {
+    return (
+      <>
+        <button 
+          onClick={toggleMobileMenu}
+          className="fixed top-4 left-4 z-50 md:hidden bg-white p-2 rounded-md shadow-md"
+          aria-label="Toggle menu"
+        >
+          <MenuIcon className="h-6 w-6 text-gray-600" />
+        </button>
+        
+        <aside 
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out",
+            isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-bold text-ath-red-clay">ATH</span>
+              <span className="text-xl font-medium">Sistema</span>
+            </div>
+            <button
+              onClick={toggleMobileMenu}
+              className="rounded-full p-1 hover:bg-gray-100"
+              aria-label="Close menu"
+            >
+              <ChevronLeft className="h-6 w-6 text-gray-500" />
+            </button>
+          </div>
+          
+          <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-4rem)]">
+            {navigation.map((item) => (
+              <div key={item.href}>
+                {item.submenu ? (
+                  <Collapsible 
+                    open={isSubmenuExpanded(item.href)} 
+                    onOpenChange={() => toggleSubmenu(item.href)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <NavLink
+                        to={item.href}
+                        className={({ isActive }) => cn(
+                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-300 flex-grow",
+                          isActive || location.pathname.startsWith(item.href)
+                            ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
+                            : "text-gray-600 hover:bg-gray-100"
+                        )}
+                      >
+                        <item.icon className={cn(
+                          "h-5 w-5", 
+                          location.pathname.startsWith(item.href) ? "text-ath-red-clay" : "text-gray-500"
+                        )} />
+                        <span>{item.name}</span>
+                      </NavLink>
+                      <CollapsibleTrigger className="px-2 py-1 rounded-md hover:bg-gray-100">
+                        {isSubmenuExpanded(item.href) ? (
+                          <ChevronRight className="h-4 w-4 transform rotate-90 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-500" />
+                        )}
+                      </CollapsibleTrigger>
+                    </div>
+                    <CollapsibleContent>
+                      <div className="mt-1 ml-6 space-y-1 border-l pl-2">
+                        {item.submenu.map((subItem) => (
+                          <NavLink
+                            key={`${subItem.href}-${subItem.sportType || 'default'}`}
+                            to={subItem.sportType ? `${subItem.href}?sport=${subItem.sportType}` : subItem.href}
+                            className={({ isActive }) => cn(
+                              "flex items-center rounded-md px-3 py-2 text-sm transition-all",
+                              (isActive || 
+                                (location.pathname === subItem.href && 
+                                  (subItem.sportType ? location.search === `?sport=${subItem.sportType}` : !location.search)))
+                                ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
+                                : "text-gray-600 hover:bg-gray-100"
+                            )}
+                          >
+                            <span>{subItem.name}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ) : (
+                  <NavLink
+                    to={item.href}
+                    className={({ isActive }) => cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-300",
+                      isActive 
+                        ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
+                        : "text-gray-600 hover:bg-gray-100"
+                    )}
+                  >
+                    <item.icon className={cn("h-5 w-5", location.pathname === item.href ? "text-ath-red-clay" : "text-gray-500")} />
+                    <span>{item.name}</span>
+                  </NavLink>
+                )}
+              </div>
+            ))}
+          </nav>
+        </aside>
+      </>
+    );
+  }
   
   return (
     <aside 
@@ -150,23 +287,18 @@ export default function Sidebar() {
             <span className="text-xl font-medium">Sistema</span>
           </div>
         )}
-        {!isMobile && (
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="rounded-full p-1 hover:bg-gray-100"
-            aria-label={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
-          >
-            {isCollapsed ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            )}
-          </button>
-        )}
+
+        <button
+          onClick={toggleSidebar}
+          className="rounded-full p-1 hover:bg-gray-100"
+          aria-label={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-5 w-5 text-gray-500" />
+          ) : (
+            <ChevronLeft className="h-5 w-5 text-gray-500" />
+          )}
+        </button>
       </div>
       
       <nav className="space-y-1 flex-1 overflow-y-auto">
@@ -189,20 +321,10 @@ export default function Sidebar() {
                     {!isCollapsed && <span className="whitespace-nowrap">{item.name}</span>}
                   </div>
                   {!isCollapsed && (
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="16" 
-                      height="16" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      className={cn("transition-transform", isSubmenuExpanded(item.href) ? "rotate-180" : "")}
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
+                    <ChevronRight className={cn(
+                      "h-4 w-4 transition-transform",
+                      isSubmenuExpanded(item.href) ? "rotate-90" : ""
+                    )} />
                   )}
                 </div>
                 
