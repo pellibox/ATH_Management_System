@@ -1,373 +1,24 @@
+
 import { useState } from "react";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ChartBar, Users, User, Calendar, Copy, CalendarDays, Clock, CalendarIcon } from "lucide-react";
 import { format, addDays, startOfWeek, addWeeks } from "date-fns";
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 
-const COURT_TYPES = {
-  TENNIS_CLAY: "tennis-clay",
-  TENNIS_HARD: "tennis-hard",
-  PADEL: "padel",
-  PICKLEBALL: "pickleball",
-  TOUCH_TENNIS: "touch-tennis",
-};
-
-const PERSON_TYPES = {
-  PLAYER: "player",
-  COACH: "coach",
-};
-
-const ACTIVITY_TYPES = {
-  MATCH: "match",
-  TRAINING: "training",
-  BASKET_DRILL: "basket-drill",
-  GAME: "game",
-  LESSON: "lesson",
-};
-
-interface CourtProps {
-  id: string;
-  type: string;
-  name: string;
-  number: number;
-  occupants: PersonData[];
-  activities: ActivityData[];
-}
-
-interface PersonData {
-  id: string;
-  name: string;
-  type: string;
-  courtId?: string;
-  position?: { x: number, y: number };
-}
-
-interface ActivityData {
-  id: string;
-  name: string;
-  type: string;
-  courtId?: string;
-  duration?: string;
-  startTime?: string;
-}
-
-interface ScheduleTemplate {
-  id: string;
-  name: string;
-  date: Date;
-  courts: CourtProps[];
-}
-
-const Person = ({ person, onRemove }: { person: PersonData; onRemove: () => void }) => {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: person.type,
-    item: { id: person.id, type: person.type, name: person.name },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  }));
-
-  return (
-    <div
-      ref={drag}
-      className={`flex items-center p-2 rounded-md mb-1 ${
-        isDragging ? "opacity-40" : "opacity-100"
-      } ${person.type === PERSON_TYPES.PLAYER ? "bg-ath-blue-light" : "bg-orange-100"}`}
-    >
-      {person.type === PERSON_TYPES.PLAYER ? (
-        <User className="h-4 w-4 mr-2" />
-      ) : (
-        <Users className="h-4 w-4 mr-2" />
-      )}
-      <span className="text-sm">{person.name}</span>
-      <button
-        onClick={onRemove}
-        className="ml-auto text-gray-500 hover:text-red-500"
-        aria-label="Remove person"
-      >
-        ×
-      </button>
-    </div>
-  );
-};
-
-const Activity = ({ activity, onRemove }: { activity: ActivityData; onRemove: () => void }) => {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: "activity",
-    item: { id: activity.id, type: activity.type, name: activity.name },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  }));
-
-  const getActivityColor = () => {
-    switch (activity.type) {
-      case ACTIVITY_TYPES.MATCH:
-        return "bg-purple-100 text-purple-800";
-      case ACTIVITY_TYPES.TRAINING:
-        return "bg-green-100 text-green-800";
-      case ACTIVITY_TYPES.BASKET_DRILL:
-        return "bg-yellow-100 text-yellow-800";
-      case ACTIVITY_TYPES.GAME:
-        return "bg-blue-100 text-blue-800";
-      case ACTIVITY_TYPES.LESSON:
-        return "bg-pink-100 text-pink-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getActivityIcon = () => {
-    switch (activity.type) {
-      case ACTIVITY_TYPES.MATCH:
-        return <ChartBar className="h-4 w-4 mr-2" />;
-      case ACTIVITY_TYPES.TRAINING:
-        return <Users className="h-4 w-4 mr-2" />;
-      case ACTIVITY_TYPES.BASKET_DRILL:
-        return <Users className="h-4 w-4 mr-2" />;
-      case ACTIVITY_TYPES.GAME:
-        return <Users className="h-4 w-4 mr-2" />;
-      case ACTIVITY_TYPES.LESSON:
-        return <User className="h-4 w-4 mr-2" />;
-      default:
-        return <ChartBar className="h-4 w-4 mr-2" />;
-    }
-  };
-
-  return (
-    <div
-      ref={drag}
-      className={`flex items-center p-2 rounded-md mb-1 ${
-        isDragging ? "opacity-40" : "opacity-100"
-      } ${getActivityColor()}`}
-    >
-      {getActivityIcon()}
-      <span className="text-sm">{activity.name}</span>
-      {activity.duration && (
-        <span className="text-xs ml-2">({activity.duration})</span>
-      )}
-      <button
-        onClick={onRemove}
-        className="ml-auto text-gray-500 hover:text-red-500"
-        aria-label="Remove activity"
-      >
-        ×
-      </button>
-    </div>
-  );
-};
-
-const Court = ({ 
-  court, 
-  onDrop, 
-  onActivityDrop 
-}: { 
-  court: CourtProps; 
-  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }) => void;
-  onActivityDrop: (courtId: string, activity: ActivityData) => void;
-}) => {
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
-    drop: (item: any, monitor) => {
-      const clientOffset = monitor.getClientOffset();
-      const initialOffset = monitor.getInitialClientOffset();
-      const containerRect = document.getElementById(`court-${court.id}`)?.getBoundingClientRect();
-      
-      if (clientOffset && containerRect && initialOffset) {
-        const position = {
-          x: (clientOffset.x - containerRect.left) / containerRect.width,
-          y: (clientOffset.y - containerRect.top) / containerRect.height
-        };
-        
-        if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
-          onDrop(court.id, item as PersonData, position);
-        } else {
-          onActivityDrop(court.id, item as ActivityData);
-        }
-      } else {
-        if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
-          onDrop(court.id, item as PersonData);
-        } else {
-          onActivityDrop(court.id, item as ActivityData);
-        }
-      }
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
-  }));
-
-  const getCourtStyles = () => {
-    switch (court.type) {
-      case COURT_TYPES.TENNIS_CLAY:
-        return "bg-ath-clay/20 border-ath-clay";
-      case COURT_TYPES.TENNIS_HARD:
-        return "bg-ath-hard/20 border-ath-hard";
-      case COURT_TYPES.PADEL:
-        return "bg-ath-grass/20 border-ath-grass";
-      case COURT_TYPES.PICKLEBALL:
-        return "bg-yellow-100 border-yellow-400";
-      case COURT_TYPES.TOUCH_TENNIS:
-        return "bg-purple-100 border-purple-400";
-      default:
-        return "bg-gray-100 border-gray-300";
-    }
-  };
-
-  const getCourtLabel = () => {
-    const type = court.type.split("-");
-    const surface = type.length > 1 ? ` (${type[1]})` : "";
-    return `${type[0].charAt(0).toUpperCase() + type[0].slice(1)}${surface}`;
-  };
-
-  return (
-    <div
-      id={`court-${court.id}`}
-      ref={drop}
-      className={`relative rounded-lg border-2 ${getCourtStyles()} ${
-        isOver ? "ring-2 ring-ath-blue" : ""
-      } transition-all h-44 sm:h-56 flex flex-col`}
-    >
-      <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
-        <span className="text-xs font-medium bg-white/80 px-2 py-1 rounded">
-          {court.name} #{court.number}
-        </span>
-        <span className="text-xs bg-white/80 px-2 py-1 rounded">{getCourtLabel()}</span>
-      </div>
-
-      {(court.type === COURT_TYPES.TENNIS_CLAY || court.type === COURT_TYPES.TENNIS_HARD) && (
-        <div className="w-3/4 h-3/4 border border-white/70 relative flex items-center justify-center">
-          <div className="absolute left-0 right-0 h-[1px] bg-white/70"></div>
-          <div className="absolute top-0 bottom-0 w-[1px] bg-white/70"></div>
-        </div>
-      )}
-      
-      {court.type === COURT_TYPES.PADEL && (
-        <div className="w-3/4 h-3/4 border border-white/70 relative">
-          <div className="absolute left-0 right-0 top-1/3 h-[1px] bg-white/70"></div>
-          <div className="absolute inset-0 border-4 border-transparent border-b-white/70 -mb-4"></div>
-        </div>
-      )}
-      
-      {court.type === COURT_TYPES.PICKLEBALL && (
-        <div className="w-2/3 h-3/4 border border-white/70 relative">
-          <div className="absolute left-0 right-0 top-1/3 bottom-1/3 border-t border-b border-white/70"></div>
-        </div>
-      )}
-      
-      {court.type === COURT_TYPES.TOUCH_TENNIS && (
-        <div className="w-2/3 h-2/3 border border-white/70 relative">
-          <div className="absolute left-0 right-0 h-[1px] top-1/2 bg-white/70"></div>
-        </div>
-      )}
-
-      {court.occupants.map((person) => (
-        <div
-          key={person.id}
-          className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
-            person.type === PERSON_TYPES.PLAYER ? "bg-blue-500 text-white" : "bg-orange-500 text-white"
-          }`}
-          style={{
-            left: `${(person.position?.x || 0.5) * 100}%`,
-            top: `${(person.position?.y || 0.5) * 100}%`,
-          }}
-          title={person.name}
-        >
-          {person.name.substring(0, 2)}
-        </div>
-      ))}
-
-      {court.activities.length > 0 && (
-        <div className="absolute top-10 left-2 right-2 bg-black/10 p-1 rounded">
-          <div className="flex flex-wrap gap-1">
-            {court.activities.map((activity) => (
-              <div
-                key={activity.id}
-                className={`text-xs px-2 py-1 rounded-full ${
-                  activity.type === ACTIVITY_TYPES.MATCH
-                    ? "bg-purple-100 text-purple-800"
-                    : activity.type === ACTIVITY_TYPES.TRAINING
-                    ? "bg-green-100 text-green-800"
-                    : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                    ? "bg-yellow-100 text-yellow-800"
-                    : activity.type === ACTIVITY_TYPES.GAME
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-pink-100 text-pink-800"
-                }`}
-              >
-                {activity.name}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/5 max-h-20 overflow-y-auto">
-        {court.occupants.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {court.occupants.map((person) => (
-              <div
-                key={person.id}
-                className={`text-xs px-2 py-1 rounded-full ${
-                  person.type === PERSON_TYPES.PLAYER
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-orange-100 text-orange-800"
-                }`}
-              >
-                {person.name}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-xs text-gray-500 italic">Empty court</div>
-        )}
-      </div>
-    </div>
-  );
-};
+// Import court vision components
+import { Court } from "@/components/court-vision/Court";
+import { AvailablePeople } from "@/components/court-vision/AvailablePeople";
+import { AvailableActivities } from "@/components/court-vision/AvailableActivities";
+import { ScheduleTemplates } from "@/components/court-vision/ScheduleTemplates";
+import { DateSelector } from "@/components/court-vision/DateSelector";
+import { PeopleManagement } from "@/components/court-vision/PeopleManagement";
+import { CourtLegend } from "@/components/court-vision/CourtLegend";
+import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vision/constants";
+import { PersonData, ActivityData, CourtProps, ScheduleTemplate } from "@/components/court-vision/types";
 
 export default function CourtVision() {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showCalendar, setShowCalendar] = useState(false);
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [courts, setCourts] = useState<CourtProps[]>([
     { id: "court1", type: COURT_TYPES.TENNIS_CLAY, name: "Center Court", number: 1, occupants: [], activities: [] },
@@ -393,16 +44,6 @@ export default function CourtVision() {
     { id: "activity3", name: "Basket Drill", type: ACTIVITY_TYPES.BASKET_DRILL, duration: "45m" },
   ]);
 
-  const [newPerson, setNewPerson] = useState({ name: "", type: PERSON_TYPES.PLAYER });
-  const [newActivity, setNewActivity] = useState({ 
-    name: "", 
-    type: ACTIVITY_TYPES.MATCH,
-    duration: "1h"
-  });
-  const [newTemplateName, setNewTemplateName] = useState("");
-
-  const [showAddPersonDialog, setShowAddPersonDialog] = useState(false);
-  const [showManagePeopleDialog, setShowManagePeopleDialog] = useState(false);
   const [playersList, setPlayersList] = useState<PersonData[]>([
     { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
     { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER },
@@ -410,6 +51,7 @@ export default function CourtVision() {
     { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER },
     { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER },
   ]);
+  
   const [coachesList, setCoachesList] = useState<PersonData[]>([
     { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH },
     { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH },
@@ -541,8 +183,8 @@ export default function CourtVision() {
     }
   };
 
-  const handleAddPerson = () => {
-    if (newPerson.name.trim() === "") {
+  const handleAddPerson = (personData: {name: string, type: string}) => {
+    if (personData.name.trim() === "") {
       toast({
         title: "Error",
         description: "Please enter a name",
@@ -551,15 +193,14 @@ export default function CourtVision() {
       return;
     }
 
-    const newId = `${newPerson.type}-${Date.now()}`;
+    const newId = `${personData.type}-${Date.now()}`;
     const personToAdd = {
       id: newId,
-      name: newPerson.name,
-      type: newPerson.type,
+      name: personData.name,
+      type: personData.type,
     };
 
     setPeople([...people, personToAdd]);
-    setNewPerson({ name: "", type: PERSON_TYPES.PLAYER });
 
     toast({
       title: "Person Added",
@@ -567,8 +208,8 @@ export default function CourtVision() {
     });
   };
 
-  const handleAddActivity = () => {
-    if (newActivity.name.trim() === "") {
+  const handleAddActivity = (activityData: {name: string, type: string, duration: string}) => {
+    if (activityData.name.trim() === "") {
       toast({
         title: "Error",
         description: "Please enter an activity name",
@@ -580,13 +221,12 @@ export default function CourtVision() {
     const newId = `activity-${Date.now()}`;
     const activityToAdd = {
       id: newId,
-      name: newActivity.name,
-      type: newActivity.type,
-      duration: newActivity.duration,
+      name: activityData.name,
+      type: activityData.type,
+      duration: activityData.duration,
     };
 
     setActivities([...activities, activityToAdd]);
-    setNewActivity({ name: "", type: ACTIVITY_TYPES.MATCH, duration: "1h" });
 
     toast({
       title: "Activity Added",
@@ -594,8 +234,8 @@ export default function CourtVision() {
     });
   };
 
-  const saveAsTemplate = () => {
-    if (newTemplateName.trim() === "") {
+  const saveAsTemplate = (name: string) => {
+    if (name.trim() === "") {
       toast({
         title: "Error",
         description: "Please enter a template name",
@@ -606,17 +246,16 @@ export default function CourtVision() {
 
     const template: ScheduleTemplate = {
       id: `template-${Date.now()}`,
-      name: newTemplateName,
+      name: name,
       date: selectedDate,
       courts: [...courts],
     };
 
     setTemplates([...templates, template]);
-    setNewTemplateName("");
 
     toast({
       title: "Template Saved",
-      description: `Template "${newTemplateName}" has been saved and can be applied to other days`,
+      description: `Template "${name}" has been saved and can be applied to other days`,
     });
   };
 
@@ -650,7 +289,7 @@ export default function CourtVision() {
     });
   };
 
-  const handleAddPersonToSystem = () => {
+  const handleAddPersonToSystem = (newPerson: PersonData) => {
     if (!newPerson.name.trim()) {
       toast({
         title: "Error",
@@ -660,26 +299,17 @@ export default function CourtVision() {
       return;
     }
 
-    const id = `${newPerson.type === PERSON_TYPES.PLAYER ? 'player' : 'coach'}-${Date.now()}`;
-    const newPersonData = {
-      id,
-      name: newPerson.name,
-      type: newPerson.type
-    };
-
     if (newPerson.type === PERSON_TYPES.PLAYER) {
-      setPlayersList([...playersList, newPersonData]);
+      setPlayersList([...playersList, newPerson]);
     } else {
-      setCoachesList([...coachesList, newPersonData]);
+      setCoachesList([...coachesList, newPerson]);
     }
 
-    setPeople([...people, newPersonData]);
-    setNewPerson({ name: "", type: PERSON_TYPES.PLAYER });
-    setShowAddPersonDialog(false);
+    setPeople([...people, newPerson]);
 
     toast({
       title: `${newPerson.type === PERSON_TYPES.PLAYER ? 'Player' : 'Coach'} Added`,
-      description: `${newPersonData.name} has been added to the system`,
+      description: `${newPerson.name} has been added to the system`,
     });
   };
 
@@ -727,385 +357,40 @@ export default function CourtVision() {
           <p className="text-gray-600 mt-1">Drag and drop players, coaches, and activities to assign them to courts</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mb-6 bg-white p-3 rounded-xl shadow-soft">
-          <div className="flex items-center">
-            <Calendar className="h-5 w-5 text-ath-blue mr-2" />
-            <span className="font-medium">Schedule for:</span>
-          </div>
-          
-          <Popover open={showCalendar} onOpenChange={setShowCalendar}>
-            <PopoverTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="border border-gray-300 bg-white"
-              >
-                <span>{format(selectedDate, "MMMM d, yyyy")}</span>
-                <CalendarIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => {
-                  setSelectedDate(date || new Date());
-                  setShowCalendar(false);
-                }}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
-          
-          <div className="flex items-center gap-2 ml-auto">
-            <Button 
-              variant="outline" 
-              className="text-sm" 
-              onClick={copyToNextDay}
-            >
-              <Copy className="h-4 w-4 mr-1.5" />
-              Copy to Next Day
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="text-sm" 
-              onClick={copyToWeek}
-            >
-              <CalendarDays className="h-4 w-4 mr-1.5" />
-              Copy to Next Week
-            </Button>
-          </div>
-        </div>
+        <DateSelector 
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          onCopyToNextDay={copyToNextDay}
+          onCopyToWeek={copyToWeek}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-3 lg:col-span-2 space-y-4">
-            <div className="bg-white rounded-xl shadow-soft p-4">
-              <h2 className="font-medium mb-3 flex items-center">
-                <Users className="h-4 w-4 mr-2" /> People Management
-              </h2>
-              
-              <div className="flex flex-col space-y-2">
-                <Dialog open={showAddPersonDialog} onOpenChange={setShowAddPersonDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="default" className="w-full">
-                      Add New Person
-                    </Button>
-                  </DialogTrigger>
-                  
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Add New Person</DialogTitle>
-                      <DialogDescription>
-                        Add a new player or coach to the system
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                          id="name"
-                          placeholder="Enter name"
-                          value={newPerson.name}
-                          onChange={(e) => setNewPerson({ ...newPerson, name: e.target.value })}
-                        />
-                      </div>
-                      
-                      <div className="grid gap-2">
-                        <Label>Type</Label>
-                        <div className="flex space-x-2">
-                          <Button
-                            type="button"
-                            variant={newPerson.type === PERSON_TYPES.PLAYER ? "default" : "outline"}
-                            onClick={() => setNewPerson({ ...newPerson, type: PERSON_TYPES.PLAYER })}
-                            className="flex-1"
-                          >
-                            <User className="mr-1.5 h-4 w-4" />
-                            Player
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={newPerson.type === PERSON_TYPES.COACH ? "default" : "outline"}
-                            onClick={() => setNewPerson({ ...newPerson, type: PERSON_TYPES.COACH })}
-                            className="flex-1"
-                          >
-                            <Users className="mr-1.5 h-4 w-4" />
-                            Coach
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <DialogFooter>
-                      <Button type="button" onClick={handleAddPersonToSystem}>Add Person</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                
-                <Dialog open={showManagePeopleDialog} onOpenChange={setShowManagePeopleDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      Manage People
-                    </Button>
-                  </DialogTrigger>
-                  
-                  <DialogContent className="sm:max-w-[600px]">
-                    <DialogHeader>
-                      <DialogTitle>Manage Players & Coaches</DialogTitle>
-                      <DialogDescription>
-                        View and manage all people in the system
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="py-4 max-h-[400px] overflow-y-auto">
-                      <h3 className="font-medium mb-2 flex items-center">
-                        <User className="h-4 w-4 mr-1.5" /> Players
-                      </h3>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-                        {playersList.map((player) => (
-                          <Card key={player.id} className="overflow-hidden">
-                            <div className="flex justify-between items-center p-3">
-                              <div>
-                                <p className="font-medium text-sm truncate">{player.name}</p>
-                              </div>
-                              <div className="flex space-x-1">
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost"
-                                  onClick={() => addPersonToDragArea(player)}
-                                >
-                                  Assign
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="destructive"
-                                  onClick={() => handleRemovePersonFromSystem(player)}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                      
-                      <h3 className="font-medium mb-2 flex items-center">
-                        <Users className="h-4 w-4 mr-1.5" /> Coaches
-                      </h3>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {coachesList.map((coach) => (
-                          <Card key={coach.id} className="overflow-hidden">
-                            <div className="flex justify-between items-center p-3">
-                              <div>
-                                <p className="font-medium text-sm truncate">{coach.name}</p>
-                              </div>
-                              <div className="flex space-x-1">
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost"
-                                  onClick={() => addPersonToDragArea(coach)}
-                                >
-                                  Assign
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="destructive"
-                                  onClick={() => handleRemovePersonFromSystem(coach)}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
+            <PeopleManagement 
+              playersList={playersList}
+              coachesList={coachesList}
+              onAddPerson={handleAddPersonToSystem}
+              onRemovePerson={handleRemovePersonFromSystem}
+              onAddToDragArea={addPersonToDragArea}
+            />
             
-            <div className="bg-white rounded-xl shadow-soft p-4">
-              <h2 className="font-medium mb-3 flex items-center">
-                <Users className="h-4 w-4 mr-2" /> Available People
-              </h2>
-              
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Add New Person</h3>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Name"
-                    className="w-full px-3 py-2 text-sm border rounded"
-                    value={newPerson.name}
-                    onChange={(e) => setNewPerson({ ...newPerson, name: e.target.value })}
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      className={`flex-1 text-xs py-1.5 rounded ${
-                        newPerson.type === PERSON_TYPES.PLAYER
-                          ? "bg-ath-blue text-white"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
-                      onClick={() => setNewPerson({ ...newPerson, type: PERSON_TYPES.PLAYER })}
-                    >
-                      Player
-                    </button>
-                    <button
-                      className={`flex-1 text-xs py-1.5 rounded ${
-                        newPerson.type === PERSON_TYPES.COACH
-                          ? "bg-ath-orange text-white"
-                          : "bg-gray-200 text-gray-700"
-                      }`}
-                      onClick={() => setNewPerson({ ...newPerson, type: PERSON_TYPES.COACH })}
-                    >
-                      Coach
-                    </button>
-                  </div>
-                  <button
-                    className="w-full bg-green-500 text-white text-sm py-1.5 rounded hover:bg-green-600 transition-colors"
-                    onClick={handleAddPerson}
-                  >
-                    Add Person
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-h-[180px] overflow-y-auto">
-                {people.length > 0 ? (
-                  people.map((person) => (
-                    <Person
-                      key={person.id}
-                      person={person}
-                      onRemove={() => handleRemovePerson(person.id)}
-                    />
-                  ))
-                ) : (
-                  <div className="text-sm text-gray-500 italic p-2">
-                    All people assigned to courts
-                  </div>
-                )}
-              </div>
-            </div>
+            <AvailablePeople 
+              people={people}
+              onAddPerson={handleAddPerson}
+              onRemovePerson={handleRemovePerson}
+            />
             
-            <div className="bg-white rounded-xl shadow-soft p-4">
-              <h2 className="font-medium mb-3 flex items-center">
-                <ChartBar className="h-4 w-4 mr-2" /> Available Activities
-              </h2>
-              
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Add New Activity</h3>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Activity Name"
-                    className="w-full px-3 py-2 text-sm border rounded"
-                    value={newActivity.name}
-                    onChange={(e) => setNewActivity({ ...newActivity, name: e.target.value })}
-                  />
-                  <select
-                    className="w-full px-3 py-2 text-sm border rounded"
-                    value={newActivity.type}
-                    onChange={(e) => setNewActivity({ ...newActivity, type: e.target.value })}
-                  >
-                    <option value={ACTIVITY_TYPES.MATCH}>Match</option>
-                    <option value={ACTIVITY_TYPES.TRAINING}>Training</option>
-                    <option value={ACTIVITY_TYPES.BASKET_DRILL}>Basket Drill</option>
-                    <option value={ACTIVITY_TYPES.GAME}>Game</option>
-                    <option value={ACTIVITY_TYPES.LESSON}>Lesson</option>
-                  </select>
-                  <div className="flex items-center">
-                    <span className="text-sm text-gray-600 mr-2">Duration:</span>
-                    <select
-                      className="flex-1 px-3 py-2 text-sm border rounded"
-                      value={newActivity.duration}
-                      onChange={(e) => setNewActivity({ ...newActivity, duration: e.target.value })}
-                    >
-                      <option value="30m">30 minutes</option>
-                      <option value="45m">45 minutes</option>
-                      <option value="1h">1 hour</option>
-                      <option value="1.5h">1.5 hours</option>
-                      <option value="2h">2 hours</option>
-                    </select>
-                  </div>
-                  <button
-                    className="w-full bg-green-500 text-white text-sm py-1.5 rounded hover:bg-green-600 transition-colors"
-                    onClick={handleAddActivity}
-                  >
-                    Add Activity
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-h-[180px] overflow-y-auto">
-                {activities.length > 0 ? (
-                  activities.map((activity) => (
-                    <Activity
-                      key={activity.id}
-                      activity={activity}
-                      onRemove={() => handleRemoveActivity(activity.id)}
-                    />
-                  ))
-                ) : (
-                  <div className="text-sm text-gray-500 italic p-2">
-                    All activities assigned to courts
-                  </div>
-                )}
-              </div>
-            </div>
+            <AvailableActivities 
+              activities={activities}
+              onAddActivity={handleAddActivity}
+              onRemoveActivity={handleRemoveActivity}
+            />
             
-            <div className="bg-white rounded-xl shadow-soft p-4">
-              <h2 className="font-medium mb-3 flex items-center">
-                <Clock className="h-4 w-4 mr-2" /> Schedule Templates
-              </h2>
-              
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Save Current Schedule</h3>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Template Name"
-                    className="w-full px-3 py-2 text-sm border rounded"
-                    value={newTemplateName}
-                    onChange={(e) => setNewTemplateName(e.target.value)}
-                  />
-                  <button
-                    className="w-full bg-ath-blue text-white text-sm py-1.5 rounded hover:bg-ath-blue-dark transition-colors"
-                    onClick={saveAsTemplate}
-                  >
-                    Save as Template
-                  </button>
-                </div>
-              </div>
-              
-              {templates.length > 0 ? (
-                <div className="space-y-2">
-                  {templates.map((template) => (
-                    <div key={template.id} className="p-2 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">{template.name}</span>
-                        <button
-                          className="text-xs bg-ath-blue-light px-2 py-1 rounded text-ath-blue hover:bg-ath-blue-light/80"
-                          onClick={() => applyTemplate(template)}
-                        >
-                          Apply
-                        </button>
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Created: {format(template.date, "MMM d, yyyy")}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm text-gray-500 italic p-2">
-                  No saved templates yet
-                </div>
-              )}
-            </div>
+            <ScheduleTemplates 
+              templates={templates}
+              onSaveTemplate={saveAsTemplate}
+              onApplyTemplate={applyTemplate}
+            />
           </div>
 
           <div className="md:col-span-9 lg:col-span-10">
@@ -1120,23 +405,7 @@ export default function CourtVision() {
               ))}
             </div>
             
-            <div className="mt-6 p-3 bg-white rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium mb-2">Court Types</h3>
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center">
-                  <span className="w-3 h-3 rounded-full bg-ath-clay mr-1.5"></span>
-                  <span className="text-xs text-gray-600">Tennis (Clay)</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-3 h-3 rounded-full bg-ath-hard mr-1.5"></span>
-                  <span className="text-xs text-gray-600">Tennis (Hard)</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-3 h-3 rounded-full bg-ath-grass mr-1.5"></span>
-                  <span className="text-xs text-gray-600">Padel</span>
-                </div>
-              </div>
-            </div>
+            <CourtLegend />
           </div>
         </div>
       </div>
