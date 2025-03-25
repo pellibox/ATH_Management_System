@@ -17,6 +17,7 @@ import {
   MoveVertical,
   ArrowDown,
   ArrowUp,
+  Send,
 } from "lucide-react";
 
 // Import court vision components
@@ -30,12 +31,14 @@ import { CourtLegend } from "@/components/court-vision/CourtLegend";
 import { CourtAssignmentDialog } from "@/components/court-vision/CourtAssignmentDialog";
 import { TimeSlotSelector } from "@/components/court-vision/TimeSlotSelector";
 import { CourtManagement } from "@/components/court-vision/CourtManagement";
+import { SendScheduleDialog } from "@/components/court-vision/SendScheduleDialog";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vision/constants";
 import { PersonData, ActivityData, CourtProps, ScheduleTemplate, DateSchedule } from "@/components/court-vision/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 export default function CourtVision() {
   const { toast } = useToast();
@@ -663,6 +666,12 @@ export default function CourtVision() {
                     Copia Settimana
                   </span>
                 </button>
+                <SendScheduleDialog 
+                  courts={courts}
+                  selectedDate={selectedDate}
+                  playersList={playersList}
+                  coachesList={coachesList}
+                />
                 <button
                   className="ml-2 bg-gray-200 hover:bg-gray-300 p-2 rounded-md"
                   onClick={() => setShowFloatingPanel(!showFloatingPanel)}
@@ -834,3 +843,4 @@ export default function CourtVision() {
     </DndProvider>
   );
 }
+
