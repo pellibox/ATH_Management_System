@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -6,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { X, Trash2, Edit, Clock } from "lucide-react";
 import { TimeSlot } from "./TimeSlot";
+import { Input } from "@/components/ui/input";
 
 interface CourtComponentProps {
   court: CourtProps;
@@ -18,6 +20,7 @@ interface CourtComponentProps {
   onCourtRename?: (courtId: string, name: string) => void;
   onCourtTypeChange?: (courtId: string, type: string) => void;
   onCourtRemove?: (courtId: string) => void;
+  onCourtNumberChange?: (courtId: string, number: number) => void;
 }
 
 export function Court({ 
@@ -30,12 +33,15 @@ export function Court({
   onRemoveActivity,
   onCourtRename,
   onCourtTypeChange,
-  onCourtRemove
+  onCourtRemove,
+  onCourtNumberChange
 }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"layout" | "schedule">("layout");
   const [isEditing, setIsEditing] = useState(false);
   const [courtName, setCourtName] = useState(court.name);
+  const [isEditingNumber, setIsEditingNumber] = useState(false);
+  const [courtNumber, setCourtNumber] = useState(court.number);
   
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
@@ -96,14 +102,15 @@ export function Court({
   };
 
   const isTimeSlotOccupied = (object: PersonData | ActivityData, timeSlot: string): boolean => {
-    const isPerson = 'timeSlot' in object;
-    const isActivity = 'startTime' in object;
+    // Use type guards to safely check properties
+    const isPerson = 'type' in object && (object.type === PERSON_TYPES.PLAYER || object.type === PERSON_TYPES.COACH);
+    const isActivity = 'type' in object && object.type.startsWith('activity');
     
     let startSlot: string | undefined;
     
-    if (isPerson && object.timeSlot) {
+    if (isPerson && 'timeSlot' in object) {
       startSlot = object.timeSlot;
-    } else if (isActivity && object.startTime) {
+    } else if (isActivity && 'startTime' in object) {
       startSlot = object.startTime;
     } else {
       return false;
@@ -176,6 +183,13 @@ export function Court({
     setIsEditing(false);
   };
 
+  const handleSaveCourtNumber = () => {
+    if (onCourtNumberChange && !isNaN(courtNumber)) {
+      onCourtNumberChange(court.id, courtNumber);
+    }
+    setIsEditingNumber(false);
+  };
+
   const handleCourtTypeChange = (type: string) => {
     if (onCourtTypeChange) {
       onCourtTypeChange(court.id, type);
@@ -200,7 +214,34 @@ export function Court({
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
             <span className="text-xs font-medium bg-ath-black/70 text-white px-2 py-1 rounded">
-              {court.name} #{court.number}
+              {court.name} 
+              <span className="ml-1 cursor-pointer" onClick={(e) => {
+                e.stopPropagation();
+                setIsEditingNumber(true);
+              }}>
+                #{court.number}
+              </span>
+              {isEditingNumber && (
+                <div onClick={(e) => e.stopPropagation()} className="absolute z-50 mt-1 bg-white rounded shadow-md p-2">
+                  <Input
+                    type="number"
+                    value={courtNumber}
+                    onChange={(e) => setCourtNumber(parseInt(e.target.value) || 1)}
+                    className="w-16 h-8 text-xs text-black"
+                    min={1}
+                    autoFocus
+                    onBlur={handleSaveCourtNumber}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveCourtNumber();
+                      } else if (e.key === 'Escape') {
+                        setIsEditingNumber(false);
+                        setCourtNumber(court.number);
+                      }
+                    }}
+                  />
+                </div>
+              )}
             </span>
             <span className="text-xs bg-ath-black/70 text-white px-2 py-1 rounded">{getCourtLabel()}</span>
           </div>
@@ -417,6 +458,22 @@ export function Court({
                 <option value={COURT_TYPES.PICKLEBALL}>Pickleball</option>
                 <option value={COURT_TYPES.TOUCH_TENNIS}>Touch Tennis</option>
               </select>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Numero Campo:</span>
+              <Input
+                type="number"
+                value={courtNumber}
+                onChange={(e) => setCourtNumber(parseInt(e.target.value) || 1)}
+                className="w-16 text-sm"
+                min={1}
+              />
+              <button 
+                onClick={handleSaveCourtNumber}
+                className="ml-2 bg-ath-black text-white text-xs p-1 rounded"
+              >
+                Salva
+              </button>
             </div>
             {onCourtRemove && (
               <button 

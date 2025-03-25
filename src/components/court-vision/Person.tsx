@@ -23,7 +23,7 @@ export function Person({ person, onRemove }: PersonProps) {
       ref={drag}
       className={`flex items-center p-2 rounded-md mb-1 ${
         isDragging ? "opacity-40" : "opacity-100"
-      } ${person.type === PERSON_TYPES.PLAYER ? "bg-ath-blue-light" : "bg-orange-100"}`}
+      } ${person.type === PERSON_TYPES.PLAYER ? "bg-ath-blue-light" : "bg-orange-100"} cursor-move`}
     >
       {person.type === PERSON_TYPES.PLAYER ? (
         <User className="h-4 w-4 mr-2" />

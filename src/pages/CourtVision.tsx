@@ -151,6 +151,11 @@ export default function CourtVision() {
   }, [courts]);
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
+    // Check if this is a drag from one court/timeslot to another
+    const isMovingFromExistingAssignment = courts.some(court => 
+      court.occupants.some(p => p.id === person.id)
+    );
+
     const personDuration = person.durationHours || 1;
     
     const personWithCourtInfo = { 
@@ -172,6 +177,7 @@ export default function CourtVision() {
 
     let updatedCourts = [...courts];
 
+    // Remove the person from any existing court assignment
     updatedCourts = updatedCourts.map((court) => {
       return {
         ...court,
@@ -179,6 +185,7 @@ export default function CourtVision() {
       };
     });
 
+    // Add the person to the new court
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
         return {
@@ -191,18 +198,24 @@ export default function CourtVision() {
 
     setCourts(updatedCourts);
 
+    // Only add to the available list if not already assigned somewhere
     const isFromAvailableList = people.some(p => p.id === person.id);
     if (isFromAvailableList) {
       setPeople(people.filter(p => p.id !== person.id));
     }
 
     toast({
-      title: "Persona Assegnata",
-      description: `${person.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${personDuration > 1 ? ` per ${personDuration} ore` : ''}`,
+      title: isMovingFromExistingAssignment ? "Persona Spostata" : "Persona Assegnata",
+      description: `${person.name} è stata ${isMovingFromExistingAssignment ? "spostata" : "assegnata"} al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${personDuration > 1 ? ` per ${personDuration} ore` : ''}`,
     });
   };
 
   const handleActivityDrop = (courtId: string, activity: ActivityData, timeSlot?: string) => {
+    // Check if this is a drag from one court/timeslot to another
+    const isMovingFromExistingAssignment = courts.some(court => 
+      court.activities.some(a => a.id === activity.id)
+    );
+
     const draggableActivity = activities.find((a) => a.id === activity.id) || 
                               courts.flatMap(c => c.activities).find(a => a.id === activity.id);
     
@@ -238,6 +251,7 @@ export default function CourtVision() {
 
     let updatedCourts = [...courts];
 
+    // Remove the activity from any existing court assignment
     updatedCourts = updatedCourts.map((court) => {
       return {
         ...court,
@@ -245,6 +259,7 @@ export default function CourtVision() {
       };
     });
 
+    // Add the activity to the new court
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
         return {
@@ -266,8 +281,8 @@ export default function CourtVision() {
     }
 
     toast({
-      title: "Attività Assegnata",
-      description: `${draggableActivity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${durationHours > 1 ? ` per ${durationHours} ore` : ''}`,
+      title: isMovingFromExistingAssignment ? "Attività Spostata" : "Attività Assegnata",
+      description: `${draggableActivity.name} è stata ${isMovingFromExistingAssignment ? "spostata" : "assegnata"} al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${durationHours > 1 ? ` per ${durationHours} ore` : ''}`,
     });
   };
 
@@ -622,6 +637,8 @@ export default function CourtVision() {
   };
 
   const handleChangeCourtNumber = (courtId: string, number: number) => {
+    if (isNaN(number) || number < 1) return;
+    
     setCourts(
       courts.map(court => 
         court.id === courtId 
@@ -629,6 +646,11 @@ export default function CourtVision() {
           : court
       )
     );
+    
+    toast({
+      title: "Numero Campo Aggiornato",
+      description: `Il campo è stato aggiornato al numero ${number}`,
+    });
   };
 
   const [showFloatingPanel, setShowFloatingPanel] = useState(true);
@@ -836,6 +858,7 @@ export default function CourtVision() {
               onCourtRename={handleRenameCourt}
               onCourtTypeChange={handleChangeCourtType}
               onCourtRemove={handleRemoveCourt}
+              onCourtNumberChange={handleChangeCourtNumber}
             />
           ))}
         </div>
@@ -843,4 +866,3 @@ export default function CourtVision() {
     </DndProvider>
   );
 }
-

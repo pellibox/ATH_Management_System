@@ -1,6 +1,6 @@
 
 import { useState, useCallback, memo } from "react";
-import { useDrop } from "react-dnd";
+import { useDrop, useDrag } from "react-dnd";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { PersonData, ActivityData } from "./types";
 import { Clock, Users } from "lucide-react";
@@ -14,6 +14,72 @@ interface TimeSlotProps {
   onActivityDrop: (courtId: string, time: string, activity: ActivityData) => void;
   onRemovePerson: (personId: string, time: string) => void;
   onRemoveActivity: (activityId: string, time: string) => void;
+}
+
+// Create a draggable person component for the time slot
+function DraggablePerson({ person, time, onRemove }: { person: PersonData, time: string, onRemove: () => void }) {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: person.type,
+    item: { ...person, timeSlot: time },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div 
+      ref={drag}
+      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
+        person.type === PERSON_TYPES.PLAYER 
+          ? "bg-ath-red-clay-dark text-white"
+          : "bg-ath-black text-white"
+      } ${isDragging ? "opacity-50" : ""} cursor-move`}
+    >
+      {person.name.substring(0, 10)}
+      <button
+        onClick={onRemove}
+        className="ml-1 text-gray-300 hover:text-white"
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
+// Create a draggable activity component for the time slot
+function DraggableActivity({ activity, time, onRemove }: { activity: ActivityData, time: string, onRemove: () => void }) {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "activity",
+    item: { ...activity, startTime: time },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div 
+      ref={drag}
+      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
+        activity.type === ACTIVITY_TYPES.MATCH 
+          ? "bg-ath-black-light text-white" 
+          : activity.type === ACTIVITY_TYPES.TRAINING
+          ? "bg-ath-red-clay-dark text-white"
+          : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+          ? "bg-ath-red-clay-dark text-white"
+          : activity.type === ACTIVITY_TYPES.GAME
+          ? "bg-ath-black text-white"
+          : "bg-ath-gray-medium text-white"
+      } ${isDragging ? "opacity-50" : ""} cursor-move`}
+    >
+      {activity.name}
+      <button
+        onClick={onRemove}
+        className="ml-1 text-gray-300 hover:text-white"
+      >
+        ×
+      </button>
+    </div>
+  );
 }
 
 export const TimeSlot = memo(function TimeSlot({ 
@@ -75,28 +141,12 @@ export const TimeSlot = memo(function TimeSlot({
       {activities.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1">
           {activities.map((activity) => (
-            <div 
+            <DraggableActivity 
               key={activity.id}
-              className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
-                activity.type === ACTIVITY_TYPES.MATCH 
-                  ? "bg-ath-black-light text-white" 
-                  : activity.type === ACTIVITY_TYPES.TRAINING
-                  ? "bg-ath-red-clay-dark text-white"
-                  : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                  ? "bg-ath-red-clay-dark text-white"
-                  : activity.type === ACTIVITY_TYPES.GAME
-                  ? "bg-ath-black text-white"
-                  : "bg-ath-gray-medium text-white"
-              }`}
-            >
-              {activity.name}
-              <button
-                onClick={() => handleRemoveActivity(activity.id)}
-                className="ml-1 text-gray-300 hover:text-white"
-              >
-                ×
-              </button>
-            </div>
+              activity={activity}
+              time={time}
+              onRemove={() => handleRemoveActivity(activity.id)}
+            />
           ))}
         </div>
       )}
@@ -104,22 +154,12 @@ export const TimeSlot = memo(function TimeSlot({
       {occupants.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {occupants.map((person) => (
-            <div 
+            <DraggablePerson
               key={person.id}
-              className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
-                person.type === PERSON_TYPES.PLAYER 
-                  ? "bg-ath-red-clay-dark text-white"
-                  : "bg-ath-black text-white"
-              }`}
-            >
-              {person.name.substring(0, 10)}
-              <button
-                onClick={() => handleRemovePerson(person.id)}
-                className="ml-1 text-gray-300 hover:text-white"
-              >
-                ×
-              </button>
-            </div>
+              person={person}
+              time={time}
+              onRemove={() => handleRemovePerson(person.id)}
+            />
           ))}
         </div>
       )}
