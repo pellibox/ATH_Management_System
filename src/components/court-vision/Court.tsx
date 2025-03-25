@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -204,9 +203,26 @@ export function Court({
   const hasMoreOccupants = visibleOccupants.length > 12;
   const personSize = getPersonSize();
 
+  // Add new handlers for person time slot and court changes
+  const handleChangePersonTimeSlot = (personId: string, timeSlot: string) => {
+    const person = court.occupants.find(p => p.id === personId);
+    if (person && onRemovePerson && onDrop) {
+      onRemovePerson(personId, person.timeSlot);
+      onDrop(court.id, {...person, timeSlot}, person.position, timeSlot);
+    }
+  };
+
+  const handleChangePersonCourt = (personId: string, courtId: string) => {
+    const person = court.occupants.find(p => p.id === personId);
+    if (person && courtId !== court.id && onRemovePerson && onDrop) {
+      onRemovePerson(personId, person.timeSlot);
+      onDrop(courtId, {...person}, {x: 0.5, y: 0.5}, person.timeSlot);
+    }
+  };
+
   // Calculate court height based on sidebar state
-  const courtHeight = isSidebarCollapsed ? "h-[675px]" : "h-96 sm:h-[450px]";
-  const courtWidth = isSidebarCollapsed ? "w-[400px]" : "w-full";
+  const courtHeight = isSidebarCollapsed ? "h-[675px]" : "h-96 sm:h-[600px]";
+  const courtWidth = isSidebarCollapsed ? "w-[600px]" : "w-full";
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -505,13 +521,14 @@ export function Court({
               {court.occupants.map((person) => (
                 <div 
                   key={person.id} 
-                  className="flex items-center justify-between p-2 rounded-md bg-gray-50 hover:bg-gray-100"
+                  className="flex flex-col p-2 rounded-md bg-gray-50 hover:bg-gray-100"
                 >
                   <div className="flex items-center">
                     <div 
                       className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
                         person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
                       }`}
+                      style={person.programColor ? { backgroundColor: person.programColor } : {}}
                     >
                       {person.name.substring(0, 2)}
                     </div>
@@ -519,19 +536,35 @@ export function Court({
                       <p className="font-medium text-sm">{person.name}</p>
                       <p className="text-xs text-gray-500">
                         {person.type === PERSON_TYPES.PLAYER ? "Giocatore" : "Allenatore"}
-                        {person.timeSlot && ` - ${person.timeSlot}`}
-                        {person.durationHours && person.durationHours > 1 && 
-                         ` (${person.durationHours}h${person.endTimeSlot ? ` fino ${person.endTimeSlot}` : ''})`}
                       </p>
                     </div>
+                    <button
+                      onClick={() => onRemovePerson && onRemovePerson(person.id, person.timeSlot)}
+                      className="ml-auto text-red-500 hover:text-red-700"
+                      aria-label="Remove person"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onRemovePerson && onRemovePerson(person.id, person.timeSlot)}
-                    className="text-red-500 hover:text-red-700"
-                    aria-label="Remove person"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  
+                  {/* Time slot and court selection */}
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3 w-3 text-gray-500" />
+                      <select 
+                        value={person.timeSlot || ''} 
+                        onChange={(e) => handleChangePersonTimeSlot(person.id, e.target.value)}
+                        className="flex-1 h-7 text-xs py-0 px-2 border rounded"
+                      >
+                        <option value="">Seleziona orario</option>
+                        {timeSlots.map((time) => (
+                          <option key={time} value={time} className="text-xs">
+                            {time}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

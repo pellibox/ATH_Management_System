@@ -701,7 +701,7 @@ export default function CourtVision() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="mx-auto py-4 relative h-full flex flex-col overflow-hidden">
+      <div className="mx-auto py-4 relative h-screen flex flex-col overflow-hidden">
         <div className="px-4 sticky top-0 z-50 bg-white pb-4">
           <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
           
@@ -863,106 +863,94 @@ export default function CourtVision() {
           </div>
         </div>
           
-        <div className="flex-1 overflow-y-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
-            <CourtAssignmentDialog 
-              courts={courts}
-              availablePeople={people}
-              availableActivities={activities}
-              timeSlots={timeSlots}
-              onAssignPerson={handleAssignPerson}
-              onAssignActivity={handleAssignActivity}
-              onRemovePerson={handleRemovePerson}
-              onRemoveActivity={handleRemoveActivity}
-            />
-            
-            {people.length > 0 && (
-              <div className="bg-white rounded-xl shadow-md p-4">
-                <h2 className="font-medium mb-3 flex items-center">
-                  <Users className="h-4 w-4 mr-2" /> Persone Disponibili
-                </h2>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {people.map((person) => (
-                    <div 
-                      key={person.id}
-                      className={`flex items-center gap-2 p-2 rounded-md cursor-move`}
-                      style={{ backgroundColor: person.programColor ? `${person.programColor}20` : (
-                        person.type === PERSON_TYPES.PLAYER ? "rgba(139, 92, 246, 0.1)" : "rgba(26, 31, 44, 0.1)"
-                      )}}
-                    >
-                      <div 
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white"
-                        style={{ backgroundColor: person.programColor || (
-                          person.type === PERSON_TYPES.PLAYER ? "#8B5CF6" : "#1A1F2C"
-                        )}}
-                      >
-                        {person.name.substring(0, 2)}
-                      </div>
-                      <div className="flex-grow">
-                        <p className="text-sm font-medium">{person.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {person.type === PERSON_TYPES.PLAYER ? "Giocatore" : "Allenatore"}
-                          {person.programId && (
-                            <> • {programs.find(p => p.id === person.programId)?.name}</>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {activities.length > 0 && (
-              <div className="bg-white rounded-xl shadow-md p-4">
-                <h2 className="font-medium mb-3 flex items-center">
-                  <CalendarIcon className="h-4 w-4 mr-2" /> Attività Disponibili
-                </h2>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {activities.map((activity) => (
-                    <div 
-                      key={activity.id}
-                      className={`p-2 rounded-md cursor-move ${
-                        activity.type === ACTIVITY_TYPES.MATCH
-                          ? "bg-ath-black-light/10 text-ath-black-light"
-                          : activity.type === ACTIVITY_TYPES.TRAINING
-                          ? "bg-ath-red-clay-dark/10 text-ath-red-clay-dark"
-                          : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                          ? "bg-ath-red-clay/10 text-ath-red-clay"
-                          : "bg-ath-gray-medium/10 text-ath-gray-medium"
-                      }`}
-                    >
-                      <div className="text-sm font-medium">{activity.name}</div>
-                      <div className="text-xs">{activity.duration && `Durata: ${activity.duration}`}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex flex-wrap gap-4 justify-center">
-            {courts.map((court) => (
-              <Court
-                key={court.id}
-                court={court}
-                date={selectedDate}
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="px-4 bg-white z-40 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+              <CourtAssignmentDialog 
+                courts={courts}
+                availablePeople={people}
+                availableActivities={activities}
                 timeSlots={timeSlots}
-                onDrop={handleDrop}
-                onActivityDrop={handleActivityDrop}
+                onAssignPerson={handleAssignPerson}
+                onAssignActivity={handleAssignActivity}
                 onRemovePerson={handleRemovePerson}
                 onRemoveActivity={handleRemoveActivity}
-                onCourtRename={handleRenameCourt}
-                onCourtTypeChange={handleChangeCourtType}
-                onCourtRemove={handleRemoveCourt}
-                onCourtNumberChange={handleChangeCourtNumber}
-                isSidebarCollapsed={isSidebarCollapsed}
               />
-            ))}
+              
+              {people.length > 0 && (
+                <div className="bg-white rounded-xl shadow-md p-4">
+                  <h2 className="font-medium mb-3 flex items-center">
+                    <Users className="h-4 w-4 mr-2" /> Persone Disponibili
+                  </h2>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {people.map((person) => (
+                      <Person
+                        key={person.id}
+                        person={person}
+                        onRemove={() => handleRemovePerson(person.id)}
+                        courts={courts}
+                        timeSlots={timeSlots}
+                        onChangeTimeSlot={handleChangePersonTimeSlot}
+                        onChangeCourt={handleChangePersonCourt}
+                        showControls={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {activities.length > 0 && (
+                <div className="bg-white rounded-xl shadow-md p-4">
+                  <h2 className="font-medium mb-3 flex items-center">
+                    <CalendarIcon className="h-4 w-4 mr-2" /> Attività Disponibili
+                  </h2>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {activities.map((activity) => (
+                      <div 
+                        key={activity.id}
+                        className={`p-2 rounded-md cursor-move ${
+                          activity.type === ACTIVITY_TYPES.MATCH
+                            ? "bg-ath-black-light/10 text-ath-black-light"
+                            : activity.type === ACTIVITY_TYPES.TRAINING
+                            ? "bg-ath-red-clay-dark/10 text-ath-red-clay-dark"
+                            : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+                            ? "bg-ath-red-clay/10 text-ath-red-clay"
+                            : "bg-ath-gray-medium/10 text-ath-gray-medium"
+                        }`}
+                      >
+                        <div className="text-sm font-medium">{activity.name}</div>
+                        <div className="text-xs">{activity.duration && `Durata: ${activity.duration}`}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto px-4 pb-4">
+            <div className="flex flex-wrap gap-4 justify-center">
+              {courts.map((court) => (
+                <Court
+                  key={court.id}
+                  court={court}
+                  date={selectedDate}
+                  timeSlots={timeSlots}
+                  onDrop={handleDrop}
+                  onActivityDrop={handleActivityDrop}
+                  onRemovePerson={handleRemovePerson}
+                  onRemoveActivity={handleRemoveActivity}
+                  onCourtRename={handleRenameCourt}
+                  onCourtTypeChange={handleChangeCourtType}
+                  onCourtRemove={handleRemoveCourt}
+                  onCourtNumberChange={handleChangeCourtNumber}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
     </DndProvider>
   );
 }
-
