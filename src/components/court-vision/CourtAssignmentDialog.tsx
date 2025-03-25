@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -49,6 +48,7 @@ export function CourtAssignmentDialog({
           variant={selectedTab === "people" ? "default" : "outline"}
           onClick={() => setSelectedTab("people")}
           size="sm"
+          className={selectedTab === "people" ? "bg-ath-red-clay hover:bg-ath-red-clay-dark" : ""}
         >
           <Users className="h-4 w-4 mr-2" /> People
         </Button>
@@ -56,6 +56,7 @@ export function CourtAssignmentDialog({
           variant={selectedTab === "activities" ? "default" : "outline"}
           onClick={() => setSelectedTab("activities")}
           size="sm"
+          className={selectedTab === "activities" ? "bg-ath-red-clay hover:bg-ath-red-clay-dark" : ""}
         >
           <CalendarIcon className="h-4 w-4 mr-2" /> Activities
         </Button>
@@ -69,7 +70,7 @@ export function CourtAssignmentDialog({
               <div
                 key={court.id}
                 className={`p-2 border rounded cursor-pointer ${
-                  selectedCourt?.id === court.id ? "bg-blue-50 border-blue-500" : ""
+                  selectedCourt?.id === court.id ? "bg-ath-red-clay/10 border-ath-red-clay" : ""
                 }`}
                 onClick={() => setSelectedCourt(court)}
               >
@@ -97,8 +98,8 @@ export function CourtAssignmentDialog({
                         <div
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2 ${
                             person.type === PERSON_TYPES.PLAYER
-                              ? "bg-blue-500 text-white"
-                              : "bg-orange-500 text-white"
+                              ? "bg-ath-red-clay text-white"
+                              : "bg-ath-black text-white"
                           }`}
                         >
                           {person.name.substring(0, 2)}
@@ -107,9 +108,10 @@ export function CourtAssignmentDialog({
                       </div>
                       <Button
                         size="sm"
+                        className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
                         onClick={() => {
                           onAssignPerson(selectedCourt.id, person);
-                          setOpen(false);
+                          // Keep the dialog open to allow multiple assignments
                         }}
                       >
                         Assign
@@ -133,7 +135,7 @@ export function CourtAssignmentDialog({
               <div
                 key={court.id}
                 className={`p-2 border rounded cursor-pointer ${
-                  selectedCourt?.id === court.id ? "bg-blue-50 border-blue-500" : ""
+                  selectedCourt?.id === court.id ? "bg-ath-red-clay/10 border-ath-red-clay" : ""
                 }`}
                 onClick={() => setSelectedCourt(court)}
               >
@@ -161,14 +163,14 @@ export function CourtAssignmentDialog({
                         <div
                           className={`px-2 py-1 rounded-full text-xs mr-2 ${
                             activity.type === ACTIVITY_TYPES.MATCH
-                              ? "bg-purple-100 text-purple-800"
+                              ? "bg-ath-black-light text-white"
                               : activity.type === ACTIVITY_TYPES.TRAINING
-                              ? "bg-green-100 text-green-800"
+                              ? "bg-ath-red-clay-dark text-white"
                               : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                              ? "bg-yellow-100 text-yellow-800"
+                              ? "bg-ath-red-clay text-white"
                               : activity.type === ACTIVITY_TYPES.GAME
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-pink-100 text-pink-800"
+                              ? "bg-ath-black text-white"
+                              : "bg-ath-gray-medium text-white"
                           }`}
                         >
                           {activity.name}
@@ -176,9 +178,10 @@ export function CourtAssignmentDialog({
                       </div>
                       <Button
                         size="sm"
+                        className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
                         onClick={() => {
                           onAssignActivity(selectedCourt.id, activity);
-                          setOpen(false);
+                          // Keep the dialog open to allow multiple assignments
                         }}
                       >
                         Assign
@@ -195,34 +198,37 @@ export function CourtAssignmentDialog({
           )}
         </div>
       )}
+      
+      <div className="mt-4 flex justify-end">
+        <Button 
+          variant="outline" 
+          onClick={() => setOpen(false)}
+          className="border-ath-red-clay text-ath-red-clay"
+        >
+          Done
+        </Button>
+      </div>
     </div>
   );
 
   return isMobile ? (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline" className="w-full mb-4">
+        <Button variant="outline" className="w-full mb-4 border-ath-red-clay text-ath-red-clay">
           <Users className="h-4 w-4 mr-2" /> Assign to Courts
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="bg-white">
         <DrawerHeader>
           <DrawerTitle>Assign to Courts</DrawerTitle>
         </DrawerHeader>
         <AssignmentComponent />
-        <div className="p-4">
-          <DrawerClose asChild>
-            <Button variant="outline" className="w-full">
-              Close
-            </Button>
-          </DrawerClose>
-        </div>
       </DrawerContent>
     </Drawer>
   ) : (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full mb-4">
+        <Button variant="outline" className="w-full mb-4 border-ath-red-clay text-ath-red-clay">
           <Users className="h-4 w-4 mr-2" /> Assign to Courts
         </Button>
       </DialogTrigger>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -68,6 +69,14 @@ export default function CourtVision() {
     
     if (!draggablePerson) return;
 
+    // Create a copy of the person with the new position and courtId
+    const personCopy = { 
+      ...draggablePerson, 
+      courtId,
+      position 
+    };
+
+    // If person is already on a court, remove them from that court
     const updatedCourts = courts.map((court) => {
       if (court.id !== courtId && court.occupants.some((p) => p.id === person.id)) {
         return {
@@ -78,18 +87,21 @@ export default function CourtVision() {
       return court;
     });
 
+    // Add person to the target court (if not already there)
     const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
     
     if (targetCourtIndex !== -1) {
+      // If the person is not already on this court, add them
       if (!updatedCourts[targetCourtIndex].occupants.some(p => p.id === person.id)) {
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
           occupants: [
             ...updatedCourts[targetCourtIndex].occupants,
-            { ...draggablePerson, courtId, position },
+            personCopy,
           ],
         };
       } else {
+        // If they are already on this court, just update their position
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
           occupants: updatedCourts[targetCourtIndex].occupants.map(p => 
@@ -99,7 +111,15 @@ export default function CourtVision() {
       }
     }
 
-    setPeople(people.filter((p) => p.id !== person.id));
+    // Remove from available people only if they weren't already on a court
+    const wasOnCourt = courts.some(court => 
+      court.occupants.some(p => p.id === person.id)
+    );
+    
+    if (!wasOnCourt) {
+      setPeople(people.filter((p) => p.id !== person.id));
+    }
+    
     setCourts(updatedCourts);
 
     toast({
@@ -114,6 +134,10 @@ export default function CourtVision() {
     
     if (!draggableActivity) return;
 
+    // Create a copy of the activity with the courtId
+    const activityCopy = { ...draggableActivity, courtId };
+
+    // If activity is already on a court, remove it from that court
     const updatedCourts = courts.map((court) => {
       if (court.id !== courtId && court.activities.some((a) => a.id === activity.id)) {
         return {
@@ -124,21 +148,31 @@ export default function CourtVision() {
       return court;
     });
 
+    // Add activity to the target court (if not already there)
     const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
     
     if (targetCourtIndex !== -1) {
+      // If the activity is not already on this court, add it
       if (!updatedCourts[targetCourtIndex].activities.some(a => a.id === activity.id)) {
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
           activities: [
             ...updatedCourts[targetCourtIndex].activities,
-            { ...draggableActivity, courtId },
+            activityCopy,
           ],
         };
       }
     }
 
-    setActivities(activities.filter((a) => a.id !== activity.id));
+    // Remove from available activities only if it wasn't already on a court
+    const wasOnCourt = courts.some(court => 
+      court.activities.some(a => a.id === activity.id)
+    );
+    
+    if (!wasOnCourt) {
+      setActivities(activities.filter((a) => a.id !== activity.id));
+    }
+    
     setCourts(updatedCourts);
 
     toast({
@@ -363,10 +397,10 @@ export default function CourtVision() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="max-w-7xl mx-auto animate-fade-in p-4">
+      <div className="max-w-7xl mx-auto animate-fade-in p-4 bg-white">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Court Vision</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-ath-black">Court Vision</h1>
+          <p className="text-ath-gray-dark mt-1">
             {isMobile 
               ? "Use the dialog to assign people and activities to courts" 
               : "Drag and drop players, coaches, and activities to assign them to courts"}

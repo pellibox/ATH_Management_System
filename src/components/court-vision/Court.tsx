@@ -44,7 +44,7 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
   const getCourtStyles = () => {
     switch (court.type) {
       case COURT_TYPES.TENNIS_CLAY:
-        return "bg-ath-clay/20 border-ath-clay";
+        return "bg-ath-red-clay/10 border-ath-red-clay";
       case COURT_TYPES.TENNIS_HARD:
         return "bg-ath-hard/20 border-ath-hard";
       case COURT_TYPES.PADEL:
@@ -69,38 +69,38 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
       id={`court-${court.id}`}
       ref={drop}
       className={`relative rounded-lg border-2 ${getCourtStyles()} ${
-        isOver ? "ring-2 ring-ath-blue" : ""
+        isOver ? "ring-2 ring-ath-red-clay" : ""
       } transition-all h-44 sm:h-56 flex flex-col`}
     >
       <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
-        <span className="text-xs font-medium bg-white/80 px-2 py-1 rounded">
+        <span className="text-xs font-medium bg-ath-black/70 text-white px-2 py-1 rounded">
           {court.name} #{court.number}
         </span>
-        <span className="text-xs bg-white/80 px-2 py-1 rounded">{getCourtLabel()}</span>
+        <span className="text-xs bg-ath-black/70 text-white px-2 py-1 rounded">{getCourtLabel()}</span>
       </div>
 
       {(court.type === COURT_TYPES.TENNIS_CLAY || court.type === COURT_TYPES.TENNIS_HARD) && (
-        <div className="w-3/4 h-3/4 border border-white/70 relative flex items-center justify-center">
+        <div className="w-3/4 h-3/4 border border-white/70 relative flex items-center justify-center self-center mt-auto mb-auto">
           <div className="absolute left-0 right-0 h-[1px] bg-white/70"></div>
           <div className="absolute top-0 bottom-0 w-[1px] bg-white/70"></div>
         </div>
       )}
       
       {court.type === COURT_TYPES.PADEL && (
-        <div className="w-3/4 h-3/4 border border-white/70 relative">
+        <div className="w-3/4 h-3/4 border border-white/70 relative self-center mt-auto mb-auto">
           <div className="absolute left-0 right-0 top-1/3 h-[1px] bg-white/70"></div>
           <div className="absolute inset-0 border-4 border-transparent border-b-white/70 -mb-4"></div>
         </div>
       )}
       
       {court.type === COURT_TYPES.PICKLEBALL && (
-        <div className="w-2/3 h-3/4 border border-white/70 relative">
+        <div className="w-2/3 h-3/4 border border-white/70 relative self-center mt-auto mb-auto">
           <div className="absolute left-0 right-0 top-1/3 bottom-1/3 border-t border-b border-white/70"></div>
         </div>
       )}
       
       {court.type === COURT_TYPES.TOUCH_TENNIS && (
-        <div className="w-2/3 h-2/3 border border-white/70 relative">
+        <div className="w-2/3 h-2/3 border border-white/70 relative self-center mt-auto mb-auto">
           <div className="absolute left-0 right-0 h-[1px] top-1/2 bg-white/70"></div>
         </div>
       )}
@@ -109,7 +109,7 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
         <div
           key={person.id}
           className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
-            person.type === PERSON_TYPES.PLAYER ? "bg-blue-500 text-white" : "bg-orange-500 text-white"
+            person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
           }`}
           style={{
             left: `${(person.position?.x || 0.5) * 100}%`,
@@ -122,21 +122,21 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
       ))}
 
       {court.activities.length > 0 && (
-        <div className="absolute top-10 left-2 right-2 bg-black/10 p-1 rounded">
+        <div className="absolute top-10 left-2 right-2 bg-ath-black/30 p-1 rounded">
           <div className="flex flex-wrap gap-1">
             {court.activities.map((activity) => (
               <div
                 key={activity.id}
                 className={`text-xs px-2 py-1 rounded-full ${
                   activity.type === ACTIVITY_TYPES.MATCH
-                    ? "bg-purple-100 text-purple-800"
+                    ? "bg-ath-black-light text-white"
                     : activity.type === ACTIVITY_TYPES.TRAINING
-                    ? "bg-green-100 text-green-800"
+                    ? "bg-ath-red-clay-dark/90 text-white"
                     : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                    ? "bg-yellow-100 text-yellow-800"
+                    ? "bg-ath-red-clay/90 text-white"
                     : activity.type === ACTIVITY_TYPES.GAME
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-pink-100 text-pink-800"
+                    ? "bg-ath-black text-white"
+                    : "bg-ath-gray-medium text-white"
                 }`}
               >
                 {activity.name}
@@ -146,7 +146,7 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
         </div>
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/5 max-h-20 overflow-y-auto">
+      <div className="absolute bottom-0 left-0 right-0 p-2 bg-ath-black/10 max-h-20 overflow-y-auto">
         {court.occupants.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {court.occupants.map((person) => (
@@ -154,8 +154,8 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
                 key={person.id}
                 className={`text-xs px-2 py-1 rounded-full ${
                   person.type === PERSON_TYPES.PLAYER
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-orange-100 text-orange-800"
+                    ? "bg-ath-red-clay/90 text-white"
+                    : "bg-ath-black-light text-white"
                 }`}
               >
                 {person.name}

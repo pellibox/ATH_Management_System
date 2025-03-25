@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -64,19 +63,15 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
         ath: {
-          blue: '#0EA5E9',
-          'blue-light': '#E0F2FE',
-          'blue-dark': '#0369A1',
-          green: '#22c55e',
-          'green-light': '#dcfce7',
-          'green-dark': '#15803d',
-          orange: '#f97316',
-          'orange-light': '#ffedd5',
-          'orange-dark': '#c2410c',
-          gray: '#F8FAFC',
-          'gray-light': '#F1F5F9',
-          'gray-medium': '#CBD5E1',
-          'gray-dark': '#64748B',
+          'red-clay': '#ea384c',
+          'red-clay-light': '#f8acb5',
+          'red-clay-dark': '#c4162a',
+          'black': '#222222',
+          'black-light': '#444444',
+          'black-dark': '#000000',
+          'gray-dark': '#3a3a3a',
+          'gray-medium': '#5a5a5a',
+          'gray-light': '#7a7a7a',
           'clay': '#E97451',
           'grass': '#4CAF50',
           'hard': '#3B82F6',
