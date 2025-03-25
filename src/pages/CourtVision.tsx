@@ -1,10 +1,9 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
-import { format, addDays, startOfWeek, addWeeks } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { format, addDays, startOfWeek, addWeeks, parseISO } from "date-fns";
+import { CalendarIcon, Clock } from "lucide-react";
 
 // Import court vision components
 import { Court } from "@/components/court-vision/Court";
@@ -15,8 +14,9 @@ import { DateSelector } from "@/components/court-vision/DateSelector";
 import { PeopleManagement } from "@/components/court-vision/PeopleManagement";
 import { CourtLegend } from "@/components/court-vision/CourtLegend";
 import { CourtAssignmentDialog } from "@/components/court-vision/CourtAssignmentDialog";
+import { TimeSlotSelector } from "@/components/court-vision/TimeSlotSelector";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vision/constants";
-import { PersonData, ActivityData, CourtProps, ScheduleTemplate } from "@/components/court-vision/types";
+import { PersonData, ActivityData, CourtProps, ScheduleTemplate, DateSchedule } from "@/components/court-vision/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CourtVision() {
@@ -25,7 +25,16 @@ export default function CourtVision() {
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
-  const [courts, setCourts] = useState<CourtProps[]>([
+  const [dateSchedules, setDateSchedules] = useState<DateSchedule[]>([]);
+  
+  // Define time slots
+  const [timeSlots, setTimeSlots] = useState<string[]>([
+    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", 
+    "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
+  ]);
+  
+  // Initialize empty courts
+  const defaultCourts: CourtProps[] = [
     { id: "court1", type: COURT_TYPES.TENNIS_CLAY, name: "Center Court", number: 1, occupants: [], activities: [] },
     { id: "court2", type: COURT_TYPES.TENNIS_CLAY, name: "Tennis", number: 2, occupants: [], activities: [] },
     { id: "court3", type: COURT_TYPES.TENNIS_CLAY, name: "Tennis", number: 3, occupants: [], activities: [] },
@@ -33,7 +42,9 @@ export default function CourtVision() {
     { id: "court6", type: COURT_TYPES.TENNIS_HARD, name: "Tennis", number: 6, occupants: [], activities: [] },
     { id: "padel1", type: COURT_TYPES.PADEL, name: "Padel", number: 1, occupants: [], activities: [] },
     { id: "padel2", type: COURT_TYPES.PADEL, name: "Padel", number: 2, occupants: [], activities: [] },
-  ]);
+  ];
+  
+  const [courts, setCourts] = useState<CourtProps[]>(defaultCourts);
 
   const [people, setPeople] = useState<PersonData[]>([
     { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
@@ -63,55 +74,77 @@ export default function CourtVision() {
     { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH },
   ]);
 
-  const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }) => {
-    // Check if the person is already on any court
-    const isOnAnyCourt = courts.some(court => 
-      court.occupants.some(p => p.id === person.id)
-    );
+  // Load courts for the selected date
+  useEffect(() => {
+    const dateString = selectedDate.toISOString().split('T')[0];
+    const existingSchedule = dateSchedules.find(schedule => schedule.date === dateString);
+    
+    if (existingSchedule) {
+      setCourts(existingSchedule.courts);
+    } else {
+      setCourts(defaultCourts);
+    }
+  }, [selectedDate, dateSchedules]);
 
+  // Save courts when they change
+  useEffect(() => {
+    const dateString = selectedDate.toISOString().split('T')[0];
+    const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === dateString);
+    
+    if (existingScheduleIndex >= 0) {
+      const updatedSchedules = [...dateSchedules];
+      updatedSchedules[existingScheduleIndex] = { date: dateString, courts };
+      setDateSchedules(updatedSchedules);
+    } else {
+      setDateSchedules([...dateSchedules, { date: dateString, courts }]);
+    }
+  }, [courts]);
+
+  const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
     // Create a copy of the person with court information
     const personWithCourtInfo = { 
       ...person, 
       courtId,
-      position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 }
+      position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
+      timeSlot,
+      date: selectedDate.toISOString().split('T')[0]
     };
 
     let updatedCourts = [...courts];
 
-    // If person is already on a court, remove them from that court
-    if (isOnAnyCourt) {
+    // If person is already on a court for this time slot, remove them
+    if (timeSlot) {
+      // Look for the person in this specific time slot
       updatedCourts = updatedCourts.map((court) => {
-        if (court.occupants.some((p) => p.id === person.id)) {
-          return {
-            ...court,
-            occupants: court.occupants.filter((p) => p.id !== person.id),
-          };
-        }
-        return court;
+        return {
+          ...court,
+          occupants: court.occupants.filter((p) => {
+            // Keep the person if they're not the same person or not in the same time slot
+            return !(p.id === person.id && p.timeSlot === timeSlot);
+          })
+        };
+      });
+    } else {
+      // For general court assignment (no time slot), check all courts
+      updatedCourts = updatedCourts.map((court) => {
+        return {
+          ...court,
+          occupants: court.occupants.filter((p) => {
+            // Keep the person if they're not the same person or they have a specific time slot
+            return !(p.id === person.id && !p.timeSlot);
+          })
+        };
       });
     }
 
     // Add person to the target court
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
-        // Check if person already exists on this court
-        const personExists = court.occupants.some(p => p.id === person.id);
-        
-        if (personExists) {
-          // Update position if person already exists
-          return {
-            ...court,
-            occupants: court.occupants.map(p => 
-              p.id === person.id ? { ...p, position: personWithCourtInfo.position } : p
-            ),
-          };
-        } else {
-          // Add new person if they don't exist
-          return {
-            ...court,
-            occupants: [...court.occupants, personWithCourtInfo],
-          };
-        }
+        // Add new person
+        return {
+          ...court,
+          occupants: [...court.occupants, personWithCourtInfo],
+        };
       }
       return court;
     });
@@ -126,41 +159,59 @@ export default function CourtVision() {
 
     toast({
       title: "Persona Assegnata",
-      description: `${person.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
+      description: `${person.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}`,
     });
   };
 
-  const handleActivityDrop = (courtId: string, activity: ActivityData) => {
+  const handleActivityDrop = (courtId: string, activity: ActivityData, timeSlot?: string) => {
     const draggableActivity = activities.find((a) => a.id === activity.id) || 
                               courts.flatMap(c => c.activities).find(a => a.id === activity.id);
     
     if (!draggableActivity) return;
 
-    const activityCopy = { ...draggableActivity, courtId };
+    const activityCopy = { 
+      ...draggableActivity, 
+      courtId, 
+      startTime: timeSlot,
+      date: selectedDate.toISOString().split('T')[0]
+    };
 
-    const updatedCourts = courts.map((court) => {
-      if (court.id !== courtId && court.activities.some((a) => a.id === activity.id)) {
+    let updatedCourts = [...courts];
+
+    // If activity is already scheduled for this time slot, remove it
+    if (timeSlot) {
+      updatedCourts = updatedCourts.map((court) => {
         return {
           ...court,
-          activities: court.activities.filter((a) => a.id !== activity.id),
+          activities: court.activities.filter(a => 
+            !(a.id === activity.id && a.startTime === timeSlot)
+          )
+        };
+      });
+    } else {
+      // For general assignment (no time slot), check all courts
+      updatedCourts = updatedCourts.map((court) => {
+        return {
+          ...court,
+          activities: court.activities.filter(a => 
+            !(a.id === activity.id && !a.startTime)
+          )
+        };
+      });
+    }
+
+    // Add activity to the target court
+    updatedCourts = updatedCourts.map(court => {
+      if (court.id === courtId) {
+        return {
+          ...court,
+          activities: [...court.activities, activityCopy],
         };
       }
       return court;
     });
 
-    const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
-    
-    if (targetCourtIndex !== -1) {
-      if (!updatedCourts[targetCourtIndex].activities.some(a => a.id === activity.id)) {
-        updatedCourts[targetCourtIndex] = {
-          ...updatedCourts[targetCourtIndex],
-          activities: [
-            ...updatedCourts[targetCourtIndex].activities,
-            activityCopy,
-          ],
-        };
-      }
-    }
+    setCourts(updatedCourts);
 
     const wasOnCourt = courts.some(court => 
       court.activities.some(a => a.id === activity.id)
@@ -169,61 +220,79 @@ export default function CourtVision() {
     if (!wasOnCourt) {
       setActivities(activities.filter((a) => a.id !== activity.id));
     }
-    
-    setCourts(updatedCourts);
 
     toast({
       title: "Attività Assegnata",
-      description: `${draggableActivity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
+      description: `${draggableActivity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}`,
     });
   };
 
-  const handleAssignPerson = (courtId: string, person: PersonData) => {
-    handleDrop(courtId, person, { x: 0.5, y: 0.5 });
+  const handleAssignPerson = (courtId: string, person: PersonData, timeSlot?: string) => {
+    handleDrop(courtId, person, { x: 0.5, y: 0.5 }, timeSlot);
   };
 
-  const handleAssignActivity = (courtId: string, activity: ActivityData) => {
-    handleActivityDrop(courtId, activity);
+  const handleAssignActivity = (courtId: string, activity: ActivityData, timeSlot?: string) => {
+    handleActivityDrop(courtId, activity, timeSlot);
   };
 
-  const handleRemovePerson = (personId: string) => {
-    const personToRemove = courts.flatMap(c => c.occupants).find(p => p.id === personId);
+  const handleRemovePerson = (personId: string, timeSlot?: string) => {
+    const personToRemove = courts.flatMap(c => c.occupants).find(p => 
+      p.id === personId && p.timeSlot === timeSlot
+    );
     
     if (personToRemove) {
-      const { courtId, position, ...personWithoutCourtInfo } = personToRemove;
+      const { courtId, position, timeSlot, date, ...personWithoutCourtInfo } = personToRemove;
       
-      setPeople([...people, personWithoutCourtInfo]);
+      // Only add back to available people if they don't have other assignments
+      const hasOtherAssignments = courts.some(court => 
+        court.occupants.some(p => p.id === personId && p.timeSlot !== timeSlot)
+      );
+      
+      if (!hasOtherAssignments) {
+        setPeople([...people, personWithoutCourtInfo]);
+      }
       
       setCourts(
         courts.map((court) => ({
           ...court,
-          occupants: court.occupants.filter((p) => p.id !== personId),
+          occupants: court.occupants.filter((p) => !(p.id === personId && p.timeSlot === timeSlot)),
         }))
       );
 
       toast({
         title: "Persona Rimossa",
-        description: `${personToRemove.name} è stata rimossa dal campo`,
+        description: `${personToRemove.name} è stata rimossa dal campo${timeSlot ? ` alle ${timeSlot}` : ''}`,
       });
     }
   };
 
-  const handleRemoveActivity = (activityId: string) => {
-    const activityToRemove = courts.flatMap(c => c.activities).find(a => a.id === activityId);
+  const handleRemoveActivity = (activityId: string, timeSlot?: string) => {
+    const activityToRemove = courts.flatMap(c => c.activities).find(a => 
+      a.id === activityId && a.startTime === timeSlot
+    );
     
     if (activityToRemove) {
-      setActivities([...activities, { ...activityToRemove, courtId: undefined }]);
+      const { courtId, startTime, date, ...activityWithoutCourtInfo } = activityToRemove;
+      
+      // Only add back to available activities if they don't have other assignments
+      const hasOtherAssignments = courts.some(court => 
+        court.activities.some(a => a.id === activityId && a.startTime !== timeSlot)
+      );
+      
+      if (!hasOtherAssignments) {
+        setActivities([...activities, activityWithoutCourtInfo]);
+      }
       
       setCourts(
         courts.map((court) => ({
           ...court,
-          activities: court.activities.filter((a) => a.id !== activityId),
+          activities: court.activities.filter((a) => !(a.id === activityId && a.startTime === timeSlot)),
         }))
       );
 
       toast({
         title: "Attività Rimossa",
-        description: `${activityToRemove.name} è stata rimossa dal campo`,
+        description: `${activityToRemove.name} è stata rimossa dal campo${timeSlot ? ` alle ${timeSlot}` : ''}`,
       });
     }
   };
@@ -287,6 +356,39 @@ export default function CourtVision() {
     });
   };
 
+  const handleAddTimeSlot = (time: string) => {
+    setTimeSlots([...timeSlots, time].sort());
+    
+    toast({
+      title: "Fascia Oraria Aggiunta",
+      description: `Fascia oraria ${time} è stata aggiunta al programma`,
+    });
+  };
+
+  const handleRemoveTimeSlot = (time: string) => {
+    // Check if this time slot is in use
+    const isTimeSlotInUse = courts.some(court => 
+      court.occupants.some(p => p.timeSlot === time) || 
+      court.activities.some(a => a.startTime === time)
+    );
+    
+    if (isTimeSlotInUse) {
+      toast({
+        title: "Fascia Oraria In Uso",
+        description: `Non è possibile rimuovere la fascia oraria ${time} perché è in uso`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setTimeSlots(timeSlots.filter(t => t !== time));
+    
+    toast({
+      title: "Fascia Oraria Rimossa",
+      description: `Fascia oraria ${time} è stata rimossa dal programma`,
+    });
+  };
+
   const saveAsTemplate = (name: string) => {
     if (name.trim() === "") {
       toast({
@@ -315,6 +417,18 @@ export default function CourtVision() {
   const applyTemplate = (template: ScheduleTemplate) => {
     setCourts(template.courts);
 
+    // Add to date schedules
+    const dateString = selectedDate.toISOString().split('T')[0];
+    const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === dateString);
+    
+    if (existingScheduleIndex >= 0) {
+      const updatedSchedules = [...dateSchedules];
+      updatedSchedules[existingScheduleIndex] = { date: dateString, courts: template.courts };
+      setDateSchedules(updatedSchedules);
+    } else {
+      setDateSchedules([...dateSchedules, { date: dateString, courts: template.courts }]);
+    }
+
     toast({
       title: "Template Applicato",
       description: `Template "${template.name}" è stato applicato al giorno ${format(selectedDate, "MMMM d, yyyy")}`,
@@ -323,6 +437,19 @@ export default function CourtVision() {
 
   const copyToNextDay = () => {
     const nextDay = addDays(selectedDate, 1);
+    const nextDayString = nextDay.toISOString().split('T')[0];
+    
+    // Save current courts to the next day
+    const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === nextDayString);
+    
+    if (existingScheduleIndex >= 0) {
+      const updatedSchedules = [...dateSchedules];
+      updatedSchedules[existingScheduleIndex] = { date: nextDayString, courts };
+      setDateSchedules(updatedSchedules);
+    } else {
+      setDateSchedules([...dateSchedules, { date: nextDayString, courts }]);
+    }
+    
     setSelectedDate(nextDay);
 
     toast({
@@ -334,6 +461,24 @@ export default function CourtVision() {
   const copyToWeek = () => {
     const startOfCurrentWeek = startOfWeek(selectedDate);
     const nextWeekStart = addWeeks(startOfCurrentWeek, 1);
+    
+    // Loop through each day of the week and copy courts
+    for (let i = 0; i < 7; i++) {
+      const targetDay = addDays(nextWeekStart, i);
+      const targetDayString = targetDay.toISOString().split('T')[0];
+      
+      // Save current courts to the target day
+      const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === targetDayString);
+      
+      if (existingScheduleIndex >= 0) {
+        const updatedSchedules = [...dateSchedules];
+        updatedSchedules[existingScheduleIndex] = { date: targetDayString, courts };
+        setDateSchedules(updatedSchedules);
+      } else {
+        setDateSchedules([...dateSchedules, { date: targetDayString, courts }]);
+      }
+    }
+    
     setSelectedDate(nextWeekStart);
 
     toast({
@@ -397,6 +542,8 @@ export default function CourtVision() {
                 <Court
                   key={court.id}
                   court={court}
+                  date={selectedDate}
+                  timeSlots={timeSlots}
                   onDrop={handleDrop}
                   onActivityDrop={handleActivityDrop}
                   onRemovePerson={handleRemovePerson}
@@ -411,10 +558,17 @@ export default function CourtVision() {
               courts={courts}
               availablePeople={people}
               availableActivities={activities}
+              timeSlots={timeSlots}
               onAssignPerson={handleAssignPerson}
               onAssignActivity={handleAssignActivity}
               onRemovePerson={handleRemovePerson}
               onRemoveActivity={handleRemoveActivity}
+            />
+            
+            <TimeSlotSelector
+              timeSlots={timeSlots}
+              onAddTimeSlot={handleAddTimeSlot}
+              onRemoveTimeSlot={handleRemoveTimeSlot}
             />
             
             <AvailablePeople 
@@ -442,6 +596,24 @@ export default function CourtVision() {
               onApplyTemplate={applyTemplate} 
               onSaveTemplate={saveAsTemplate}
             />
+            
+            <div className="bg-white rounded-xl shadow-soft p-4">
+              <h2 className="font-medium mb-3">Azioni Rapide</h2>
+              <div className="space-y-2">
+                <button 
+                  className="w-full bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
+                  onClick={copyToNextDay}
+                >
+                  Copia al Giorno Successivo
+                </button>
+                <button 
+                  className="w-full bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
+                  onClick={copyToWeek}
+                >
+                  Copia alla Prossima Settimana
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

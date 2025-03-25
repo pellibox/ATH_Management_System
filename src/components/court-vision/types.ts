@@ -5,6 +5,8 @@ export interface PersonData {
   type: string;
   courtId?: string;
   position?: { x: number; y: number };
+  timeSlot?: string;
+  date?: string; // ISO date string
 }
 
 export interface ActivityData {
@@ -14,6 +16,7 @@ export interface ActivityData {
   courtId?: string;
   duration?: string;
   startTime?: string;
+  date?: string; // ISO date string
 }
 
 export interface CourtProps {
@@ -29,5 +32,10 @@ export interface ScheduleTemplate {
   id: string;
   name: string;
   date: Date;
+  courts: CourtProps[];
+}
+
+export interface DateSchedule {
+  date: string; // ISO date string
   courts: CourtProps[];
 }
