@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -92,7 +91,6 @@ export function Court({
     return `${type[0].charAt(0).toUpperCase() + type[0].slice(1)}${surface}`;
   };
 
-  // Find occupants and activities for a specific time slot
   const getOccupantsForTimeSlot = (time: string) => {
     return court.occupants.filter(person => 
       person.timeSlot === time || (!person.timeSlot && time === timeSlots[0])
@@ -105,7 +103,6 @@ export function Court({
     );
   };
 
-  // Calculate person marker size based on how many people are on the court
   const getPersonSize = () => {
     const count = court.occupants.length;
     if (count <= 2) return "w-10 h-10 text-sm";
@@ -113,25 +110,21 @@ export function Court({
     if (count <= 8) return "w-7 h-7 text-xs";
     return "w-6 h-6 text-[10px]";
   };
-  
-  // Distribute people around the court based on their count
+
   const getPersonPosition = (index: number, total: number, position?: {x: number, y: number}) => {
     if (position) return position;
     
-    // If person has a custom position, use it
     if (total <= 4) {
-      // Simple positions for 4 or fewer people
       const positions = [
-        {x: 0.25, y: 0.25}, // top left
-        {x: 0.75, y: 0.25}, // top right
-        {x: 0.25, y: 0.75}, // bottom left
-        {x: 0.75, y: 0.75}, // bottom right
+        {x: 0.25, y: 0.25},
+        {x: 0.75, y: 0.25},
+        {x: 0.25, y: 0.75},
+        {x: 0.75, y: 0.75},
       ];
       return positions[index % positions.length];
     } else {
-      // More distributed positions for more people
       const angle = (Math.PI * 2 * index) / total;
-      const radius = 0.35; // Distance from center
+      const radius = 0.35;
       const centerX = 0.5;
       const centerY = 0.5;
       return {
@@ -140,7 +133,7 @@ export function Court({
       };
     }
   };
-  
+
   const handleSaveCourtName = () => {
     if (courtName.trim() && onCourtRename) {
       onCourtRename(court.id, courtName);
@@ -153,14 +146,13 @@ export function Court({
       onCourtTypeChange(court.id, type);
     }
   };
-  
-  // Only show people without specific time slots in the layout view
+
   const visibleOccupants = viewMode === "layout" 
     ? court.occupants.filter(person => !person.timeSlot).slice(0, 12)
     : [];
   const hasMoreOccupants = visibleOccupants.length > 12;
   const personSize = getPersonSize();
-  
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -169,7 +161,7 @@ export function Court({
           ref={drop}
           className={`relative rounded-lg border-2 ${getCourtStyles()} ${
             isOver ? "ring-2 ring-ath-red-clay" : ""
-          } transition-all h-80 sm:h-96 flex flex-col cursor-pointer animate-fade-in`}
+          } transition-all h-96 sm:h-[450px] flex flex-col cursor-pointer animate-fade-in`}
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
             <span className="text-xs font-medium bg-ath-black/70 text-white px-2 py-1 rounded">

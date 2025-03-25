@@ -270,7 +270,7 @@ export default function Courts() {
                 <label className="block text-sm font-medium mb-1">Court Type</label>
                 <select
                   value={newCourtType}
-                  onChange={(e) => setNewCourtType(e.target.value)}
+                  onChange={(e) => setNewCourtType(e.target.value as "clay" | "grass" | "hard" | "central")}
                   className="w-full p-2 border rounded"
                 >
                   <option value="clay">Clay</option>
