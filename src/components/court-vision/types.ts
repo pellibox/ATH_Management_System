@@ -13,6 +13,7 @@ export interface PersonData {
   programColor?: string; // Color for visual representation
   sourceTimeSlot?: string; // Source time slot for drag and drop operations
   hoursAssigned?: number; // Total hours assigned in current week
+  sportType?: string; // Type of sport (tennis, padel, pickleball, touchtennis)
 }
 
 export interface ActivityData {
@@ -26,6 +27,7 @@ export interface ActivityData {
   durationHours?: number; // Duration in hours
   endTimeSlot?: string; // End time slot for spanning multiple slots
   sourceTimeSlot?: string; // Source time slot for drag and drop operations
+  sportType?: string; // Type of sport (tennis, padel, pickleball, touchtennis)
 }
 
 export interface CourtProps {
@@ -57,4 +59,3 @@ export interface Program {
   totalWeeks?: number; // Total weeks for the program duration
   remainingWeeks?: number; // Remaining weeks in the program
 }
-

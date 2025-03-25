@@ -3,6 +3,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek, addWeeks } from "date-fns";
+import { useLocation, useNavigate } from "react-router-dom";
 import { 
   CalendarIcon, 
   Clock, 
@@ -36,6 +37,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 // Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// Define sport types
+const SPORT_TYPES = {
+  TENNIS: "tennis",
+  PADEL: "padel",
+  PICKLEBALL: "pickleball",
+  TOUCHTENNIS: "touchtennis"
+};
+
 const FloatingMenuPanel = ({ children }: { children: React.ReactNode }) => (
   <div className="fixed bottom-4 left-4 right-4 z-50 bg-white rounded-xl shadow-lg p-4 border border-gray-200">
     <div className="flex space-x-4 overflow-x-auto pb-2">
@@ -44,9 +53,20 @@ const FloatingMenuPanel = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(' ');
+};
+
 export default function CourtVision() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Extract sport from URL query params
+  const searchParams = new URLSearchParams(location.pathname === "/court-vision/layout" ? "" : location.search);
+  const sportFilter = searchParams.get("sport") || "";
+  const isLayoutView = location.pathname === "/court-vision/layout";
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
@@ -66,39 +86,98 @@ export default function CourtVision() {
     { id: "court6", type: COURT_TYPES.TENNIS_HARD, name: "Tennis", number: 6, occupants: [], activities: [] },
     { id: "padel1", type: COURT_TYPES.PADEL, name: "Padel", number: 1, occupants: [], activities: [] },
     { id: "padel2", type: COURT_TYPES.PADEL, name: "Padel", number: 2, occupants: [], activities: [] },
+    { id: "pickle1", type: "pickleball", name: "Pickleball", number: 1, occupants: [], activities: [] },
+    { id: "touch1", type: "touchtennis", name: "Touch Tennis", number: 1, occupants: [], activities: [] },
   ];
   
   const [courts, setCourts] = useState<CourtProps[]>(defaultCourts);
+  const [filteredCourts, setFilteredCourts] = useState<CourtProps[]>(defaultCourts);
 
   const [people, setPeople] = useState<PersonData[]>([
-    { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
-    { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER },
-    { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER },
-    { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH },
-    { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH },
+    { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player4", name: "Carlo Rossi", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.PADEL },
+    { id: "player5", name: "Laura Bianchi", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.PADEL },
+    { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.TENNIS },
+    { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.TENNIS },
+    { id: "coach3", name: "Coach Pickleball", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.PICKLEBALL },
+    { id: "coach4", name: "Coach Touchtennis", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.TOUCHTENNIS },
   ]);
+
+  const [filteredPeople, setFilteredPeople] = useState<PersonData[]>(people);
 
   const [activities, setActivities] = useState<ActivityData[]>([
-    { id: "activity1", name: "Singles Match", type: ACTIVITY_TYPES.MATCH, duration: "1h" },
-    { id: "activity2", name: "Group Training", type: ACTIVITY_TYPES.TRAINING, duration: "1.5h" },
-    { id: "activity3", name: "Basket Drill", type: ACTIVITY_TYPES.BASKET_DRILL, duration: "45m" },
+    { id: "activity1", name: "Singles Match", type: ACTIVITY_TYPES.MATCH, duration: "1h", sportType: SPORT_TYPES.TENNIS },
+    { id: "activity2", name: "Group Training", type: ACTIVITY_TYPES.TRAINING, duration: "1.5h", sportType: SPORT_TYPES.TENNIS },
+    { id: "activity3", name: "Basket Drill", type: ACTIVITY_TYPES.BASKET_DRILL, duration: "45m", sportType: SPORT_TYPES.TENNIS },
+    { id: "activity4", name: "Padel Match", type: ACTIVITY_TYPES.MATCH, duration: "1h", sportType: SPORT_TYPES.PADEL },
+    { id: "activity5", name: "Pickleball Drill", type: ACTIVITY_TYPES.TRAINING, duration: "1h", sportType: SPORT_TYPES.PICKLEBALL },
   ]);
+
+  const [filteredActivities, setFilteredActivities] = useState<ActivityData[]>(activities);
 
   const [playersList, setPlayersList] = useState<PersonData[]>([
-    { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
-    { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER },
-    { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER },
-    { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER },
-    { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER },
+    { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TENNIS },
+    { id: "player6", name: "Carlo Rossi", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.PADEL },
+    { id: "player7", name: "Laura Bianchi", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.PADEL },
+    { id: "player8", name: "John Pickle", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.PICKLEBALL },
+    { id: "player9", name: "Tim Touch", type: PERSON_TYPES.PLAYER, sportType: SPORT_TYPES.TOUCHTENNIS },
   ]);
   
+  const [filteredPlayersList, setFilteredPlayersList] = useState<PersonData[]>(playersList);
+  
   const [coachesList, setCoachesList] = useState<PersonData[]>([
-    { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH },
-    { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH },
-    { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH },
+    { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.TENNIS },
+    { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.TENNIS },
+    { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.TENNIS },
+    { id: "coach4", name: "Coach Padel", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.PADEL },
+    { id: "coach5", name: "Coach Pickleball", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.PICKLEBALL },
+    { id: "coach6", name: "Coach Touchtennis", type: PERSON_TYPES.COACH, sportType: SPORT_TYPES.TOUCHTENNIS },
   ]);
 
+  const [filteredCoachesList, setFilteredCoachesList] = useState<PersonData[]>(coachesList);
+
   const [programs, setPrograms] = useState<Program[]>(DEFAULT_PROGRAMS);
+
+  // Apply filters based on sport type
+  useEffect(() => {
+    if (sportFilter) {
+      setFilteredCourts(courts.filter(court => {
+        if (sportFilter === SPORT_TYPES.TENNIS) {
+          return court.type.includes("tennis");
+        } else {
+          return court.type.includes(sportFilter);
+        }
+      }));
+      
+      setFilteredPeople(people.filter(person => 
+        !person.sportType || person.sportType === sportFilter
+      ));
+      
+      setFilteredActivities(activities.filter(activity => 
+        !activity.sportType || activity.sportType === sportFilter
+      ));
+      
+      setFilteredPlayersList(playersList.filter(player => 
+        !player.sportType || player.sportType === sportFilter
+      ));
+      
+      setFilteredCoachesList(coachesList.filter(coach => 
+        !coach.sportType || coach.sportType === sportFilter
+      ));
+    } else {
+      setFilteredCourts(courts);
+      setFilteredPeople(people);
+      setFilteredActivities(activities);
+      setFilteredPlayersList(playersList);
+      setFilteredCoachesList(coachesList);
+    }
+  }, [sportFilter, courts, people, activities, playersList, coachesList]);
 
   useEffect(() => {
     const dateString = selectedDate.toISOString().split('T')[0];
@@ -332,7 +411,7 @@ export default function CourtVision() {
     }
   };
 
-  const handleAddPerson = (personData: {name: string, type: string}) => {
+  const handleAddPerson = (personData: {name: string, type: string, sportType?: string}) => {
     if (personData.name.trim() === "") {
       toast({
         title: "Error",
@@ -347,6 +426,7 @@ export default function CourtVision() {
       id: newId,
       name: personData.name,
       type: personData.type,
+      sportType: personData.sportType || sportFilter || undefined
     };
 
     setPeople(prevPeople => [...prevPeople, personToAdd]);
@@ -726,7 +806,10 @@ export default function CourtVision() {
   };
 
   const checkUnassignedPeople = (scheduleType: "day" | "week" | "month") => {
-    const allPeople = [...playersList, ...coachesList];
+    const relevantPeople = sportFilter 
+      ? [...playersList, ...coachesList].filter(p => !p.sportType || p.sportType === sportFilter)
+      : [...playersList, ...coachesList];
+      
     const unassigned: PersonData[] = [];
     
     // Get all assigned people for the current schedule scope
@@ -736,7 +819,7 @@ export default function CourtVision() {
       return schedule?.courts.flatMap(c => c.occupants) || [];
     };
     
-    allPeople.forEach(person => {
+    relevantPeople.forEach(person => {
       let isAssigned = false;
       
       if (scheduleType === "day") {
@@ -770,11 +853,104 @@ export default function CourtVision() {
     return unassigned;
   };
 
+  const CourtLayoutView = () => {
+    const dateString = selectedDate.toISOString().split('T')[0];
+    
+    return (
+      <div className="grid gap-6">
+        {filteredCourts.map((court) => {
+          const courtOccupants = court.occupants.filter(p => p.date === dateString);
+          const courtActivities = court.activities.filter(a => a.date === dateString);
+          
+          return (
+            <div key={court.id} className="bg-white rounded-xl shadow p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-medium">
+                  {court.name} #{court.number}
+                </h3>
+                <span 
+                  className={cn(
+                    "w-3 h-3 rounded-full",
+                    court.type.includes("clay") ? "bg-ath-red-clay" : 
+                    court.type.includes("hard") ? "bg-ath-black" : 
+                    court.type.includes("padel") ? "bg-green-500" :
+                    court.type.includes("pickle") ? "bg-blue-500" : "bg-purple-500"
+                  )}
+                ></span>
+              </div>
+              
+              {/* Scheduled People */}
+              {courtOccupants.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium mb-2">Persone</h4>
+                  <div className="grid gap-2">
+                    {courtOccupants.map((person) => (
+                      <div 
+                        key={`${person.id}-${person.timeSlot}`} 
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                      >
+                        <div className="flex items-center">
+                          <div 
+                            className="w-6 h-6 rounded-full mr-2 flex items-center justify-center text-white text-xs"
+                            style={{ 
+                              backgroundColor: person.programColor || (person.type === PERSON_TYPES.PLAYER 
+                                ? "#8B5CF6" 
+                                : "#1A1F2C"
+                              ) 
+                            }}
+                          >
+                            {person.name.substring(0, 2)}
+                          </div>
+                          <span className="text-sm">{person.name}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {person.timeSlot} {person.endTimeSlot && `- ${person.endTimeSlot}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Scheduled Activities */}
+              {courtActivities.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Attività</h4>
+                  <div className="grid gap-2">
+                    {courtActivities.map((activity) => (
+                      <div 
+                        key={`${activity.id}-${activity.startTime}`} 
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                      >
+                        <span className="text-sm">{activity.name}</span>
+                        <div className="text-xs text-gray-500">
+                          {activity.startTime} {activity.endTimeSlot && `- ${activity.endTimeSlot}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {courtOccupants.length === 0 && courtActivities.length === 0 && (
+                <div className="text-sm text-gray-500 italic">Nessuna assegnazione per questo campo</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="mx-auto py-4 relative h-screen flex flex-col overflow-hidden">
         <div className="px-4 sticky top-0 z-50 bg-white pb-4">
-          <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            Court Vision
+            {sportFilter && ` - ${sportFilter.charAt(0).toUpperCase() + sportFilter.slice(1)}`}
+            {isLayoutView && " - Layout View"}
+          </h1>
           
           <div className={`transition-all duration-300 ${showFloatingPanel ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}>
             <div className="bg-white rounded-xl shadow-md p-4 mb-6">
@@ -805,12 +981,34 @@ export default function CourtVision() {
                     </span>
                   </button>
                   <SendScheduleDialog 
-                    courts={courts}
+                    courts={filteredCourts}
                     selectedDate={selectedDate}
-                    playersList={playersList}
-                    coachesList={coachesList}
+                    playersList={filteredPlayersList}
+                    coachesList={filteredCoachesList}
                     onCheckUnassigned={checkUnassignedPeople}
                   />
+                  {!isLayoutView && (
+                    <button 
+                      className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
+                      onClick={() => navigate("/court-vision/layout")}
+                    >
+                      <span className="flex items-center justify-center">
+                        <Layers className="h-4 w-4 mr-1" />
+                        Campo View
+                      </span>
+                    </button>
+                  )}
+                  {isLayoutView && (
+                    <button 
+                      className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
+                      onClick={() => navigate("/court-vision")}
+                    >
+                      <span className="flex items-center justify-center">
+                        <Layers className="h-4 w-4 mr-1" />
+                        Schedule View
+                      </span>
+                    </button>
+                  )}
                   <button
                     className="ml-2 bg-gray-200 hover:bg-gray-300 p-2 rounded-md"
                     onClick={() => setShowFloatingPanel(!showFloatingPanel)}
@@ -821,7 +1019,7 @@ export default function CourtVision() {
                 </div>
               </div>
               
-              {showFloatingPanel && (
+              {showFloatingPanel && !isLayoutView && (
                 <>
                   <div className="mb-4">
                     <div className="flex flex-wrap items-center gap-4">
@@ -837,6 +1035,14 @@ export default function CourtVision() {
                       <div className="flex items-center gap-1">
                         <span className="w-4 h-4 bg-green-500 rounded-full"></span>
                         <span className="text-sm">Padel</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-blue-500 rounded-full"></span>
+                        <span className="text-sm">Pickleball</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-purple-500 rounded-full"></span>
+                        <span className="text-sm">Touch Tennis</span>
                       </div>
                     </div>
                   </div>
@@ -875,31 +1081,35 @@ export default function CourtVision() {
         <div className="flex flex-1 overflow-hidden">
           {/* Courts grid */}
           <div className="flex-1 overflow-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courts.map((court) => (
-                <Court 
-                  key={court.id} 
-                  court={court} 
-                  timeSlots={timeSlots}
-                  onDrop={handleDrop}
-                  onActivityDrop={handleActivityDrop}
-                  onRemovePerson={handleRemovePerson}
-                  onRemoveActivity={handleRemoveActivity}
-                  onAssignPerson={handleAssignPerson}
-                  onAssignActivity={handleAssignActivity}
-                  people={people}
-                  activities={activities}
-                  programs={programs}
-                />
-              ))}
-            </div>
+            {isLayoutView ? (
+              <CourtLayoutView />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredCourts.map((court) => (
+                  <Court 
+                    key={court.id} 
+                    court={court} 
+                    timeSlots={timeSlots}
+                    onDrop={handleDrop}
+                    onActivityDrop={handleActivityDrop}
+                    onRemovePerson={handleRemovePerson}
+                    onRemoveActivity={handleRemoveActivity}
+                    onAssignPerson={handleAssignPerson}
+                    onAssignActivity={handleAssignActivity}
+                    people={filteredPeople}
+                    activities={filteredActivities}
+                    programs={programs}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           
-          {/* Side panels */}
+          {/* Side panels - always visible */}
           <div className="w-80 bg-gray-50 p-4 flex flex-col gap-4 overflow-auto border-l border-gray-200">
             <AssignmentsDashboard 
-              courts={courts}
-              people={people}
+              courts={filteredCourts}
+              people={filteredPeople}
               programs={programs}
               onChangeTimeSlot={handleChangePersonTimeSlot}
               onChangeCourt={handleChangePersonCourt}
@@ -907,14 +1117,14 @@ export default function CourtVision() {
             />
             
             <AvailablePeople
-              people={people}
+              people={filteredPeople}
               programs={programs}
               onAddPerson={handleAddPerson}
               onRemovePerson={handleRemovePerson}
             />
             
             <AvailableActivities 
-              activities={activities}
+              activities={filteredActivities}
               onAddActivity={handleAddActivity}
               onRemoveActivity={handleRemoveActivity}
             />

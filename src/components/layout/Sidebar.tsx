@@ -12,6 +12,13 @@ interface NavItemProps {
   isCollapsed: boolean;
 }
 
+interface SubNavItemProps {
+  to: string;
+  label: string;
+  isCollapsed: boolean;
+  sportType?: string;
+}
+
 const NavItem = ({ to, icon: Icon, label, isCollapsed }: NavItemProps) => {
   const location = useLocation();
   const isActive = location.pathname === to;
@@ -33,16 +40,51 @@ const NavItem = ({ to, icon: Icon, label, isCollapsed }: NavItemProps) => {
   );
 };
 
+const SubNavItem = ({ to, label, isCollapsed, sportType }: SubNavItemProps) => {
+  const location = useLocation();
+  const isActive = location.pathname === to && 
+                   (sportType ? location.search === `?sport=${sportType}` : true);
+  
+  return (
+    <NavLink
+      to={sportType ? `${to}?sport=${sportType}` : to}
+      className={({ isActive }) => cn(
+        "flex items-center rounded-md px-3 py-2 text-sm transition-all duration-300 ml-8",
+        isActive 
+          ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
+          : "text-gray-600 hover:bg-gray-100",
+        isCollapsed ? "justify-center ml-0" : ""
+      )}
+    >
+      {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
+    </NavLink>
+  );
+};
+
 export default function Sidebar() {
   const isMobile = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const location = useLocation();
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Calendario", href: "/calendar", icon: Calendar },
     { name: "Campi", href: "/courts", icon: Layers },
-    { name: "Visione Campo", href: "/court-vision", icon: View },
+    { 
+      name: "Visione Campo", 
+      href: "/court-vision", 
+      icon: View,
+      submenu: [
+        { name: "Tutti gli Sport", href: "/court-vision", sportType: "" },
+        { name: "Tennis", href: "/court-vision", sportType: "tennis" },
+        { name: "Padel", href: "/court-vision", sportType: "padel" },
+        { name: "Pickleball", href: "/court-vision", sportType: "pickleball" },
+        { name: "Touch Tennis", href: "/court-vision", sportType: "touchtennis" },
+        { name: "Layout View", href: "/court-vision/layout", sportType: "" }
+      ]
+    },
     { name: "Staff", href: "/staff", icon: Users },
     { name: "Giocatori", href: "/players", icon: UserCircle },
     { name: "Programmi", href: "/programs", icon: BookOpen },
@@ -76,6 +118,20 @@ export default function Sidebar() {
     const event = new CustomEvent('sidebarStateChange', { detail: { isCollapsed } });
     window.dispatchEvent(event);
   }, [isCollapsed]);
+
+  // Toggle submenu expansion
+  const toggleSubmenu = (path: string) => {
+    if (expandedMenus.includes(path)) {
+      setExpandedMenus(expandedMenus.filter(menu => menu !== path));
+    } else {
+      setExpandedMenus([...expandedMenus, path]);
+    }
+  };
+
+  // Check if submenu is expanded
+  const isSubmenuExpanded = (path: string) => {
+    return expandedMenus.includes(path) || location.pathname.startsWith(path);
+  };
 
   if (!mounted) return null; // Prevent hydration mismatch
   
@@ -115,7 +171,65 @@ export default function Sidebar() {
       
       <nav className="space-y-1 flex-1 overflow-y-auto">
         {navigation.map((item) => (
-          <NavItem key={item.href} to={item.href} icon={item.icon} label={item.name} isCollapsed={isCollapsed} />
+          <div key={item.href}>
+            {item.submenu ? (
+              <>
+                <div 
+                  className={cn(
+                    "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm cursor-pointer transition-all duration-300",
+                    location.pathname.startsWith(item.href)
+                      ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
+                      : "text-gray-600 hover:bg-gray-100",
+                    isCollapsed ? "justify-center" : ""
+                  )}
+                  onClick={() => !isCollapsed && toggleSubmenu(item.href)}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className={cn("h-5 w-5", location.pathname.startsWith(item.href) ? "text-ath-red-clay" : "text-gray-500")} />
+                    {!isCollapsed && <span className="whitespace-nowrap">{item.name}</span>}
+                  </div>
+                  {!isCollapsed && (
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className={cn("transition-transform", isSubmenuExpanded(item.href) ? "rotate-180" : "")}
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  )}
+                </div>
+                
+                {/* Submenu items */}
+                {(isSubmenuExpanded(item.href) || isCollapsed) && (
+                  <div className={cn("mt-1 space-y-1", isCollapsed ? "text-center" : "")}>
+                    {item.submenu.map((subItem) => (
+                      <SubNavItem 
+                        key={`${subItem.href}-${subItem.sportType}`} 
+                        to={subItem.href} 
+                        label={subItem.name} 
+                        isCollapsed={isCollapsed}
+                        sportType={subItem.sportType} 
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <NavItem 
+                to={item.href}
+                icon={item.icon}
+                label={item.name}
+                isCollapsed={isCollapsed}
+              />
+            )}
+          </div>
         ))}
       </nav>
       
