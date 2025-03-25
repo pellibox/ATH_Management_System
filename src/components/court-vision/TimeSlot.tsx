@@ -129,7 +129,7 @@ export const TimeSlot = memo(function TimeSlot({
         
         // Update with the new time slot
         onDrop(courtId, time, personItem);
-      } else if (item.type && item.type.toString().startsWith("activity")) {
+      } else if (item.type && (item.type === "activity" || item.type.toString().startsWith("activity"))) {
         // Handle activity drop
         const activityItem = item as ActivityData;
         

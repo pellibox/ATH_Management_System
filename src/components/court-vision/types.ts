@@ -1,4 +1,3 @@
-
 export interface PersonData {
   id: string;
   name: string;
@@ -11,6 +10,7 @@ export interface PersonData {
   endTimeSlot?: string; // End time slot for spanning multiple slots
   programId?: string; // Program assignment
   programColor?: string; // Color for visual representation
+  sourceTimeSlot?: string; // Source time slot for drag and drop operations
 }
 
 export interface ActivityData {
@@ -23,6 +23,7 @@ export interface ActivityData {
   date?: string; // ISO date string
   durationHours?: number; // Duration in hours
   endTimeSlot?: string; // End time slot for spanning multiple slots
+  sourceTimeSlot?: string; // Source time slot for drag and drop operations
 }
 
 export interface CourtProps {
