@@ -206,6 +206,7 @@ export function Court({
 
   // Calculate court height based on sidebar state
   const courtHeight = isSidebarCollapsed ? "h-[675px]" : "h-96 sm:h-[450px]";
+  const courtWidth = isSidebarCollapsed ? "w-[400px]" : "w-full";
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -215,7 +216,7 @@ export function Court({
           ref={drop}
           className={`relative rounded-lg border-2 ${getCourtStyles()} ${
             isOver ? "ring-2 ring-ath-red-clay" : ""
-          } transition-all ${courtHeight} flex flex-col cursor-pointer animate-fade-in`}
+          } transition-all ${courtHeight} ${courtWidth} flex flex-col cursor-pointer animate-fade-in mx-auto`}
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
             <span className="text-xs font-medium bg-ath-black/70 text-white px-2 py-1 rounded">

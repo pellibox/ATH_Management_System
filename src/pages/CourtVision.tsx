@@ -701,157 +701,169 @@ export default function CourtVision() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="container mx-auto py-4 relative">
-        <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
-        
-        <div className={`transition-all duration-300 ${showFloatingPanel ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}>
-          <div className="bg-white rounded-xl shadow-md p-4 mb-6 sticky top-4 z-30">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex-grow max-w-md">
-                <DateSelector 
-                  selectedDate={selectedDate} 
-                  onDateChange={setSelectedDate} 
-                />
-              </div>
-              <div className="flex space-x-2">
-                <button 
-                  className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
-                  onClick={copyToNextDay}
-                >
-                  <span className="flex items-center justify-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    Copia Giorno
-                  </span>
-                </button>
-                <button 
-                  className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
-                  onClick={copyToWeek}
-                >
-                  <span className="flex items-center justify-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    Copia Settimana
-                  </span>
-                </button>
-                <SendScheduleDialog 
-                  courts={courts}
-                  selectedDate={selectedDate}
-                  playersList={playersList}
-                  coachesList={coachesList}
-                />
-                <button
-                  className="ml-2 bg-gray-200 hover:bg-gray-300 p-2 rounded-md"
-                  onClick={() => setShowFloatingPanel(!showFloatingPanel)}
-                  title={showFloatingPanel ? "Minimize Panel" : "Expand Panel"}
-                >
-                  {showFloatingPanel ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
-                </button>
-              </div>
-            </div>
-            
-            {showFloatingPanel && (
-              <>
-                <div className="mb-4">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-sm font-medium">Court Types:</span>
-                    <div className="flex items-center gap-1">
-                      <span className="w-4 h-4 bg-ath-red-clay rounded-full"></span>
-                      <span className="text-sm">Tennis (Clay)</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-4 h-4 bg-ath-black rounded-full"></span>
-                      <span className="text-sm">Tennis (Hard)</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-4 h-4 bg-green-500 rounded-full"></span>
-                      <span className="text-sm">Padel</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <Tabs defaultValue="courts" className="w-full">
-                  <TabsList className="w-full justify-start mb-4 bg-gray-100 p-1 rounded-md">
-                    <TabsTrigger value="courts" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                      <Layers className="h-4 w-4 mr-1" />
-                      Courts
-                    </TabsTrigger>
-                    <TabsTrigger value="people" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                      <Users className="h-4 w-4 mr-1" />
-                      People
-                    </TabsTrigger>
-                    <TabsTrigger value="activities" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                      <Film className="h-4 w-4 mr-1" />
-                      Activities
-                    </TabsTrigger>
-                    <TabsTrigger value="time-slots" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                      <Clock className="h-4 w-4 mr-1" />
-                      Time Slots
-                    </TabsTrigger>
-                    <TabsTrigger value="templates" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                      <CalendarIcon className="h-4 w-4 mr-1" />
-                      Templates
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <div className="flex justify-between items-center mb-4">
-                    <TabsContent value="courts" className="mt-0 w-full">
-                      <CourtManagement 
-                        courts={courts}
-                        onAddCourt={handleAddCourt}
-                        onRemoveCourt={handleRemoveCourt}
-                        onRenameCourt={handleRenameCourt}
-                        onChangeCourtType={handleChangeCourtType}
-                        onChangeCourtNumber={handleChangeCourtNumber}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="people" className="mt-0 w-full">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <ProgramManagement 
-                          programs={programs}
-                          onAddProgram={handleAddProgram}
-                          onRemoveProgram={handleRemoveProgram}
-                        />
-                        <PeopleManagement 
-                          playersList={playersList} 
-                          coachesList={coachesList}
-                          programs={programs}
-                          onAddPerson={handleAddPerson}
-                          onRemovePerson={(personId) => handleRemovePerson(personId)}
-                          onAddToDragArea={handleAddToDragArea}
-                          onAssignProgram={handleAssignProgram}
-                        />
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="activities" className="mt-0 w-full">
-                      <AvailableActivities 
-                        activities={activities}
-                        onAddActivity={handleAddActivity}
-                        onRemoveActivity={(activityId) => handleRemoveActivity(activityId)}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="time-slots" className="mt-0 w-full">
-                      <TimeSlotSelector 
-                        timeSlots={timeSlots}
-                        onAddTimeSlot={handleAddTimeSlot}
-                        onRemoveTimeSlot={handleRemoveTimeSlot}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="templates" className="mt-0 w-full">
-                      <ScheduleTemplates 
-                        templates={templates}
-                        onSaveTemplate={saveAsTemplate}
-                        onApplyTemplate={applyTemplate}
-                      />
-                    </TabsContent>
-                  </div>
-                </Tabs>
-              </>
-            )}
-          </div>
+      <div className="mx-auto py-4 relative h-full flex flex-col overflow-hidden">
+        <div className="px-4 sticky top-0 z-50 bg-white pb-4">
+          <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
           
+          <div className={`transition-all duration-300 ${showFloatingPanel ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}>
+            <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex-grow max-w-md">
+                  <DateSelector 
+                    selectedDate={selectedDate} 
+                    onDateChange={setSelectedDate} 
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <button 
+                    className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
+                    onClick={copyToNextDay}
+                  >
+                    <span className="flex items-center justify-center">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      Copia Giorno
+                    </span>
+                  </button>
+                  <button 
+                    className="flex-1 bg-ath-black text-white py-2 px-3 rounded hover:bg-ath-black-light transition-colors text-sm"
+                    onClick={copyToWeek}
+                  >
+                    <span className="flex items-center justify-center">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      Copia Settimana
+                    </span>
+                  </button>
+                  <SendScheduleDialog 
+                    courts={courts}
+                    selectedDate={selectedDate}
+                    playersList={playersList}
+                    coachesList={coachesList}
+                  />
+                  <button
+                    className="ml-2 bg-gray-200 hover:bg-gray-300 p-2 rounded-md"
+                    onClick={() => setShowFloatingPanel(!showFloatingPanel)}
+                    title={showFloatingPanel ? "Minimize Panel" : "Expand Panel"}
+                  >
+                    {showFloatingPanel ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+                  </button>
+                </div>
+              </div>
+              
+              {showFloatingPanel && (
+                <>
+                  <div className="mb-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <span className="text-sm font-medium">Court Types:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-ath-red-clay rounded-full"></span>
+                        <span className="text-sm">Tennis (Clay)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-ath-black rounded-full"></span>
+                        <span className="text-sm">Tennis (Hard)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-4 h-4 bg-green-500 rounded-full"></span>
+                        <span className="text-sm">Padel</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Tabs defaultValue="courts" className="w-full">
+                    <TabsList className="w-full justify-start mb-4 bg-gray-100 p-1 rounded-md">
+                      <TabsTrigger value="courts" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Layers className="h-4 w-4 mr-1" />
+                        Courts
+                      </TabsTrigger>
+                      <TabsTrigger value="people" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Users className="h-4 w-4 mr-1" />
+                        People
+                      </TabsTrigger>
+                      <TabsTrigger value="activities" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Film className="h-4 w-4 mr-1" />
+                        Activities
+                      </TabsTrigger>
+                      <TabsTrigger value="time-slots" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <Clock className="h-4 w-4 mr-1" />
+                        Time Slots
+                      </TabsTrigger>
+                      <TabsTrigger value="templates" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
+                        <CalendarIcon className="h-4 w-4 mr-1" />
+                        Templates
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <div className="flex justify-between items-center mb-4">
+                      <TabsContent value="courts" className="mt-0 w-full">
+                        <details className="w-full bg-gray-50 p-2 rounded-lg">
+                          <summary className="cursor-pointer font-medium flex items-center">
+                            <Layers className="h-4 w-4 mr-2" />
+                            Gestione Campi
+                          </summary>
+                          <div className="pt-2">
+                            <CourtManagement 
+                              courts={courts}
+                              onAddCourt={handleAddCourt}
+                              onRemoveCourt={handleRemoveCourt}
+                              onRenameCourt={handleRenameCourt}
+                              onChangeCourtType={handleChangeCourtType}
+                              onChangeCourtNumber={handleChangeCourtNumber}
+                            />
+                          </div>
+                        </details>
+                      </TabsContent>
+                      
+                      <TabsContent value="people" className="mt-0 w-full">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <ProgramManagement 
+                            programs={programs}
+                            onAddProgram={handleAddProgram}
+                            onRemoveProgram={handleRemoveProgram}
+                          />
+                          <PeopleManagement 
+                            playersList={playersList} 
+                            coachesList={coachesList}
+                            programs={programs}
+                            onAddPerson={handleAddPerson}
+                            onRemovePerson={(personId) => handleRemovePerson(personId)}
+                            onAddToDragArea={handleAddToDragArea}
+                            onAssignProgram={handleAssignProgram}
+                          />
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="activities" className="mt-0 w-full">
+                        <AvailableActivities 
+                          activities={activities}
+                          onAddActivity={handleAddActivity}
+                          onRemoveActivity={(activityId) => handleRemoveActivity(activityId)}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="time-slots" className="mt-0 w-full">
+                        <TimeSlotSelector 
+                          timeSlots={timeSlots}
+                          onAddTimeSlot={handleAddTimeSlot}
+                          onRemoveTimeSlot={handleRemoveTimeSlot}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="templates" className="mt-0 w-full">
+                        <ScheduleTemplates 
+                          templates={templates}
+                          onSaveTemplate={saveAsTemplate}
+                          onApplyTemplate={applyTemplate}
+                        />
+                      </TabsContent>
+                    </div>
+                  </Tabs>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+          
+        <div className="flex-1 overflow-y-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
             <CourtAssignmentDialog 
               courts={courts}
@@ -873,7 +885,7 @@ export default function CourtVision() {
                   {people.map((person) => (
                     <div 
                       key={person.id}
-                      className={`flex items-center gap-2 p-2 rounded-md`}
+                      className={`flex items-center gap-2 p-2 rounded-md cursor-move`}
                       style={{ backgroundColor: person.programColor ? `${person.programColor}20` : (
                         person.type === PERSON_TYPES.PLAYER ? "rgba(139, 92, 246, 0.1)" : "rgba(26, 31, 44, 0.1)"
                       )}}
@@ -910,7 +922,7 @@ export default function CourtVision() {
                   {activities.map((activity) => (
                     <div 
                       key={activity.id}
-                      className={`p-2 rounded-md ${
+                      className={`p-2 rounded-md cursor-move ${
                         activity.type === ACTIVITY_TYPES.MATCH
                           ? "bg-ath-black-light/10 text-ath-black-light"
                           : activity.type === ACTIVITY_TYPES.TRAINING
@@ -929,7 +941,7 @@ export default function CourtVision() {
             )}
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex flex-wrap gap-4 justify-center">
             {courts.map((court) => (
               <Court
                 key={court.id}
@@ -953,3 +965,4 @@ export default function CourtVision() {
     </DndProvider>
   );
 }
+

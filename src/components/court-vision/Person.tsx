@@ -21,10 +21,6 @@ export function Person({ person, onRemove }: PersonProps) {
     }),
   }));
 
-  // Determine background color based on program or default by person type
-  const bgColor = person.programColor || 
-    (person.type === PERSON_TYPES.PLAYER ? "bg-ath-blue-light" : "bg-orange-100");
-
   return (
     <div
       ref={drag}
