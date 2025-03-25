@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Plus, Filter, Layers, Eye } from "lucide-react";
 import CourtCard from "@/components/ui/CourtCard";
@@ -9,19 +8,34 @@ import { useToast } from "@/hooks/use-toast";
 // Shared court state management (in a real app, this would be in a global state store)
 import { CourtProps } from "@/components/court-vision/types";
 
+// Type definition for CourtCard props
+type CourtCardType = {
+  id: number;
+  name: string;
+  type: "clay" | "grass" | "hard" | "central";
+  indoor: boolean;
+  available: boolean;
+  nextAvailable?: string;
+  currentSession?: {
+    title: string;
+    instructor: string;
+    endTime: string;
+  };
+};
+
 // Mock data
-const mockCourts = [
+const mockCourts: CourtCardType[] = [
   {
     id: 1,
     name: "Court 1",
-    type: "clay" as const,
+    type: "clay",
     indoor: false,
     available: true,
   },
   {
     id: 2,
     name: "Court 2",
-    type: "grass" as const,
+    type: "grass",
     indoor: false,
     available: false,
     nextAvailable: "14:30",
@@ -34,14 +48,14 @@ const mockCourts = [
   {
     id: 3,
     name: "Court 3",
-    type: "hard" as const,
+    type: "hard",
     indoor: true,
     available: true,
   },
   {
     id: 4,
     name: "Court 4",
-    type: "clay" as const,
+    type: "clay",
     indoor: false,
     available: false,
     nextAvailable: "16:00",
@@ -54,7 +68,7 @@ const mockCourts = [
   {
     id: 5,
     name: "Central Court",
-    type: "central" as const,
+    type: "central",
     indoor: true,
     available: false,
     nextAvailable: "18:00",
@@ -67,21 +81,21 @@ const mockCourts = [
   {
     id: 6,
     name: "Court 6",
-    type: "hard" as const,
+    type: "hard",
     indoor: true,
     available: true,
   },
   {
     id: 7,
     name: "Court 7",
-    type: "grass" as const,
+    type: "grass",
     indoor: false,
     available: true,
   },
   {
     id: 8,
     name: "Court 8",
-    type: "clay" as const,
+    type: "clay",
     indoor: false,
     available: false,
     nextAvailable: "13:00",
@@ -98,10 +112,10 @@ export default function Courts() {
   const [filter, setFilter] = useState<string>("all");
   const [showAddCourtModal, setShowAddCourtModal] = useState(false);
   const [newCourtName, setNewCourtName] = useState("Court");
-  const [newCourtType, setNewCourtType] = useState("clay");
+  const [newCourtType, setNewCourtType] = useState<"clay" | "grass" | "hard" | "central">("clay");
   const [newCourtIndoor, setNewCourtIndoor] = useState(false);
   
-  const [courts, setCourts] = useState(mockCourts);
+  const [courts, setCourts] = useState<CourtCardType[]>(mockCourts);
   
   const filteredCourts = filter === "all" 
     ? courts 
@@ -112,10 +126,10 @@ export default function Courts() {
         : courts.filter(court => court.type === filter);
   
   const handleAddCourt = () => {
-    const newCourt = {
+    const newCourt: CourtCardType = {
       id: courts.length + 1,
       name: newCourtName,
-      type: newCourtType as "clay" | "grass" | "hard" | "central",
+      type: newCourtType,
       indoor: newCourtIndoor,
       available: true,
     };
