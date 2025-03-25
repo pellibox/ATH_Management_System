@@ -8,6 +8,85 @@ import { PersonData } from "./types";
 import { PERSON_TYPES } from "./constants";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useDrag } from "react-dnd";
+
+// Create a draggable person component for the floating menu
+function DraggablePerson({ person, onAddToDragArea }: { person: PersonData, onAddToDragArea: (person: PersonData) => void }) {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: person.type,
+    item: person,
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div className="flex items-center justify-between p-2 mb-1 rounded bg-gray-50 hover:bg-gray-100">
+      <div className="flex items-center">
+        <div 
+          ref={drag}
+          className={`w-6 h-6 rounded-full cursor-grab ${isDragging ? "opacity-50" : ""} ${
+            person.type === PERSON_TYPES.PLAYER 
+              ? "bg-ath-red-clay-dark text-white" 
+              : "bg-ath-black text-white"
+          } flex items-center justify-center text-xs font-medium mr-2`}
+        >
+          {person.name.substring(0, 2)}
+        </div>
+        <span className="text-sm">{person.name}</span>
+      </div>
+      <div className="flex gap-1">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0"
+            >
+              <Calendar className="h-3 w-3" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <DialogTitle>Send Schedule to {person.name}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Schedule Period</h3>
+                <div className="flex gap-2">
+                  <Button size="sm">Day</Button>
+                  <Button size="sm">Week</Button>
+                  <Button size="sm">Month</Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Contact Methods</h3>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Phone className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-7 w-7 p-0"
+          onClick={() => onAddToDragArea(person)}
+        >
+          <UserPlus className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export interface PeopleManagementProps {
   playersList: PersonData[];
@@ -97,132 +176,13 @@ export function PeopleManagement({
         
         <TabsContent value="players" className="max-h-[180px] overflow-y-auto mt-0">
           {playersList.map((player) => (
-            <div 
-              key={player.id}
-              className="flex items-center justify-between p-2 mb-1 rounded bg-gray-50 hover:bg-gray-100"
-            >
-              <div className="flex items-center">
-                <div className="w-6 h-6 rounded-full bg-ath-red-clay-dark text-white flex items-center justify-center text-xs font-medium mr-2">
-                  {player.name.substring(0, 2)}
-                </div>
-                <span className="text-sm">{player.name}</span>
-              </div>
-              <div className="flex gap-1">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0"
-                    >
-                      <Calendar className="h-3 w-3" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[450px]">
-                    <DialogHeader>
-                      <DialogTitle>Send Schedule to {player.name}</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-medium">Schedule Period</h3>
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSendSchedule(player)} size="sm">Day</Button>
-                          <Button onClick={() => handleSendSchedule(player)} size="sm">Week</Button>
-                          <Button onClick={() => handleSendSchedule(player)} size="sm">Month</Button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-medium">Contact Methods</h3>
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSendSchedule(player)} variant="outline" size="sm" className="w-full">
-                            <Phone className="h-4 w-4 mr-2" />
-                            WhatsApp
-                          </Button>
-                          <Button onClick={() => handleSendEmail(player)} variant="outline" size="sm" className="w-full">
-                            <Mail className="h-4 w-4 mr-2" />
-                            Email
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 w-7 p-0"
-                  onClick={() => handleAddToDragArea(player)}
-                >
-                  <UserPlus className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+            <DraggablePerson key={player.id} person={player} onAddToDragArea={handleAddToDragArea} />
           ))}
         </TabsContent>
         
         <TabsContent value="coaches" className="max-h-[180px] overflow-y-auto mt-0">
           {coachesList.map((coach) => (
-            <div 
-              key={coach.id}
-              className="flex items-center justify-between p-2 mb-1 rounded bg-gray-50 hover:bg-gray-100"
-            >
-              <div className="flex items-center">
-                <div className="w-6 h-6 rounded-full bg-ath-black text-white flex items-center justify-center text-xs font-medium mr-2">
-                  {coach.name.substring(0, 2)}
-                </div>
-                <span className="text-sm">{coach.name}</span>
-              </div>
-              <div className="flex gap-1">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0"
-                    >
-                      <Calendar className="h-3 w-3" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[450px]">
-                    <DialogHeader>
-                      <DialogTitle>Coach: {coach.name}</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-medium">Set Objectives</h3>
-                        <div className="flex gap-2">
-                          <Button size="sm">Daily</Button>
-                          <Button size="sm">Weekly</Button>
-                          <Button size="sm">Monthly</Button>
-                          <Button size="sm">Season</Button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-medium">Notify Players</h3>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Phone className="h-4 w-4 mr-2" />
-                            WhatsApp
-                          </Button>
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Mail className="h-4 w-4 mr-2" />
-                            Email
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 w-7 p-0"
-                  onClick={() => handleAddToDragArea(coach)}
-                >
-                  <UserPlus className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+            <DraggablePerson key={coach.id} person={coach} onAddToDragArea={handleAddToDragArea} />
           ))}
         </TabsContent>
       </Tabs>

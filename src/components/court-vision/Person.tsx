@@ -12,7 +12,7 @@ interface PersonProps {
 export function Person({ person, onRemove }: PersonProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
-    item: { id: person.id, type: person.type, name: person.name },
+    item: person,  // Pass the entire person object instead of just parts
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),

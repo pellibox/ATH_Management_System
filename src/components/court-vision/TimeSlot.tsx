@@ -40,9 +40,9 @@ export const TimeSlot = memo(function TimeSlot({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
     drop: (item: any) => {
       if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
-        onDrop(courtId, time, item as PersonData);
+        onDrop(courtId, time, item);
       } else {
-        onActivityDrop(courtId, time, item as ActivityData);
+        onActivityDrop(courtId, time, item);
       }
     },
     collect: (monitor) => ({
@@ -125,4 +125,3 @@ export const TimeSlot = memo(function TimeSlot({
     </div>
   );
 });
-
