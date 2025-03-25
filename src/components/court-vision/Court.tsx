@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -69,9 +68,8 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
     return `${type[0].charAt(0).toUpperCase() + type[0].slice(1)}${surface}`;
   };
 
-  // Show a limited number of occupants on the main court view
-  const visibleOccupants = court.occupants.slice(0, 3);
-  const hasMoreOccupants = court.occupants.length > 3;
+  const visibleOccupants = court.occupants.slice(0, 6);
+  const hasMoreOccupants = court.occupants.length > 6;
   
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -116,15 +114,15 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
             </div>
           )}
 
-          {visibleOccupants.map((person) => (
+          {visibleOccupants.map((person, index) => (
             <div
               key={person.id}
               className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
                 person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
               }`}
               style={{
-                left: `${(person.position?.x || 0.5) * 100}%`,
-                top: `${(person.position?.y || 0.5) * 100}%`,
+                left: `${((index % 3) * 0.5 + 0.25) * 100}%`,
+                top: `${(Math.floor(index / 3) * 0.5 + 0.25) * 100}%`,
               }}
               title={person.name}
             >
@@ -134,7 +132,7 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
 
           {hasMoreOccupants && (
             <div className="absolute right-3 bottom-3 z-10 bg-ath-black text-white text-xs px-2 py-1 rounded-full">
-              +{court.occupants.length - 3}
+              +{court.occupants.length - 6}
             </div>
           )}
 
