@@ -1,10 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { Bell, User, Search, Mail, Sun, Moon, Menu } from 'lucide-react';
+import { Bell, User, Search, Mail, Sun, Moon, Menu, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export default function Header() {
+interface HeaderProps {
+  toggleSidebar: () => void;
+  sidebarCollapsed: boolean;
+}
+
+export default function Header({ toggleSidebar, sidebarCollapsed }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [showSearch, setShowSearch] = useState(false);
@@ -40,15 +45,25 @@ export default function Header() {
         : "bg-transparent"
     )}>
       <div className="flex h-14 md:h-16 items-center justify-between px-3 md:px-6">
-        {isMobile ? (
-          <button 
-            className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
-            onClick={() => setShowSearch(!showSearch)}
-          >
-            <Search className="h-5 w-5" />
-          </button>
-        ) : (
-          <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {!isMobile && (
+            <button
+              onClick={toggleSidebar}
+              className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-full transition-colors hidden md:flex"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {sidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+            </button>
+          )}
+          
+          {isMobile ? (
+            <button 
+              className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+              onClick={() => setShowSearch(!showSearch)}
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          ) : (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
@@ -57,8 +72,8 @@ export default function Header() {
                 className="h-9 w-48 md:w-64 rounded-full bg-gray-100 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ath-blue/20"
               />
             </div>
-          </div>
-        )}
+          )}
+        </div>
         
         {showSearch && isMobile && (
           <div className="absolute top-14 left-0 right-0 bg-white p-3 shadow-md z-30">

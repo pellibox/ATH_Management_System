@@ -18,6 +18,7 @@ import Reports from "./pages/Reports";
 import Tournaments from "./pages/Tournaments";
 import Videos from "./pages/Videos";
 import Integrations from "./pages/Integrations";
+import Activities from "./pages/Activities";
 import "./App.css";
 import "./index.css";
 
@@ -45,6 +46,7 @@ function App() {
                 <Route path="tournaments" element={<Tournaments />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="videos" element={<Videos />} />
+                <Route path="activities" element={<Activities />} />
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />

@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
-import { Save, User, Building, LinkIcon, Bell, Shield, Server, Upload, Download, FileText, AlertCircle, CalendarIcon } from "lucide-react";
-import { read, utils, writeFile } from 'xlsx';
+
+import { useState } from "react";
+import { Save, User, Building, LinkIcon, Bell, Shield, Server, CalendarIcon, Layers, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CourtsTab from "@/components/settings/CourtsTab";
+import TimeSlotsTab from "@/components/settings/TimeSlotsTab";
 
 interface SettingsTabProps {
   icon: React.ElementType;
@@ -28,107 +28,9 @@ const SettingsTab = ({ icon: Icon, title, id, isActive, onClick }: SettingsTabPr
   </button>
 );
 
-interface ImportedPerson {
-  name: string;
-  type: string;
-  programId?: string;
-  email?: string;
-  phone?: string;
-  notes?: string;
-  valid: boolean;
-  error?: string;
-}
-
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("general");
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importedData, setImportedData] = useState<ImportedPerson[]>([]);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [importStep, setImportStep] = useState<'upload' | 'preview' | 'complete'>('upload');
-  
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = new Uint8Array(event.target?.result as ArrayBuffer);
-        const workbook = read(data, { type: 'array' });
-        
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        
-        const jsonData = utils.sheet_to_json(worksheet);
-        
-        const processedData: ImportedPerson[] = jsonData.map((row: any, index) => {
-          const person: ImportedPerson = {
-            name: row.name || row.Name || row.Nome || '',
-            type: (row.type || row.Type || row.Tipo || '').toLowerCase() === 'coach' ? 'coach' : 'player',
-            email: row.email || row.Email || '',
-            phone: row.phone || row.Phone || row.Telefono || '',
-            programId: row.programId || row.ProgramId || row.program || row.Program || '',
-            notes: row.notes || row.Notes || row.Note || '',
-            valid: true
-          };
-          
-          if (!person.name) {
-            person.valid = false;
-            person.error = 'Nome mancante';
-          }
-          
-          return person;
-        });
-        
-        setImportedData(processedData);
-        setImportStep('preview');
-        
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } catch (error) {
-        console.error('Error processing file:', error);
-        toast({
-          title: "Errore di Importazione",
-          description: "Si è verificato un errore durante l'elaborazione del file. Assicurati che sia un file Excel valido.",
-          variant: "destructive",
-        });
-      }
-    };
-    
-    reader.readAsArrayBuffer(file);
-  };
-  
-  const handleImport = () => {
-    const validPeople = importedData.filter(person => person.valid);
-    
-    toast({
-      title: "Importazione Completata",
-      description: `${validPeople.length} persone importate con successo.`,
-    });
-    
-    setImportStep('complete');
-  };
-  
-  const resetImport = () => {
-    setImportedData([]);
-    setImportStep('upload');
-    setIsImportDialogOpen(false);
-  };
-  
-  const downloadSampleTemplate = () => {
-    const sampleData = [
-      { name: "Mario Rossi", type: "player", email: "mario@example.com", phone: "+39 123456789", programId: "perf3", notes: "Note di esempio" },
-      { name: "Luigi Bianchi", type: "coach", email: "luigi@example.com", phone: "+39 987654321", programId: "", notes: "Allenatore senior" }
-    ];
-    
-    const worksheet = utils.json_to_sheet(sampleData);
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, "Persone");
-    
-    writeFile(workbook, 'template_importazione_persone.xlsx');
-  };
   
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
@@ -155,11 +57,18 @@ export default function Settings() {
               onClick={() => setActiveTab("account")}
             />
             <SettingsTab
-              icon={FileText}
-              title="Importazioni"
-              id="imports"
-              isActive={activeTab === "imports"}
-              onClick={() => setActiveTab("imports")}
+              icon={Layers}
+              title="Campi"
+              id="courts"
+              isActive={activeTab === "courts"}
+              onClick={() => setActiveTab("courts")}
+            />
+            <SettingsTab
+              icon={Clock}
+              title="Fasce Orarie"
+              id="timeslots"
+              isActive={activeTab === "timeslots"}
+              onClick={() => setActiveTab("timeslots")}
             />
             <SettingsTab
               icon={LinkIcon}
@@ -314,233 +223,9 @@ export default function Settings() {
               </div>
             )}
             
-            {activeTab === "imports" && (
-              <div className="animate-fade-in">
-                <h2 className="text-xl font-semibold mb-6">Importazione Dati</h2>
-                
-                <div className="space-y-6">
-                  <div className="bg-white p-6 border rounded-lg">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-medium flex items-center">
-                          <User className="h-5 w-5 mr-2" />
-                          Importa Persone
-                        </h3>
-                        <p className="text-gray-600 text-sm mt-1">
-                          Importa allievi e coach da un file Excel
-                        </p>
-                      </div>
-                      
-                      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button className="bg-ath-blue hover:bg-ath-blue-dark">
-                            <Upload className="h-4 w-4 mr-2" />
-                            Importa Excel
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[750px]">
-                          <DialogHeader>
-                            <DialogTitle>Importa Allievi e Coach</DialogTitle>
-                          </DialogHeader>
-                          
-                          {importStep === 'upload' && (
-                            <div className="py-6">
-                              <div className="bg-blue-50 text-blue-700 p-4 rounded-lg mb-6 flex items-start">
-                                <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                                <div>
-                                  <p className="text-sm font-medium">Per una corretta importazione:</p>
-                                  <ul className="text-sm mt-1 list-disc pl-5">
-                                    <li>Il file deve essere in formato Excel (.xlsx)</li>
-                                    <li>Deve contenere almeno le colonne: name/nome e type/tipo</li>
-                                    <li>I tipi validi sono "player" o "coach"</li>
-                                    <li>Colonne opzionali: email, phone/telefono, programId, notes/note</li>
-                                  </ul>
-                                </div>
-                              </div>
-                              
-                              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
-                                <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                                <p className="text-sm text-gray-600 mb-4">
-                                  Trascina un file Excel o fai clic per selezionarne uno
-                                </p>
-                                <input 
-                                  type="file" 
-                                  className="hidden" 
-                                  ref={fileInputRef}
-                                  accept=".xlsx, .xls" 
-                                  onChange={handleFileUpload}
-                                />
-                                <Button 
-                                  onClick={() => fileInputRef.current?.click()}
-                                  variant="outline" 
-                                  className="mx-auto"
-                                >
-                                  Seleziona File
-                                </Button>
-                              </div>
-                              
-                              <div className="flex justify-between">
-                                <Button 
-                                  variant="outline" 
-                                  onClick={downloadSampleTemplate}
-                                  className="flex items-center"
-                                >
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Scarica Template
-                                </Button>
-                                <Button 
-                                  onClick={() => setIsImportDialogOpen(false)}
-                                  variant="ghost"
-                                >
-                                  Annulla
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {importStep === 'preview' && (
-                            <div className="py-4">
-                              <div className="max-h-[400px] overflow-y-auto mb-6">
-                                <table className="w-full border-collapse">
-                                  <thead className="bg-gray-50 sticky top-0">
-                                    <tr>
-                                      <th className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                      <th className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                      <th className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                      <th className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Programma</th>
-                                      <th className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stato</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-gray-200">
-                                    {importedData.map((person, index) => (
-                                      <tr key={index} className={person.valid ? "" : "bg-red-50"}>
-                                        <td className="p-2 text-sm">{person.name || '-'}</td>
-                                        <td className="p-2 text-sm">{person.type || '-'}</td>
-                                        <td className="p-2 text-sm">{person.email || '-'}</td>
-                                        <td className="p-2 text-sm">{person.programId || '-'}</td>
-                                        <td className="p-2 text-sm">
-                                          {person.valid ? (
-                                            <span className="text-green-600 font-medium flex items-center">
-                                              <Check className="h-4 w-4 mr-1" /> Valido
-                                            </span>
-                                          ) : (
-                                            <span className="text-red-600 font-medium flex items-center">
-                                              <X className="h-4 w-4 mr-1" /> {person.error || 'Errore'}
-                                            </span>
-                                          )}
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                              
-                              <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <p className="text-sm font-medium">Riepilogo</p>
-                                    <p className="text-sm text-gray-600">
-                                      Persone trovate: {importedData.length} | 
-                                      Valide: {importedData.filter(p => p.valid).length} | 
-                                      Con errori: {importedData.filter(p => !p.valid).length}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="flex justify-end gap-3">
-                                <Button 
-                                  variant="outline" 
-                                  onClick={() => setImportStep('upload')}
-                                >
-                                  Indietro
-                                </Button>
-                                <Button 
-                                  onClick={handleImport}
-                                  disabled={importedData.filter(p => p.valid).length === 0}
-                                >
-                                  Importa {importedData.filter(p => p.valid).length} Persone
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {importStep === 'complete' && (
-                            <div className="py-6 text-center">
-                              <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Check className="h-8 w-8 text-green-600" />
-                              </div>
-                              <h3 className="text-lg font-medium mb-2">Importazione Completata</h3>
-                              <p className="text-gray-600 mb-6">
-                                {importedData.filter(p => p.valid).length} persone sono state importate con successo.
-                              </p>
-                              <Button onClick={resetImport}>Chiudi</Button>
-                            </div>
-                          )}
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                    
-                    <Tabs defaultValue="info">
-                      <TabsList>
-                        <TabsTrigger value="info">Informazioni</TabsTrigger>
-                        <TabsTrigger value="history">Storico Importazioni</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="info" className="pt-4">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-2">Come funziona l'importazione?</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            Puoi importare allievi e coach da un file Excel seguendo questi passaggi:
-                          </p>
-                          <ol className="text-sm text-gray-600 space-y-1 list-decimal pl-4">
-                            <li>Scarica il nostro template Excel o prepara un file con le colonne necessarie</li>
-                            <li>Compila il file con i dati delle persone da importare</li>
-                            <li>Carica il file dal pulsante "Importa Excel"</li>
-                            <li>Verifica i dati nella fase di anteprima</li>
-                            <li>Conferma l'importazione</li>
-                          </ol>
-                          <div className="mt-4 flex justify-start">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={downloadSampleTemplate}
-                              className="flex items-center"
-                            >
-                              <Download className="h-4 w-4 mr-2" />
-                              Scarica Template
-                            </Button>
-                          </div>
-                        </div>
-                      </TabsContent>
-                      <TabsContent value="history" className="pt-4">
-                        <div className="text-sm text-gray-500 italic">
-                          Nessuna importazione recente.
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                  
-                  <div className="bg-white p-6 border rounded-lg opacity-60">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-medium flex items-center">
-                          <CalendarIcon className="h-5 w-5 mr-2" />
-                          Importa Programmazione
-                        </h3>
-                        <p className="text-gray-600 text-sm mt-1">
-                          Importa orari e programmazione campi da un file Excel
-                        </p>
-                      </div>
-                      
-                      <Button className="bg-gray-300" disabled>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Prossimamente
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === "courts" && <CourtsTab />}
+            
+            {activeTab === "timeslots" && <TimeSlotsTab />}
             
             {activeTab === "integrations" && (
               <div className="animate-fade-in">
@@ -650,31 +335,11 @@ export default function Settings() {
                       </button>
                     </div>
                   </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-medium">KNX Home Automation</h3>
-                        <p className="text-gray-600 text-sm mt-1">
-                          Controlla automaticamente l'illuminazione e i sistemi climatici dei campi
-                        </p>
-                      </div>
-                      <div className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
-                        Non Connesso
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-sm">
-                        Configura Connessione
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
             
-            {(activeTab !== "general" && activeTab !== "integrations" && activeTab !== "imports") && (
+            {(activeTab !== "general" && activeTab !== "integrations" && activeTab !== "courts" && activeTab !== "timeslots") && (
               <div className="py-16 text-center">
                 <h2 className="text-xl font-semibold text-gray-400 mb-2">
                   {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
@@ -689,43 +354,4 @@ export default function Settings() {
       </div>
     </div>
   );
-}
-
-function Check(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
-}
-
-function X(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="18" x2="6" y1="6" y2="18" />
-      <line x1="6" x2="18" y1="6" y2="18" />
-    </svg>
-  )
 }
