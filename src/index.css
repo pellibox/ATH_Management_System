@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -152,10 +153,10 @@ html, body {
   z-index: 10;
 }
 
-/* Court type styles updated to match the constants.ts COURT_TYPES */
+/* Court type styles updated to match the constants.ts COURT_TYPES and new darker colors */
 .court-tennis-clay {
-  background-color: rgba(233, 116, 81, 0.2);
-  border-left: 3px solid #E97451;
+  background-color: rgba(196, 22, 42, 0.2);
+  border-left: 3px solid #c4162a;
 }
 
 .court-tennis-hard {

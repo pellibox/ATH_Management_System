@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DndProvider } from "react-dnd";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek, addWeeks, parseISO } from "date-fns";
@@ -16,7 +16,8 @@ import {
   Layers,
   MoveVertical,
   ArrowDown,
-  ArrowUp
+  ArrowUp,
+  Move
 } from "lucide-react";
 
 // Import court vision components
@@ -36,6 +37,131 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 // Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Define the DraggableCourt component for drag-and-drop reordering
+interface DraggableCourtProps {
+  court: CourtProps;
+  index: number;
+  date: Date;
+  timeSlots: string[];
+  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, time?: string) => void;
+  onActivityDrop: (courtId: string, activity: ActivityData, time?: string) => void;
+  onRemovePerson: (personId: string, time?: string) => void;
+  onRemoveActivity: (activityId: string, time?: string) => void;
+  onCourtRename: (courtId: string, name: string) => void;
+  onCourtTypeChange: (courtId: string, type: string) => void;
+  onCourtRemove: (courtId: string) => void;
+  moveCourt: (dragIndex: number, hoverIndex: number) => void;
+}
+
+const DraggableCourt = ({ 
+  court, 
+  index, 
+  date, 
+  timeSlots, 
+  onDrop, 
+  onActivityDrop, 
+  onRemovePerson, 
+  onRemoveActivity, 
+  onCourtRename, 
+  onCourtTypeChange, 
+  onCourtRemove, 
+  moveCourt 
+}: DraggableCourtProps) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  
+  const [{ isDragging }, drag] = useDrag({
+    type: 'court',
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  });
+  
+  const [{ handlerId }, drop] = useDrop({
+    accept: 'court',
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    hover(item: any, monitor) {
+      if (!ref.current) {
+        return;
+      }
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+      
+      // Determine rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset();
+      
+      // Get pixels to the top
+      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+      
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+      
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return;
+      }
+      
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return;
+      }
+      
+      // Time to actually perform the action
+      moveCourt(dragIndex, hoverIndex);
+      
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      item.index = hoverIndex;
+    },
+  });
+  
+  drag(drop(ref));
+  
+  return (
+    <div 
+      ref={ref} 
+      className={`relative mb-8 ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+      data-handler-id={handlerId}
+    >
+      <div className="absolute -left-8 top-1/2 transform -translate-y-1/2 flex items-center z-10">
+        <div className="p-2 rounded-full bg-ath-black text-white hover:bg-ath-black-light cursor-move">
+          <Move size={16} />
+        </div>
+      </div>
+      <Court
+        court={court}
+        date={date}
+        timeSlots={timeSlots}
+        onDrop={onDrop}
+        onActivityDrop={onActivityDrop}
+        onRemovePerson={onRemovePerson}
+        onRemoveActivity={onRemoveActivity}
+        onCourtRename={onCourtRename}
+        onCourtTypeChange={onCourtTypeChange}
+        onCourtRemove={onCourtRemove}
+      />
+    </div>
+  );
+};
 
 export default function CourtVision() {
   const { toast } = useToast();
@@ -516,31 +642,18 @@ export default function CourtVision() {
     }
   };
 
-  const moveCourt = (courtId: string, direction: 'up' | 'down') => {
-    const courtIndex = courts.findIndex(court => court.id === courtId);
-    if (courtIndex < 0) return;
-    
-    if ((direction === 'up' && courtIndex === 0) || 
-        (direction === 'down' && courtIndex === courts.length - 1)) {
-      return;
-    }
+  const moveCourt = (dragIndex: number, hoverIndex: number) => {
+    const draggedCourt = courts[dragIndex];
     
     const newCourts = [...courts];
-    const courtToMove = newCourts[courtIndex];
-    
-    if (direction === 'up') {
-      newCourts[courtIndex] = newCourts[courtIndex - 1];
-      newCourts[courtIndex - 1] = courtToMove;
-    } else {
-      newCourts[courtIndex] = newCourts[courtIndex + 1];
-      newCourts[courtIndex + 1] = courtToMove;
-    }
+    newCourts.splice(dragIndex, 1);
+    newCourts.splice(hoverIndex, 0, draggedCourt);
     
     setCourts(newCourts);
     
     toast({
       title: "Court Reordered",
-      description: `${courtToMove.name} #${courtToMove.number} has been moved ${direction}`,
+      description: `${draggedCourt.name} #${draggedCourt.number} has been moved`,
     });
   };
 
@@ -788,44 +901,27 @@ export default function CourtVision() {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {courts.map((court, index) => (
-            <div key={court.id} className="relative">
-              <div className="absolute -left-8 top-1/2 transform -translate-y-1/2 flex flex-col space-y-1 z-10">
-                <button
-                  className="p-1 rounded-full bg-ath-blue text-white hover:bg-ath-blue-dark disabled:opacity-50"
-                  onClick={() => moveCourt(court.id, 'up')}
-                  disabled={index === 0}
-                  title="Move court up"
-                >
-                  <ArrowUp size={16} />
-                </button>
-                <button
-                  className="p-1 rounded-full bg-ath-blue text-white hover:bg-ath-blue-dark disabled:opacity-50"
-                  onClick={() => moveCourt(court.id, 'down')}
-                  disabled={index === courts.length - 1}
-                  title="Move court down"
-                >
-                  <ArrowDown size={16} />
-                </button>
-              </div>
-              <Court
-                key={court.id}
-                court={court}
-                date={selectedDate}
-                timeSlots={timeSlots}
-                onDrop={handleDrop}
-                onActivityDrop={handleActivityDrop}
-                onRemovePerson={handleRemovePerson}
-                onRemoveActivity={handleRemoveActivity}
-                onCourtRename={handleRenameCourt}
-                onCourtTypeChange={handleChangeCourtType}
-                onCourtRemove={handleRemoveCourt}
-              />
-            </div>
+            <DraggableCourt
+              key={court.id}
+              court={court}
+              index={index}
+              date={selectedDate}
+              timeSlots={timeSlots}
+              onDrop={handleDrop}
+              onActivityDrop={handleActivityDrop}
+              onRemovePerson={handleRemovePerson}
+              onRemoveActivity={handleRemoveActivity}
+              onCourtRename={handleRenameCourt}
+              onCourtTypeChange={handleChangeCourtType}
+              onCourtRemove={handleRemoveCourt}
+              moveCourt={moveCourt}
+            />
           ))}
         </div>
       </div>
     </DndProvider>
   );
 }
+

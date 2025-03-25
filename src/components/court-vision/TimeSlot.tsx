@@ -44,7 +44,7 @@ export function TimeSlot({
     <div 
       ref={drop}
       className={`border-t border-gray-200 p-2 min-h-[80px] relative ${
-        isOver ? "bg-ath-red-clay/10" : ""
+        isOver ? "bg-ath-red-clay/20" : ""
       }`}
     >
       <div className="flex items-center justify-between mb-1">
@@ -70,9 +70,9 @@ export function TimeSlot({
                 activity.type === ACTIVITY_TYPES.MATCH 
                   ? "bg-ath-black-light text-white" 
                   : activity.type === ACTIVITY_TYPES.TRAINING
-                  ? "bg-ath-red-clay-dark/90 text-white"
+                  ? "bg-ath-red-clay-dark text-white"
                   : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                  ? "bg-ath-red-clay/90 text-white"
+                  ? "bg-ath-red-clay text-white"
                   : activity.type === ACTIVITY_TYPES.GAME
                   ? "bg-ath-black text-white"
                   : "bg-ath-gray-medium text-white"
