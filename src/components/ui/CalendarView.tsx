@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mock data types
 interface CourseEvent {
@@ -66,6 +67,7 @@ const mockEvents: CourseEvent[] = [
 
 // Days of the week
 const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const weekDaysShort = ["M", "T", "W", "T", "F", "S", "S"];
 
 // Time slots from 8:00 to 20:00
 const timeSlots = Array.from({ length: 13 }, (_, i) => `${i + 8}:00`);
@@ -77,6 +79,8 @@ interface CalendarViewProps {
 export default function CalendarView({ currentView = "week" }: CalendarViewProps) {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [visibleDays, setVisibleDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
 
   // Get the dates for the current week
   const getWeekDates = () => {
@@ -119,8 +123,22 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
     setCurrentWeek(newDate);
   };
 
+  // Navigate to previous/next day in mobile view
+  const navigateDay = (direction: number) => {
+    if (isMobile && visibleDays.length === 1) {
+      const currentDayIndex = visibleDays[0];
+      const newDayIndex = (currentDayIndex + direction + 7) % 7;
+      setVisibleDays([newDayIndex]);
+    }
+  };
+
   // Format month and year for header
   const formatMonthYear = () => {
+    if (isMobile && visibleDays.length === 1) {
+      const day = weekDates[visibleDays[0]];
+      return day.toLocaleDateString("default", { month: "long", day: "numeric", year: "numeric" });
+    }
+    
     const firstDay = weekDates[0];
     const lastDay = weekDates[6];
     
@@ -153,6 +171,17 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
     });
   };
 
+  // Set mobile view to show only today when switching to mobile
+  useEffect(() => {
+    if (isMobile) {
+      // Find today's index in the week or default to first day
+      const todayIndex = weekDates.findIndex(date => isToday(date));
+      setVisibleDays(todayIndex !== -1 ? [todayIndex] : [0]);
+    } else {
+      setVisibleDays([0, 1, 2, 3, 4, 5, 6]);
+    }
+  }, [isMobile, weekDates]);
+
   // Effect to show a message when view changes
   useEffect(() => {
     if (currentView !== "week") {
@@ -167,12 +196,12 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
     <div className="rounded-xl bg-white shadow-soft overflow-hidden animate-fade-in">
       {/* Calendar Header */}
       <div className="p-4 border-b flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{formatMonthYear()}</h2>
+        <h2 className="text-lg md:text-xl font-semibold">{formatMonthYear()}</h2>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigateWeek(-1)}
+            onClick={() => isMobile && visibleDays.length === 1 ? navigateDay(-1) : navigateWeek(-1)}
             className="rounded-full p-1.5 hover:bg-gray-100 transition-colors"
-            aria-label="Previous week"
+            aria-label="Previous"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -183,53 +212,78 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
             Today
           </button>
           <button
-            onClick={() => navigateWeek(1)}
+            onClick={() => isMobile && visibleDays.length === 1 ? navigateDay(1) : navigateWeek(1)}
             className="rounded-full p-1.5 hover:bg-gray-100 transition-colors"
-            aria-label="Next week"
+            aria-label="Next"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
       </div>
 
+      {/* Mobile Day Selector */}
+      {isMobile && (
+        <div className="flex justify-center p-2 bg-gray-50 border-b">
+          <div className="flex space-x-1">
+            {weekDaysShort.map((day, index) => (
+              <button
+                key={index}
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium",
+                  visibleDays.includes(index) 
+                    ? "bg-ath-blue text-white" 
+                    : "bg-white text-gray-600 hover:bg-gray-100"
+                )}
+                onClick={() => setVisibleDays([index])}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Calendar Grid */}
       <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
+        <div className={isMobile ? "min-w-full" : "min-w-[800px]"}>
           {/* Days Header */}
-          <div className="grid grid-cols-8 border-b">
+          <div className={`grid ${isMobile ? `grid-cols-${visibleDays.length + 1}` : "grid-cols-8"} border-b`}>
             <div className="p-2 border-r bg-gray-50"></div>
-            {weekDays.map((day, index) => (
-              <div
-                key={day}
-                className={cn(
-                  "p-3 text-center border-r",
-                  isToday(weekDates[index]) ? "bg-ath-blue-light" : "bg-gray-50"
-                )}
-              >
-                <p className="text-sm font-medium">{day}</p>
-                <p
+            {weekDays.filter((_, index) => visibleDays.includes(index)).map((day, index) => {
+              const dayIndex = visibleDays[index];
+              return (
+                <div
+                  key={day + index}
                   className={cn(
-                    "text-2xl font-semibold mt-1",
-                    isToday(weekDates[index]) ? "text-ath-blue" : ""
+                    "p-3 text-center border-r",
+                    isToday(weekDates[dayIndex]) ? "bg-ath-blue-light" : "bg-gray-50"
                   )}
                 >
-                  {formatDay(weekDates[index])}
-                </p>
-              </div>
-            ))}
+                  <p className="text-sm font-medium">{day}</p>
+                  <p
+                    className={cn(
+                      "text-2xl font-semibold mt-1",
+                      isToday(weekDates[dayIndex]) ? "text-ath-blue" : ""
+                    )}
+                  >
+                    {formatDay(weekDates[dayIndex])}
+                  </p>
+                </div>
+              );
+            })}
           </div>
 
           {/* Time Slots and Events */}
           <div className="divide-y">
             {timeSlots.map((time) => (
-              <div key={time} className="grid grid-cols-8">
+              <div key={time} className={`grid ${isMobile ? `grid-cols-${visibleDays.length + 1}` : "grid-cols-8"}`}>
                 {/* Time Column */}
                 <div className="p-2 border-r bg-gray-50 flex items-center justify-center">
                   <span className="text-xs font-medium text-gray-500">{time}</span>
                 </div>
 
                 {/* Days Columns */}
-                {weekDays.map((_, dayIndex) => {
+                {visibleDays.map((dayIndex) => {
                   const events = getEventsForTimeSlot(time, dayIndex);
                   
                   return (
