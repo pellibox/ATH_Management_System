@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -319,5 +320,74 @@ export default function CourtVision() {
 
     toast({
       title: "Piano Copiato alla Prossima Settimana",
-     
-
+      description: `Le assegnazioni del campo sono state copiate alla settimana che inizia ${format(nextWeekStart, "MMMM d, yyyy")}`,
+    });
+  };
+  
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="container mx-auto py-4">
+        <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="md:col-span-2">
+            <DateSelector 
+              selectedDate={selectedDate} 
+              setSelectedDate={setSelectedDate} 
+            />
+          </div>
+          <div>
+            <CourtLegend />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {courts.map((court) => (
+                <Court
+                  key={court.id}
+                  court={court}
+                  onDrop={handleDrop}
+                  onActivityDrop={handleActivityDrop}
+                  onRemovePerson={handleRemovePerson}
+                  onRemoveActivity={handleRemoveActivity}
+                />
+              ))}
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <CourtAssignmentDialog 
+              courts={courts}
+              availablePeople={people}
+              availableActivities={activities}
+              onAssignPerson={handleAssignPerson}
+              onAssignActivity={handleAssignActivity}
+              onRemovePerson={handleRemovePerson}
+              onRemoveActivity={handleRemoveActivity}
+            />
+            
+            <AvailablePeople people={people} />
+            
+            <AvailableActivities activities={activities} />
+            
+            <PeopleManagement 
+              playersList={playersList} 
+              coachesList={coachesList} 
+              onAddPerson={handleAddPerson} 
+            />
+            
+            <ScheduleTemplates 
+              templates={templates} 
+              onApplyTemplate={applyTemplate} 
+              onSaveTemplate={saveAsTemplate}
+              onCopyToNextDay={copyToNextDay}
+              onCopyToWeek={copyToWeek}
+            />
+          </div>
+        </div>
+      </div>
+    </DndProvider>
+  );
+}
