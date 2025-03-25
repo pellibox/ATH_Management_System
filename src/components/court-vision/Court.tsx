@@ -16,6 +16,9 @@ interface CourtComponentProps {
   onActivityDrop: (courtId: string, activity: ActivityData, time?: string) => void;
   onRemovePerson?: (personId: string, time?: string) => void;
   onRemoveActivity?: (activityId: string, time?: string) => void;
+  onCourtRename?: (courtId: string, name: string) => void;
+  onCourtTypeChange?: (courtId: string, type: string) => void;
+  onCourtRemove?: (courtId: string) => void;
 }
 
 export function Court({ 
@@ -25,10 +28,15 @@ export function Court({
   onDrop, 
   onActivityDrop, 
   onRemovePerson, 
-  onRemoveActivity 
+  onRemoveActivity,
+  onCourtRename,
+  onCourtTypeChange,
+  onCourtRemove
 }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"layout" | "schedule">("layout");
+  const [isEditing, setIsEditing] = useState(false);
+  const [courtName, setCourtName] = useState(court.name);
   
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
@@ -133,6 +141,19 @@ export function Court({
     }
   };
   
+  const handleSaveCourtName = () => {
+    if (courtName.trim() && onCourtRename) {
+      onCourtRename(court.id, courtName);
+    }
+    setIsEditing(false);
+  };
+
+  const handleCourtTypeChange = (type: string) => {
+    if (onCourtTypeChange) {
+      onCourtTypeChange(court.id, type);
+    }
+  };
+  
   // Only show people without specific time slots in the layout view
   const visibleOccupants = viewMode === "layout" 
     ? court.occupants.filter(person => !person.timeSlot).slice(0, 12)
@@ -148,7 +169,7 @@ export function Court({
           ref={drop}
           className={`relative rounded-lg border-2 ${getCourtStyles()} ${
             isOver ? "ring-2 ring-ath-red-clay" : ""
-          } transition-all h-44 sm:h-56 flex flex-col cursor-pointer animate-fade-in`}
+          } transition-all h-80 sm:h-96 flex flex-col cursor-pointer animate-fade-in`}
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
             <span className="text-xs font-medium bg-ath-black/70 text-white px-2 py-1 rounded">
@@ -317,13 +338,68 @@ export function Court({
       
       <PopoverContent className="w-80 p-0 bg-white shadow-lg rounded-lg border border-gray-200" sideOffset={5}>
         <div className="flex items-center justify-between bg-ath-black p-3 text-white rounded-t-lg">
-          <h3 className="font-semibold">{court.name} #{court.number} - {getCourtLabel()}</h3>
-          <button onClick={() => setIsOpen(false)} className="text-white hover:text-gray-300">
-            <X className="h-4 w-4" />
-          </button>
+          {isEditing ? (
+            <div className="flex-1 flex items-center">
+              <input
+                type="text"
+                value={courtName}
+                onChange={(e) => setCourtName(e.target.value)}
+                className="flex-1 bg-ath-black text-white font-semibold border-b border-white px-1 py-0.5 focus:outline-none"
+                autoFocus
+              />
+              <button onClick={handleSaveCourtName} className="ml-2 text-white hover:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <h3 className="font-semibold">{court.name} #{court.number} - {getCourtLabel()}</h3>
+          )}
+          <div className="flex items-center">
+            {!isEditing && (
+              <button onClick={() => setIsEditing(true)} className="text-white hover:text-gray-300 mr-2">
+                <Edit className="h-4 w-4" />
+              </button>
+            )}
+            <button onClick={() => setIsOpen(false)} className="text-white hover:text-gray-300">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         
         <div className="p-4">
+          <h4 className="font-medium text-sm mb-2 text-ath-black-light">Opzioni Campo</h4>
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Tipo di Superficie:</span>
+              <select 
+                className="text-sm border rounded px-2 py-1"
+                value={court.type}
+                onChange={(e) => handleCourtTypeChange(e.target.value)}
+              >
+                <option value={COURT_TYPES.TENNIS_CLAY}>Terra Rossa</option>
+                <option value={COURT_TYPES.TENNIS_HARD}>Cemento</option>
+                <option value={COURT_TYPES.PADEL}>Padel</option>
+                <option value={COURT_TYPES.PICKLEBALL}>Pickleball</option>
+                <option value={COURT_TYPES.TOUCH_TENNIS}>Touch Tennis</option>
+              </select>
+            </div>
+            {onCourtRemove && (
+              <button 
+                onClick={() => {
+                  if (window.confirm("Sei sicuro di voler rimuovere questo campo?")) {
+                    onCourtRemove(court.id);
+                    setIsOpen(false);
+                  }
+                }}
+                className="w-full text-red-500 border border-red-500 rounded px-2 py-1 text-sm hover:bg-red-50 transition-colors"
+              >
+                Rimuovi Campo
+              </button>
+            )}
+          </div>
+          
           <h4 className="font-medium text-sm mb-2 text-ath-black-light">Persone sul campo</h4>
           
           {court.occupants.length === 0 ? (

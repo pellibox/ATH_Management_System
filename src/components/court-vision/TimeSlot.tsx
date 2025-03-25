@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useDrop } from "react-dnd";
-import { PERSON_TYPES } from "./constants";
+import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { PersonData, ActivityData } from "./types";
 import { Clock, Users } from "lucide-react";
 
@@ -66,7 +66,17 @@ export function TimeSlot({
           {activities.map((activity) => (
             <div 
               key={activity.id}
-              className="text-xs px-2 py-0.5 bg-ath-black text-white rounded-sm flex items-center"
+              className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
+                activity.type === ACTIVITY_TYPES.MATCH 
+                  ? "bg-ath-black-light text-white" 
+                  : activity.type === ACTIVITY_TYPES.TRAINING
+                  ? "bg-ath-red-clay-dark/90 text-white"
+                  : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+                  ? "bg-ath-red-clay/90 text-white"
+                  : activity.type === ACTIVITY_TYPES.GAME
+                  ? "bg-ath-black text-white"
+                  : "bg-ath-gray-medium text-white"
+              }`}
             >
               {activity.name}
               <button

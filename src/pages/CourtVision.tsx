@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek, addWeeks, parseISO } from "date-fns";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon, Clock, Plus, MenuIcon, Settings } from "lucide-react";
 
 // Import court vision components
 import { Court } from "@/components/court-vision/Court";
@@ -15,6 +16,7 @@ import { PeopleManagement } from "@/components/court-vision/PeopleManagement";
 import { CourtLegend } from "@/components/court-vision/CourtLegend";
 import { CourtAssignmentDialog } from "@/components/court-vision/CourtAssignmentDialog";
 import { TimeSlotSelector } from "@/components/court-vision/TimeSlotSelector";
+import { CourtManagement } from "@/components/court-vision/CourtManagement";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vision/constants";
 import { PersonData, ActivityData, CourtProps, ScheduleTemplate, DateSchedule } from "@/components/court-vision/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -26,6 +28,7 @@ export default function CourtVision() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [dateSchedules, setDateSchedules] = useState<DateSchedule[]>([]);
+  const [activeTab, setActiveTab] = useState<"courts" | "management">("courts");
   
   // Define time slots
   const [timeSlots, setTimeSlots] = useState<string[]>([
@@ -518,104 +521,205 @@ export default function CourtVision() {
     }
   };
 
+  // New court management handlers
+  const handleAddCourt = (courtData: { name: string; type: string; number: number }) => {
+    const newId = `court-${Date.now()}`;
+    const newCourt: CourtProps = {
+      id: newId,
+      name: courtData.name,
+      type: courtData.type,
+      number: courtData.number,
+      occupants: [],
+      activities: []
+    };
+    
+    setCourts([...courts, newCourt]);
+  };
+
+  const handleRemoveCourt = (courtId: string) => {
+    // Check if court has occupants or activities
+    const courtToRemove = courts.find(c => c.id === courtId);
+    
+    if (!courtToRemove) return;
+    
+    // Return people to the available list
+    courtToRemove.occupants.forEach(person => {
+      const { courtId, position, timeSlot, date, ...personWithoutCourtInfo } = person;
+      setPeople(prev => [...prev, personWithoutCourtInfo]);
+    });
+    
+    // Return activities to the available list
+    courtToRemove.activities.forEach(activity => {
+      const { courtId, startTime, date, ...activityWithoutCourtInfo } = activity;
+      setActivities(prev => [...prev, activityWithoutCourtInfo]);
+    });
+    
+    // Remove the court
+    setCourts(courts.filter(c => c.id !== courtId));
+    
+    toast({
+      title: "Campo Rimosso",
+      description: `${courtToRemove.name} #${courtToRemove.number} è stato rimosso`
+    });
+  };
+
+  const handleRenameCourt = (courtId: string, name: string) => {
+    setCourts(
+      courts.map(court =>
+        court.id === courtId ? { ...court, name } : court
+      )
+    );
+  };
+
+  const handleChangeCourtType = (courtId: string, type: string) => {
+    setCourts(
+      courts.map(court =>
+        court.id === courtId ? { ...court, type } : court
+      )
+    );
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="container mx-auto py-4">
         <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="md:col-span-2">
-            <DateSelector 
-              selectedDate={selectedDate} 
-              onDateChange={setSelectedDate} 
-            />
-          </div>
-          <div>
-            <CourtLegend />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <div className="lg:col-span-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {courts.map((court) => (
-                <Court
-                  key={court.id}
-                  court={court}
-                  date={selectedDate}
-                  timeSlots={timeSlots}
-                  onDrop={handleDrop}
-                  onActivityDrop={handleActivityDrop}
-                  onRemovePerson={handleRemovePerson}
-                  onRemoveActivity={handleRemoveActivity}
-                />
-              ))}
+        {/* Top navigation and controls */}
+        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <DateSelector 
+                selectedDate={selectedDate} 
+                onDateChange={setSelectedDate} 
+              />
             </div>
-          </div>
-          
-          <div className="space-y-4">
-            <CourtAssignmentDialog 
-              courts={courts}
-              availablePeople={people}
-              availableActivities={activities}
-              timeSlots={timeSlots}
-              onAssignPerson={handleAssignPerson}
-              onAssignActivity={handleAssignActivity}
-              onRemovePerson={handleRemovePerson}
-              onRemoveActivity={handleRemoveActivity}
-            />
-            
-            <TimeSlotSelector
-              timeSlots={timeSlots}
-              onAddTimeSlot={handleAddTimeSlot}
-              onRemoveTimeSlot={handleRemoveTimeSlot}
-            />
-            
-            <AvailablePeople 
-              people={people} 
-              onAddPerson={handleAddPerson}
-              onRemovePerson={handleRemovePerson}
-            />
-            
-            <AvailableActivities 
-              activities={activities}
-              onAddActivity={handleAddActivity}
-              onRemoveActivity={handleRemoveActivity}
-            />
-            
-            <PeopleManagement 
-              playersList={playersList} 
-              coachesList={coachesList} 
-              onAddPerson={handleAddPerson}
-              onRemovePerson={handleRemovePerson}
-              onAddToDragArea={handleAddToDragArea}
-            />
-            
-            <ScheduleTemplates 
-              templates={templates} 
-              onApplyTemplate={applyTemplate} 
-              onSaveTemplate={saveAsTemplate}
-            />
-            
-            <div className="bg-white rounded-xl shadow-soft p-4">
-              <h2 className="font-medium mb-3">Azioni Rapide</h2>
-              <div className="space-y-2">
-                <button 
-                  className="w-full bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
-                  onClick={copyToNextDay}
-                >
-                  Copia al Giorno Successivo
-                </button>
-                <button 
-                  className="w-full bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
-                  onClick={copyToWeek}
-                >
-                  Copia alla Prossima Settimana
-                </button>
+            <div>
+              <div className="flex items-center justify-between">
+                <div className="flex space-x-2">
+                  <button 
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "courts" ? "bg-ath-black text-white" : "bg-gray-100 text-gray-700"}`}
+                    onClick={() => setActiveTab("courts")}
+                  >
+                    Campi
+                  </button>
+                  <button 
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "management" ? "bg-ath-black text-white" : "bg-gray-100 text-gray-700"}`}
+                    onClick={() => setActiveTab("management")}
+                  >
+                    Gestione
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+          
+          {/* Top Tools Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
+              <CourtAssignmentDialog 
+                courts={courts}
+                availablePeople={people}
+                availableActivities={activities}
+                timeSlots={timeSlots}
+                onAssignPerson={handleAssignPerson}
+                onAssignActivity={handleAssignActivity}
+                onRemovePerson={handleRemovePerson}
+                onRemoveActivity={handleRemoveActivity}
+              />
+            </div>
+            <div>
+              <TimeSlotSelector
+                timeSlots={timeSlots}
+                onAddTimeSlot={handleAddTimeSlot}
+                onRemoveTimeSlot={handleRemoveTimeSlot}
+              />
+            </div>
+            <div className="flex space-x-2">
+              <button 
+                className="flex-1 bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
+                onClick={copyToNextDay}
+              >
+                Copia Giorno
+              </button>
+              <button 
+                className="flex-1 bg-ath-black text-white py-2 rounded hover:bg-ath-black-light transition-colors text-sm"
+                onClick={copyToWeek}
+              >
+                Copia Settimana
+              </button>
+            </div>
+          </div>
         </div>
+        
+        {activeTab === "courts" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {courts.map((court) => (
+                  <Court
+                    key={court.id}
+                    court={court}
+                    date={selectedDate}
+                    timeSlots={timeSlots}
+                    onDrop={handleDrop}
+                    onActivityDrop={handleActivityDrop}
+                    onRemovePerson={handleRemovePerson}
+                    onRemoveActivity={handleRemoveActivity}
+                    onCourtRename={handleRenameCourt}
+                    onCourtTypeChange={handleChangeCourtType}
+                    onCourtRemove={handleRemoveCourt}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <CourtLegend />
+              
+              <AvailablePeople 
+                people={people} 
+                onAddPerson={handleAddPerson}
+                onRemovePerson={(personId) => handleRemovePerson(personId)}
+              />
+              
+              <AvailableActivities 
+                activities={activities}
+                onAddActivity={handleAddActivity}
+                onRemoveActivity={(activityId) => handleRemoveActivity(activityId)}
+              />
+              
+              <ScheduleTemplates 
+                templates={templates} 
+                onApplyTemplate={applyTemplate} 
+                onSaveTemplate={saveAsTemplate}
+              />
+            </div>
+          </div>
+        )}
+        
+        {activeTab === "management" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <CourtManagement 
+                courts={courts}
+                onAddCourt={handleAddCourt}
+                onRemoveCourt={handleRemoveCourt}
+                onRenameCourt={handleRenameCourt}
+                onChangeCourtType={handleChangeCourtType}
+              />
+            </div>
+            
+            <div className="space-y-4">
+              <PeopleManagement 
+                playersList={playersList} 
+                coachesList={coachesList} 
+                onAddPerson={handleAddPerson}
+                onRemovePerson={handleRemovePerson}
+                onAddToDragArea={handleAddToDragArea}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </DndProvider>
   );
