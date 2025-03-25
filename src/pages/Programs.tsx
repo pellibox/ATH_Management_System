@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar, Plus, Search, Users, Clock, BookOpen, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,7 +19,8 @@ const PROGRAM_CATEGORIES = {
   JUNIOR: "junior",
   PERSONAL: "personal",
   ADULT: "adult",
-  COACH: "coach"
+  COACH: "coach",
+  PADEL: "padel"
 };
 
 // Map our programs to categories
