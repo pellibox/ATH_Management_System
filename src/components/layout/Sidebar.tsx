@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Calendar, Settings, Home, Users, BookOpen, Layers, Trophy, BarChart3, Video, Link, View, UserCircle } from 'lucide-react';
@@ -21,12 +22,12 @@ const NavItem = ({ to, icon: Icon, label, isCollapsed }: NavItemProps) => {
       className={({ isActive }) => cn(
         "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-300",
         isActive 
-          ? "bg-ath-blue-light text-ath-blue font-medium" 
+          ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
           : "text-gray-600 hover:bg-gray-100",
         isCollapsed ? "justify-center" : ""
       )}
     >
-      <Icon className={cn("h-5 w-5", isActive ? "text-ath-blue" : "text-gray-500")} />
+      <Icon className={cn("h-5 w-5", isActive ? "text-ath-red-clay" : "text-gray-500")} />
       {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
     </NavLink>
   );
@@ -80,7 +81,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between mb-6 md:mb-8">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-ath-blue">ATH</span>
+            <span className="text-xl font-bold text-ath-red-clay">ATH</span>
             <span className="text-xl font-medium">System</span>
           </div>
         )}

@@ -27,10 +27,10 @@ export default function CourtCard({
 }: CourtCardProps) {
   // Map court type to color scheme
   const typeColors = {
-    clay: "bg-ath-clay/10 text-ath-clay border-ath-clay/30",
+    clay: "bg-ath-red-clay/10 text-ath-red-clay border-ath-red-clay/30",
     grass: "bg-ath-grass/10 text-ath-grass border-ath-grass/30",
-    hard: "bg-ath-hard/10 text-ath-hard border-ath-hard/30",
-    central: "bg-ath-central/10 text-ath-central border-ath-central/30",
+    hard: "bg-ath-black/10 text-ath-black border-ath-black/30",
+    central: "bg-ath-red-clay-dark/10 text-ath-red-clay-dark border-ath-red-clay-dark/30",
   };
 
   // Format court type for display
@@ -115,7 +115,7 @@ export default function CourtCard({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-ath-blue mr-1.5"
+              className="text-ath-red-clay mr-1.5"
             >
               <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
               <line x1="16" x2="16" y1="2" y2="6" />

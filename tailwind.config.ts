@@ -72,10 +72,10 @@ export default {
           'gray-dark': '#3a3a3a',
           'gray-medium': '#5a5a5a',
           'gray-light': '#7a7a7a',
-          'clay': '#E97451',
+          'clay': '#ea384c',
           'grass': '#4CAF50',
-          'hard': '#3B82F6',
-          'central': '#8B5CF6'
+          'hard': '#222222',
+          'central': '#c4162a'
         }
 			},
 			borderRadius: {

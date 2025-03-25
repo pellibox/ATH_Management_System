@@ -19,8 +19,8 @@
 
 /* Court type styles */
 .court-clay {
-  background-color: rgba(217, 119, 87, 0.15);
-  border-left: 3px solid #d97757;
+  background-color: rgba(234, 56, 76, 0.15);
+  border-left: 3px solid #ea384c;
 }
 
 .court-grass {
@@ -29,13 +29,13 @@
 }
 
 .court-hard {
-  background-color: rgba(66, 153, 225, 0.15);
-  border-left: 3px solid #4299e1;
+  background-color: rgba(34, 34, 34, 0.15);
+  border-left: 3px solid #222222;
 }
 
 .court-central {
-  background-color: rgba(159, 122, 234, 0.15);
-  border-left: 3px solid #9f7aea;
+  background-color: rgba(196, 22, 42, 0.15);
+  border-left: 3px solid #c4162a;
 }
 
 .card-hover {
@@ -75,14 +75,14 @@
 
 /* Custom colors */
 :root {
-  --ath-blue: #2563eb;
-  --ath-blue-dark: #1d4ed8;
-  --ath-blue-light: #dbeafe;
+  --ath-blue: #ea384c;  /* Changed to red clay */
+  --ath-blue-dark: #c4162a;  /* Changed to dark red clay */
+  --ath-blue-light: #f8acb5;  /* Changed to light red clay */
   --ath-orange: #f97316;
-  --ath-clay: #d97757;
+  --ath-clay: #ea384c;
   --ath-grass: #48bb78;
-  --ath-hard: #4299e1;
-  --ath-central: #9f7aea;
+  --ath-hard: #222222;  /* Changed to black */
+  --ath-central: #c4162a;  /* Changed to dark red clay */
 }
 
 .text-ath-blue {

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import Calendar from "./pages/Calendar";
 import Courts from "./pages/Courts";
 import CourtVision from "./pages/CourtVision";
 import Staff from "./pages/Staff";
+import Players from "./pages/Players";
 import Programs from "./pages/Programs";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -36,6 +38,7 @@ function App() {
               <Route path="courts" element={<Courts />} />
               <Route path="court-vision" element={<CourtVision />} />
               <Route path="staff" element={<Staff />} />
+              <Route path="players" element={<Players />} />
               <Route path="programs" element={<Programs />} />
               <Route path="tournaments" element={<Tournaments />} />
               <Route path="reports" element={<Reports />} />
