@@ -3,7 +3,8 @@ import { useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
-import { ChartBar, Users, User, Calendar, Copy, CalendarDays, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChartBar, Users, User, Calendar, Copy, CalendarDays, Clock, CalendarIcon } from "lucide-react";
 import { format, addDays, startOfWeek, addWeeks } from "date-fns";
 import { 
   Popover,
