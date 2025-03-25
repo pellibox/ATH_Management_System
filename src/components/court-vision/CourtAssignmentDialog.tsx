@@ -20,7 +20,7 @@ import { ChevronRight, Users, CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { PersonData, ActivityData, CourtProps } from "./types";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CourtAssignmentDialogProps {
   courts: CourtProps[];
@@ -39,7 +39,7 @@ export function CourtAssignmentDialog({
 }: CourtAssignmentDialogProps) {
   const [selectedTab, setSelectedTab] = useState<"people" | "activities">("people");
   const [selectedCourt, setSelectedCourt] = useState<CourtProps | null>(null);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
   const AssignmentComponent = () => (

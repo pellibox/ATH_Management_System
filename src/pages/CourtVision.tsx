@@ -16,11 +16,12 @@ import { CourtLegend } from "@/components/court-vision/CourtLegend";
 import { CourtAssignmentDialog } from "@/components/court-vision/CourtAssignmentDialog";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vision/constants";
 import { PersonData, ActivityData, CourtProps, ScheduleTemplate } from "@/components/court-vision/types";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CourtVision() {
   const { toast } = useToast();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
+  
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [courts, setCourts] = useState<CourtProps[]>([
