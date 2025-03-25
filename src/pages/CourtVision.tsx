@@ -36,6 +36,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 // Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const FloatingMenuPanel = ({ children }: { children: React.ReactNode }) => (
+  <div className="fixed bottom-4 left-4 right-4 z-50 bg-white rounded-xl shadow-lg p-4 border border-gray-200">
+    <div className="flex space-x-4 overflow-x-auto pb-2">
+      {children}
+    </div>
+  </div>
+);
+
 export default function CourtVision() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -717,6 +725,51 @@ export default function CourtVision() {
     }
   };
 
+  const checkUnassignedPeople = (scheduleType: "day" | "week" | "month") => {
+    const allPeople = [...playersList, ...coachesList];
+    const unassigned: PersonData[] = [];
+    
+    // Get all assigned people for the current schedule scope
+    const getAssignedForDate = (date: Date) => {
+      const dateStr = date.toISOString().split('T')[0];
+      const schedule = dateSchedules.find(s => s.date === dateStr);
+      return schedule?.courts.flatMap(c => c.occupants) || [];
+    };
+    
+    allPeople.forEach(person => {
+      let isAssigned = false;
+      
+      if (scheduleType === "day") {
+        const assigned = getAssignedForDate(selectedDate);
+        isAssigned = assigned.some(p => p.id === person.id);
+      } else if (scheduleType === "week") {
+        for (let i = 0; i < 7; i++) {
+          const date = addDays(selectedDate, i);
+          const assigned = getAssignedForDate(date);
+          if (assigned.some(p => p.id === person.id)) {
+            isAssigned = true;
+            break;
+          }
+        }
+      } else {
+        for (let i = 0; i < 30; i++) {
+          const date = addDays(selectedDate, i);
+          const assigned = getAssignedForDate(date);
+          if (assigned.some(p => p.id === person.id)) {
+            isAssigned = true;
+            break;
+          }
+        }
+      }
+      
+      if (!isAssigned) {
+        unassigned.push(person);
+      }
+    });
+    
+    return unassigned;
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="mx-auto py-4 relative h-screen flex flex-col overflow-hidden">
@@ -756,155 +809,11 @@ export default function CourtVision() {
                     selectedDate={selectedDate}
                     playersList={playersList}
                     coachesList={coachesList}
+                    onCheckUnassigned={checkUnassignedPeople}
                   />
                   <button
                     className="ml-2 bg-gray-200 hover:bg-gray-300 p-2 rounded-md"
                     onClick={() => setShowFloatingPanel(!showFloatingPanel)}
                     title={showFloatingPanel ? "Minimize Panel" : "Expand Panel"}
                   >
-                    {showFloatingPanel ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
-                  </button>
-                </div>
-              </div>
-              
-              {showFloatingPanel && (
-                <>
-                  <div className="mb-4">
-                    <div className="flex flex-wrap items-center gap-4">
-                      <span className="text-sm font-medium">Court Types:</span>
-                      <div className="flex items-center gap-1">
-                        <span className="w-4 h-4 bg-ath-red-clay rounded-full"></span>
-                        <span className="text-sm">Tennis (Clay)</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-4 h-4 bg-ath-black rounded-full"></span>
-                        <span className="text-sm">Tennis (Hard)</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-4 h-4 bg-green-500 rounded-full"></span>
-                        <span className="text-sm">Padel</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Tabs defaultValue="courts" className="w-full">
-                    <TabsList className="w-full justify-start mb-4 bg-gray-100 p-1 rounded-md">
-                      <TabsTrigger value="courts" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                        <Layers className="h-4 w-4 mr-1" />
-                        Courts
-                      </TabsTrigger>
-                      <TabsTrigger value="people" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                        <Users className="h-4 w-4 mr-1" />
-                        People
-                      </TabsTrigger>
-                      <TabsTrigger value="activities" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                        <Film className="h-4 w-4 mr-1" />
-                        Activities
-                      </TabsTrigger>
-                      <TabsTrigger value="time-slots" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
-                        <Clock className="h-4 w-4 mr-1" />
-                        Time Slots
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="courts" className="space-y-4">
-                      <CourtManagement 
-                        courts={courts} 
-                        onAddCourt={handleAddCourt}
-                        onRemoveCourt={handleRemoveCourt}
-                        onRenameCourt={handleRenameCourt}
-                        onChangeCourtType={handleChangeCourtType}
-                        onChangeCourtNumber={handleChangeCourtNumber}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="people" className="space-y-4">
-                      <PeopleManagement 
-                        playersList={playersList}
-                        coachesList={coachesList}
-                        onAddToDragArea={handleAddToDragArea}
-                        onAddPerson={handleAddPerson}
-                        programs={programs}
-                        onAssignProgram={handleAssignProgram}
-                        onRemovePerson={handleRemovePerson}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="activities" className="space-y-4">
-                      <AvailableActivities 
-                        activities={activities} 
-                        onAddActivity={handleAddActivity}
-                        onRemoveActivity={handleRemoveActivity}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="time-slots" className="space-y-4">
-                      <TimeSlotSelector 
-                        timeSlots={timeSlots} 
-                        onAddTimeSlot={handleAddTimeSlot}
-                        onRemoveTimeSlot={handleRemoveTimeSlot}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex-grow px-4 pb-4 overflow-auto">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="w-full md:w-3/4 space-y-4">
-              {courts.map((court) => (
-                <Court
-                  key={court.id}
-                  court={court}
-                  timeSlots={timeSlots}
-                  onDrop={handleDrop}
-                  onActivityDrop={handleActivityDrop}
-                  onRemovePerson={handleRemovePerson}
-                  onRemoveActivity={handleRemoveActivity}
-                  onCourtRename={handleRenameCourt}
-                  onCourtTypeChange={handleChangeCourtType}
-                  onCourtRemove={handleRemoveCourt}
-                  onCourtNumberChange={handleChangeCourtNumber}
-                  isSidebarCollapsed={isSidebarCollapsed}
-                  date={selectedDate}
-                />
-              ))}
-            </div>
-            
-            <div className="w-full md:w-1/4 space-y-4">
-              <AvailablePeople 
-                people={people}
-                onAddPerson={handleAddPerson}
-                onRemovePerson={handleRemovePerson} 
-              />
-              
-              <AvailableActivities 
-                activities={activities} 
-                onAddActivity={handleAddActivity}
-                onRemoveActivity={handleRemoveActivity} 
-              />
-              
-              <ScheduleTemplates 
-                templates={templates} 
-                onSaveTemplate={saveAsTemplate} 
-                onApplyTemplate={applyTemplate} 
-              />
-              
-              <AssignmentsDashboard
-                courts={courts}
-                selectedDate={selectedDate}
-                programs={programs}
-                onChangeTimeSlot={handleChangePersonTimeSlot}
-                onChangeCourt={handleChangePersonCourt}
-                onRemovePerson={handleRemovePerson}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </DndProvider>
-  );
-}
+                    {showFloating
