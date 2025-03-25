@@ -67,7 +67,7 @@ export function Person({
           {person.name.substring(0, 1)}
         </div>
         <span className="text-sm">{person.name}</span>
-        <Move className="h-3 w-3 ml-2 opacity-50" title="Trascina per assegnare" />
+        <Move className="h-3 w-3 ml-2 opacity-50" aria-label="Trascina per assegnare" />
         <button
           onClick={onRemove}
           className="ml-auto text-gray-500 hover:text-red-500"

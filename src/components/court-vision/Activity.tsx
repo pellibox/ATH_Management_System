@@ -1,6 +1,6 @@
 
 import { useDrag } from "react-dnd";
-import { ChartBar, Users, User } from "lucide-react";
+import { ChartBar, Users, User, Move } from "lucide-react";
 import { ACTIVITY_TYPES } from "./constants";
 import { ActivityData } from "./types";
 
@@ -19,11 +19,18 @@ export function Activity({ activity, onRemove }: ActivityProps) {
       duration: activity.duration,
       startTime: activity.startTime,
       courtId: activity.courtId,
-      durationHours: activity.durationHours
+      durationHours: activity.durationHours,
+      sourceTimeSlot: activity.startTime  // Add source time slot for tracking
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      const didDrop = monitor.didDrop();
+      if (!didDrop) {
+        console.log("Il trascinamento dell'attività è stato annullato");
+      }
+    }
   }));
 
   const getActivityColor = () => {
@@ -72,6 +79,7 @@ export function Activity({ activity, onRemove }: ActivityProps) {
       {activity.duration && (
         <span className="text-xs ml-2">({activity.duration})</span>
       )}
+      <Move className="h-3 w-3 ml-2 opacity-50" aria-label="Trascina per assegnare" />
       <button
         onClick={onRemove}
         className="ml-auto text-gray-500 hover:text-red-500"

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -29,6 +28,7 @@ import { TimeSlotSelector } from "@/components/court-vision/TimeSlotSelector";
 import { CourtManagement } from "@/components/court-vision/CourtManagement";
 import { SendScheduleDialog } from "@/components/court-vision/SendScheduleDialog";
 import { ProgramManagement } from "@/components/court-vision/ProgramManagement";
+import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashboard";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES, DEFAULT_PROGRAMS } from "@/components/court-vision/constants";
 import { PersonData, ActivityData, CourtProps, ScheduleTemplate, DateSchedule, Program } from "@/components/court-vision/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -882,6 +882,13 @@ export default function CourtVision() {
         </div>
           
         <div className="flex flex-col h-full overflow-hidden">
+          <div className="px-4 mb-4">
+            <AssignmentsDashboard 
+              courts={courts}
+              selectedDate={selectedDate}
+            />
+          </div>
+          
           <div className="px-4 bg-white z-40 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
               <CourtAssignmentDialog 
@@ -972,3 +979,4 @@ export default function CourtVision() {
     </DndProvider>
   );
 }
+
