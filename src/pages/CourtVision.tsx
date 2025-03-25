@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -702,7 +703,7 @@ export default function CourtVision() {
 
   const handleChangePersonTimeSlot = (personId: string, timeSlot: string) => {
     const person = courts.flatMap(c => c.occupants).find(p => p.id === personId);
-    if (person && onRemovePerson && handleDrop) {
+    if (person) {
       handleRemovePerson(personId, person.timeSlot);
       handleDrop(person.courtId || "", {...person, timeSlot}, person.position, timeSlot);
     }
@@ -710,7 +711,7 @@ export default function CourtVision() {
 
   const handleChangePersonCourt = (personId: string, courtId: string) => {
     const person = courts.flatMap(c => c.occupants).find(p => p.id === personId);
-    if (person && courtId !== person.courtId && handleRemovePerson) {
+    if (person && courtId !== person.courtId) {
       handleRemovePerson(personId, person.timeSlot);
       handleDrop(courtId, {...person}, {x: 0.5, y: 0.5}, person.timeSlot);
     }
@@ -909,7 +910,7 @@ export default function CourtVision() {
                         timeSlots={timeSlots}
                         onChangeTimeSlot={handleChangePersonTimeSlot}
                         onChangeCourt={handleChangePersonCourt}
-                        showControls={false}
+                        showControls={true}
                       />
                     ))}
                   </div>
@@ -945,7 +946,7 @@ export default function CourtVision() {
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
+          <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4">
             <div className="flex flex-wrap gap-4 justify-center">
               {courts.map((court) => (
                 <Court

@@ -62,13 +62,13 @@ export function Person({
         </button>
       </div>
 
-      {showControls && person.courtId && (
+      {showControls && (
         <div className="mt-2 space-y-2 text-sm">
           {onChangeCourt && courts.length > 0 && (
             <div className="flex items-center gap-1">
               <Layers className="h-3 w-3 text-gray-500" />
               <Select 
-                value={person.courtId} 
+                value={person.courtId || ''} 
                 onValueChange={(value) => onChangeCourt(person.id, value)}
               >
                 <SelectTrigger className="h-7 text-xs py-0 px-2">
