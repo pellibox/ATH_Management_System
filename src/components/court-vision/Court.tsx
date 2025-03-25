@@ -8,6 +8,7 @@ import { X, Trash2, Edit, Clock } from "lucide-react";
 import { TimeSlot } from "./TimeSlot";
 import { Input } from "@/components/ui/input";
 
+// Update the interface to match what CourtGrid is passing
 interface CourtComponentProps {
   court: CourtProps;
   date?: Date;
@@ -16,12 +17,10 @@ interface CourtComponentProps {
   onActivityDrop: (courtId: string, activity: ActivityData, time?: string) => void;
   onRemovePerson?: (personId: string, time?: string) => void;
   onRemoveActivity?: (activityId: string, time?: string) => void;
-  onCourtRename?: (courtId: string, name: string) => void;
-  onCourtTypeChange?: (courtId: string, type: string) => void;
-  onCourtRemove?: (courtId: string) => void;
-  onCourtNumberChange?: (courtId: string, number: number) => void;
+  onRename?: (courtId: string, name: string) => void; // Add this to match onRenameCourt in CourtGrid
+  onChangeType?: (courtId: string, type: string) => void; // Add this to match onChangeCourtType in CourtGrid
+  onChangeNumber?: (courtId: string, number: number) => void; // Add this to match onChangeCourtNumber in CourtGrid
   isSidebarCollapsed?: boolean;
-  // Add the missing props
   onAssignPerson?: (courtId: string, person: PersonData, timeSlot?: string, durationHours?: number) => void;
   onAssignActivity?: (courtId: string, activity: ActivityData, timeSlot?: string, durationHours?: number) => void;
   people?: PersonData[];
@@ -37,10 +36,9 @@ export function Court({
   onActivityDrop, 
   onRemovePerson, 
   onRemoveActivity,
-  onCourtRename,
-  onCourtTypeChange,
-  onCourtRemove,
-  onCourtNumberChange,
+  onRename,
+  onChangeType,
+  onChangeNumber,
   isSidebarCollapsed = false
 }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -184,22 +182,22 @@ export function Court({
   };
 
   const handleSaveCourtName = () => {
-    if (courtName.trim() && onCourtRename) {
-      onCourtRename(court.id, courtName);
+    if (courtName.trim() && onRename) {
+      onRename(court.id, courtName);
     }
     setIsEditing(false);
   };
 
   const handleSaveCourtNumber = () => {
-    if (onCourtNumberChange && !isNaN(courtNumber)) {
-      onCourtNumberChange(court.id, courtNumber);
+    if (onChangeNumber && !isNaN(courtNumber)) {
+      onChangeNumber(court.id, courtNumber);
     }
     setIsEditingNumber(false);
   };
 
   const handleCourtTypeChange = (type: string) => {
-    if (onCourtTypeChange) {
-      onCourtTypeChange(court.id, type);
+    if (onChangeType) {
+      onChangeType(court.id, type);
     }
   };
 

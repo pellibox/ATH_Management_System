@@ -1,363 +1,255 @@
 
-import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
-  Calendar, 
-  Settings, 
-  Home, 
-  Users, 
-  BookOpen, 
-  Layers, 
-  Trophy, 
-  BarChart3, 
-  Video, 
-  Link as LinkIcon, 
-  View, 
-  UserCircle,
-  ChevronRight,
-  ChevronLeft,
-  MenuIcon
+  Calendar, Settings, Users, Activity, Layout, ChevronRight, ChevronDown,
+  Racquet, Menu, X
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-interface NavItemProps {
-  to: string;
-  icon: React.ElementType;
-  label: string;
-  isCollapsed: boolean;
+interface SidebarProps {
+  collapsed: boolean;
+  toggleSidebar: () => void;
 }
 
-interface SubNavItemProps {
-  to: string;
-  label: string;
-  isCollapsed: boolean;
-  sportType?: string;
-}
-
-const NavItem = ({ to, icon: Icon, label, isCollapsed }: NavItemProps) => {
+export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
   const location = useLocation();
-  const isActive = location.pathname === to;
-  
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) => cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-300",
-        isActive 
-          ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
-          : "text-gray-600 hover:bg-gray-100",
-        isCollapsed ? "justify-center" : ""
-      )}
-    >
-      <Icon className={cn("h-5 w-5", isActive ? "text-ath-red-clay" : "text-gray-500")} />
-      {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
-    </NavLink>
-  );
-};
-
-const SubNavItem = ({ to, label, isCollapsed, sportType }: SubNavItemProps) => {
-  const location = useLocation();
-  const isActive = location.pathname === to && 
-                   (sportType ? location.search === `?sport=${sportType}` : true);
-  
-  return (
-    <NavLink
-      to={sportType ? `${to}?sport=${sportType}` : to}
-      className={({ isActive }) => cn(
-        "flex items-center rounded-md px-3 py-2 text-sm transition-all duration-300",
-        isActive 
-          ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
-          : "text-gray-600 hover:bg-gray-100",
-        isCollapsed ? "justify-center ml-0" : "ml-8"
-      )}
-    >
-      {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
-    </NavLink>
-  );
-};
-
-export default function Sidebar() {
   const isMobile = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const location = useLocation();
-  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
-  
-  const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Calendario", href: "/calendar", icon: Calendar },
-    { name: "Campi", href: "/courts", icon: Layers },
-    { 
-      name: "Visione Campo", 
-      href: "/court-vision", 
-      icon: View,
-      submenu: [
-        { name: "Tutti gli Sport", href: "/court-vision", sportType: "" },
-        { name: "Tennis", href: "/court-vision", sportType: "tennis" },
-        { name: "Padel", href: "/court-vision", sportType: "padel" },
-        { name: "Pickleball", href: "/court-vision", sportType: "pickleball" },
-        { name: "Touch Tennis", href: "/court-vision", sportType: "touchtennis" },
-        { name: "Layout View", href: "/court-vision/layout", sportType: "" }
-      ]
-    },
-    { name: "Staff", href: "/staff", icon: Users },
-    { name: "Giocatori", href: "/players", icon: UserCircle },
-    { name: "Programmi", href: "/programs", icon: BookOpen },
-    { name: "Tornei", href: "/tournaments", icon: Trophy },
-    { name: "Rapporti", href: "/reports", icon: BarChart3 },
-    { name: "Video", href: "/videos", icon: Video },
-    { name: "Integrazioni", href: "/integrations", icon: LinkIcon },
-    { name: "Impostazioni", href: "/settings", icon: Settings },
-  ];
+  const [open, setOpen] = React.useState(false);
+  const [courtsOpen, setCourtsOpen] = React.useState(false);
 
-  // Handle window resize to collapse sidebar on mobile
-  useEffect(() => {
-    setMounted(true);
-    
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setIsCollapsed(true);
-      }
-    };
-    
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Dispatch a custom event when sidebar state changes
-    const event = new CustomEvent('sidebarStateChange', { detail: { isCollapsed } });
-    window.dispatchEvent(event);
-
-    // Close mobile menu when route changes
-    if (isMobile) {
-      setIsMenuOpen(false);
-    }
-  }, [isCollapsed, location.pathname, isMobile]);
-
-  // Toggle submenu expansion
-  const toggleSubmenu = (path: string) => {
-    if (expandedMenus.includes(path)) {
-      setExpandedMenus(expandedMenus.filter(menu => menu !== path));
-    } else {
-      setExpandedMenus([...expandedMenus, path]);
-    }
+  const isLinkActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  // Check if submenu is expanded
-  const isSubmenuExpanded = (path: string) => {
-    return expandedMenus.includes(path) || location.pathname.startsWith(path);
-  };
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      <div className="p-4 border-b">
+        <div className="flex items-center justify-between">
+          {!collapsed && (
+            <div className="font-bold text-lg text-ath-blue">ATH System</div>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className={`${collapsed ? 'mx-auto' : 'ml-auto'} text-gray-500 hover:text-gray-700 focus:outline-none`}
+            aria-label="Toggle sidebar"
+          >
+            {collapsed ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" />
+            )}
+          </button>
+        </div>
+      </div>
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+      <nav className="flex-1 overflow-y-auto py-4">
+        <ul className="space-y-1 px-2">
+          <li>
+            <Link
+              to="/"
+              className={`flex items-center py-2 px-4 rounded-md ${
+                isLinkActive('/') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              <Layout className="h-5 w-5" />
+              {!collapsed && <span className="ml-3">Dashboard</span>}
+            </Link>
+          </li>
 
-  const toggleMobileMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+          <li>
+            <Collapsible
+              open={courtsOpen}
+              onOpenChange={setCourtsOpen}
+              className="w-full"
+            >
+              <CollapsibleTrigger asChild>
+                <button
+                  className={`w-full flex items-center py-2 px-4 rounded-md ${
+                    isLinkActive('/court-vision') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+                  } ${collapsed ? 'justify-center' : 'justify-between'}`}
+                >
+                  <div className="flex items-center">
+                    <Racquet className="h-5 w-5" />
+                    {!collapsed && <span className="ml-3">Court Vision</span>}
+                  </div>
+                  {!collapsed && <ChevronDown className="h-4 w-4" />}
+                </button>
+              </CollapsibleTrigger>
+              {!collapsed && (
+                <CollapsibleContent>
+                  <ul className="mt-1 space-y-1 pl-9">
+                    <li>
+                      <Link
+                        to="/court-vision"
+                        className={`block py-2 px-4 rounded-md ${
+                          location.pathname === '/court-vision' && !location.search
+                            ? 'bg-ath-blue-light text-ath-blue'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        All Courts
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/court-vision?sport=tennis"
+                        className={`block py-2 px-4 rounded-md ${
+                          location.search.includes('sport=tennis')
+                            ? 'bg-ath-blue-light text-ath-blue'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        Tennis
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/court-vision?sport=padel"
+                        className={`block py-2 px-4 rounded-md ${
+                          location.search.includes('sport=padel')
+                            ? 'bg-ath-blue-light text-ath-blue'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        Padel
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/court-vision?sport=pickleball"
+                        className={`block py-2 px-4 rounded-md ${
+                          location.search.includes('sport=pickleball')
+                            ? 'bg-ath-blue-light text-ath-blue'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        Pickleball
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/court-vision?sport=touchtennis"
+                        className={`block py-2 px-4 rounded-md ${
+                          location.search.includes('sport=touchtennis')
+                            ? 'bg-ath-blue-light text-ath-blue'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        Touch Tennis
+                      </Link>
+                    </li>
+                  </ul>
+                </CollapsibleContent>
+              )}
+            </Collapsible>
+          </li>
 
-  if (!mounted) return null; // Prevent hydration mismatch
-  
+          <li>
+            <Link
+              to="/staff"
+              className={`flex items-center py-2 px-4 rounded-md ${
+                isLinkActive('/staff') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              <Users className="h-5 w-5" />
+              {!collapsed && <span className="ml-3">Staff</span>}
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/activities"
+              className={`flex items-center py-2 px-4 rounded-md ${
+                isLinkActive('/activities') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              <Activity className="h-5 w-5" />
+              {!collapsed && <span className="ml-3">Activities</span>}
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/calendar"
+              className={`flex items-center py-2 px-4 rounded-md ${
+                isLinkActive('/calendar') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              <Calendar className="h-5 w-5" />
+              {!collapsed && <span className="ml-3">Calendar</span>}
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/settings"
+              className={`flex items-center py-2 px-4 rounded-md ${
+                isLinkActive('/settings') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              <Settings className="h-5 w-5" />
+              {!collapsed && <span className="ml-3">Settings</span>}
+            </Link>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  );
+
+  // For mobile, we use a Sheet component
   if (isMobile) {
     return (
       <>
-        <button 
-          onClick={toggleMobileMenu}
-          className="fixed top-4 left-4 z-50 md:hidden bg-white p-2 rounded-md shadow-md"
-          aria-label="Toggle menu"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden fixed top-4 left-4 z-50"
+          onClick={() => setOpen(true)}
         >
-          <MenuIcon className="h-6 w-6 text-gray-600" />
-        </button>
-        
-        <aside 
-          className={cn(
-            "fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out",
-            isMenuOpen ? "translate-x-0" : "-translate-x-full"
-          )}
-        >
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-ath-red-clay">ATH</span>
-              <span className="text-xl font-medium">Sistema</span>
-            </div>
-            <button
-              onClick={toggleMobileMenu}
-              className="rounded-full p-1 hover:bg-gray-100"
-              aria-label="Close menu"
-            >
-              <ChevronLeft className="h-6 w-6 text-gray-500" />
-            </button>
-          </div>
-          
-          <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-4rem)]">
-            {navigation.map((item) => (
-              <div key={item.href}>
-                {item.submenu ? (
-                  <Collapsible 
-                    open={isSubmenuExpanded(item.href)} 
-                    onOpenChange={() => toggleSubmenu(item.href)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <NavLink
-                        to={item.href}
-                        className={({ isActive }) => cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-300 flex-grow",
-                          isActive || location.pathname.startsWith(item.href)
-                            ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
-                            : "text-gray-600 hover:bg-gray-100"
-                        )}
-                      >
-                        <item.icon className={cn(
-                          "h-5 w-5", 
-                          location.pathname.startsWith(item.href) ? "text-ath-red-clay" : "text-gray-500"
-                        )} />
-                        <span>{item.name}</span>
-                      </NavLink>
-                      <CollapsibleTrigger className="px-2 py-1 rounded-md hover:bg-gray-100">
-                        {isSubmenuExpanded(item.href) ? (
-                          <ChevronRight className="h-4 w-4 transform rotate-90 text-gray-500" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-gray-500" />
-                        )}
-                      </CollapsibleTrigger>
-                    </div>
-                    <CollapsibleContent>
-                      <div className="mt-1 ml-6 space-y-1 border-l pl-2">
-                        {item.submenu.map((subItem) => (
-                          <NavLink
-                            key={`${subItem.href}-${subItem.sportType || 'default'}`}
-                            to={subItem.sportType ? `${subItem.href}?sport=${subItem.sportType}` : subItem.href}
-                            className={({ isActive }) => cn(
-                              "flex items-center rounded-md px-3 py-2 text-sm transition-all",
-                              (isActive || 
-                                (location.pathname === subItem.href && 
-                                  (subItem.sportType ? location.search === `?sport=${subItem.sportType}` : !location.search)))
-                                ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
-                                : "text-gray-600 hover:bg-gray-100"
-                            )}
-                          >
-                            <span>{subItem.name}</span>
-                          </NavLink>
-                        ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                ) : (
-                  <NavLink
-                    to={item.href}
-                    className={({ isActive }) => cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-300",
-                      isActive 
-                        ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
-                        : "text-gray-600 hover:bg-gray-100"
-                    )}
-                  >
-                    <item.icon className={cn("h-5 w-5", location.pathname === item.href ? "text-ath-red-clay" : "text-gray-500")} />
-                    <span>{item.name}</span>
-                  </NavLink>
-                )}
-              </div>
-            ))}
-          </nav>
-        </aside>
+          <Menu className="h-5 w-5" />
+        </Button>
+
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent side="left" className="p-0 w-64">
+            {sidebarContent}
+          </SheetContent>
+        </Sheet>
       </>
     );
   }
-  
-  return (
-    <aside 
-      className={cn(
-        "fixed left-0 top-0 z-20 flex h-full flex-col border-r bg-white shadow-soft transition-all duration-300",
-        isCollapsed ? "w-16 p-2" : "w-64 p-4"
-      )}
-      data-collapsed={isCollapsed ? "true" : "false"}
-    >
-      <div className="flex items-center justify-between mb-6 md:mb-8">
-        {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-ath-red-clay">ATH</span>
-            <span className="text-xl font-medium">Sistema</span>
-          </div>
-        )}
 
-        <button
-          onClick={toggleSidebar}
-          className="rounded-full p-1 hover:bg-gray-100"
-          aria-label={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-5 w-5 text-gray-500" />
-          ) : (
-            <ChevronLeft className="h-5 w-5 text-gray-500" />
-          )}
-        </button>
-      </div>
-      
-      <nav className="space-y-1 flex-1 overflow-y-auto">
-        {navigation.map((item) => (
-          <div key={item.href}>
-            {item.submenu ? (
-              <>
-                <div 
-                  className={cn(
-                    "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm cursor-pointer transition-all duration-300",
-                    location.pathname.startsWith(item.href)
-                      ? "bg-ath-red-clay/10 text-ath-red-clay font-medium" 
-                      : "text-gray-600 hover:bg-gray-100",
-                    isCollapsed ? "justify-center" : ""
-                  )}
-                  onClick={() => !isCollapsed && toggleSubmenu(item.href)}
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon className={cn("h-5 w-5", location.pathname.startsWith(item.href) ? "text-ath-red-clay" : "text-gray-500")} />
-                    {!isCollapsed && <span className="whitespace-nowrap">{item.name}</span>}
-                  </div>
-                  {!isCollapsed && (
-                    <ChevronRight className={cn(
-                      "h-4 w-4 transition-transform",
-                      isSubmenuExpanded(item.href) ? "rotate-90" : ""
-                    )} />
-                  )}
-                </div>
-                
-                {/* Submenu items */}
-                {(isSubmenuExpanded(item.href) || isCollapsed) && (
-                  <div className={cn("mt-1 space-y-1", isCollapsed ? "text-center" : "")}>
-                    {item.submenu.map((subItem) => (
-                      <SubNavItem 
-                        key={`${subItem.href}-${subItem.sportType}`} 
-                        to={subItem.href} 
-                        label={subItem.name} 
-                        isCollapsed={isCollapsed}
-                        sportType={subItem.sportType} 
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <NavItem 
-                to={item.href}
-                icon={item.icon}
-                label={item.name}
-                isCollapsed={isCollapsed}
-              />
-            )}
-          </div>
-        ))}
-      </nav>
-      
-      <div className="mt-auto pt-3 md:pt-4 border-t">
-        <NavItem to="/settings" icon={Settings} label="Impostazioni" isCollapsed={isCollapsed} />
-      </div>
-    </aside>
+  // For desktop, we render the sidebar directly
+  return (
+    <div
+      className={`${
+        collapsed ? 'w-16' : 'w-64'
+      } bg-white border-r border-gray-200 transition-all duration-300 hidden md:block flex-shrink-0 h-screen sticky top-0`}
+    >
+      {sidebarContent}
+    </div>
+  );
+}
+
+// Define the ChevronLeft component since it's used but missing from the imports
+function ChevronLeft(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
   );
 }

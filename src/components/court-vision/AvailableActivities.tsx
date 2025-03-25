@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Activity, PlaySquare } from "lucide-react";
 import { ActivityData } from "./types";
@@ -7,10 +6,16 @@ import { ACTIVITY_TYPES } from "./constants";
 export interface AvailableActivitiesProps {
   activities: ActivityData[];
   onAddActivity: (activity: {name: string, type: string, duration: string}) => void;
-  onRemoveActivity: (id: string) => void;
+  onRemoveActivity?: (id: string) => void;
+  onActivityDrop?: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
 }
 
-export function AvailableActivities({ activities, onAddActivity, onRemoveActivity }: AvailableActivitiesProps) {
+export function AvailableActivities({ 
+  activities, 
+  onAddActivity, 
+  onRemoveActivity,
+  onActivityDrop 
+}: AvailableActivitiesProps) {
   const [newActivity, setNewActivity] = useState({ 
     name: "", 
     type: ACTIVITY_TYPES.MATCH,
@@ -106,7 +111,7 @@ export function AvailableActivities({ activities, onAddActivity, onRemoveActivit
                   <span className="text-xs ml-2 opacity-80">{activity.duration}</span>
                 </div>
                 <button
-                  onClick={() => onRemoveActivity(activity.id)}
+                  onClick={() => onRemoveActivity && onRemoveActivity(activity.id)}
                   className="ml-auto text-white hover:text-red-200"
                   aria-label="Remove activity"
                 >

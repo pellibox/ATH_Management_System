@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { Person } from "./Person";
@@ -9,10 +8,23 @@ export interface AvailablePeopleProps {
   people: PersonData[];
   programs?: Program[];
   onAddPerson: (person: {name: string, type: string}) => void;
-  onRemovePerson: (id: string) => void;
+  onRemovePerson?: (id: string) => void;
+  onDrop?: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
+  onAddToDragArea?: (person: PersonData) => void;
+  playersList?: PersonData[];
+  coachesList?: PersonData[];
 }
 
-export function AvailablePeople({ people, programs = [], onAddPerson, onRemovePerson }: AvailablePeopleProps) {
+export function AvailablePeople({ 
+  people, 
+  programs = [], 
+  onAddPerson, 
+  onRemovePerson,
+  onDrop,
+  onAddToDragArea,
+  playersList,
+  coachesList
+}: AvailablePeopleProps) {
   const [newPerson, setNewPerson] = useState({ name: "", type: PERSON_TYPES.PLAYER });
 
   const handleAddPerson = () => {

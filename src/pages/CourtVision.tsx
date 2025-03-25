@@ -296,6 +296,7 @@ export default function CourtVision() {
     const newTemplate: ScheduleTemplate = {
       id: `template-${Date.now()}`,
       name: name,
+      date: new Date(),
       courts: courts.map(court => ({
         ...court,
         occupants: court.occupants.map(person => ({ ...person }))

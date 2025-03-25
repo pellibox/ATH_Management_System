@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, Search, TagIcon, Clock, Edit, Trash } from "lucide-react";
 import { ACTIVITY_TYPES } from "@/components/court-vision/constants";
@@ -27,7 +26,6 @@ export default function Activities() {
     { id: "activity7", name: "Tournament Match", type: ACTIVITY_TYPES.MATCH, duration: "2h" },
   ]);
   
-  // Filter activities based on type and search query
   const filteredActivities = activities
     .filter(activity => {
       if (filter === "all") return true;
@@ -45,7 +43,6 @@ export default function Activities() {
     });
   
   const handleAddActivity = () => {
-    // This would open a dialog to add a new activity
     toast({
       title: "Not Implemented",
       description: "This feature is not yet implemented in this demo.",
@@ -82,7 +79,6 @@ export default function Activities() {
         </div>
       </div>
       
-      {/* Filter */}
       <div className="mb-6 bg-white shadow-sm rounded-lg p-1 inline-flex items-center overflow-x-auto">
         <button
           onClick={() => setFilter("all")}
@@ -136,7 +132,6 @@ export default function Activities() {
         </button>
       </div>
       
-      {/* Activities Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <table className="w-full border-collapse">
           <thead>

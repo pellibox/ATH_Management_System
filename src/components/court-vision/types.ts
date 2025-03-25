@@ -23,6 +23,7 @@ export interface ActivityData {
   courtId?: string;
   duration?: string;
   startTime?: string;
+  timeSlot?: string; // Add this to fix the error
   date?: string; // ISO date string
   durationHours?: number; // Duration in hours
   endTimeSlot?: string; // End time slot for spanning multiple slots
