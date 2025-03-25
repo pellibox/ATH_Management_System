@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Calendar, Settings, Home, Users, BookOpen, MapPin, ChartBar, Video, Award, GitMerge } from 'lucide-react';
+import { Calendar, Settings, Home, Users, BookOpen, MapPin, ChartBar, Video, Award, GitMerge, Layers, Racquet, Trophy, BarChart3, Link } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -38,6 +37,20 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   
+  const navigation = [
+    { name: "Dashboard", href: "/dashboard", icon: Home },
+    { name: "Calendar", href: "/calendar", icon: Calendar },
+    { name: "Courts", href: "/courts", icon: Layers },
+    { name: "Court Vision", href: "/court-vision", icon: Racquet },
+    { name: "Staff", href: "/staff", icon: Users },
+    { name: "Programs", href: "/programs", icon: BookOpen },
+    { name: "Tournaments", href: "/tournaments", icon: Trophy },
+    { name: "Reports", href: "/reports", icon: BarChart3 },
+    { name: "Videos", href: "/videos", icon: Video },
+    { name: "Integrations", href: "/integrations", icon: Link },
+    { name: "Settings", href: "/settings", icon: Settings },
+  ];
+
   // Handle window resize to collapse sidebar on mobile
   useEffect(() => {
     setMounted(true);
@@ -90,15 +103,9 @@ export default function Sidebar() {
       </div>
       
       <nav className="space-y-1 flex-1 overflow-y-auto">
-        <NavItem to="/" icon={Home} label="Dashboard" isCollapsed={isCollapsed} />
-        <NavItem to="/calendar" icon={Calendar} label="Calendar" isCollapsed={isCollapsed} />
-        <NavItem to="/courts" icon={MapPin} label="Courts" isCollapsed={isCollapsed} />
-        <NavItem to="/staff" icon={Users} label="Staff" isCollapsed={isCollapsed} />
-        <NavItem to="/programs" icon={BookOpen} label="Programs" isCollapsed={isCollapsed} />
-        <NavItem to="/tournaments" icon={Award} label="Tournaments" isCollapsed={isCollapsed} />
-        <NavItem to="/videos" icon={Video} label="Video Archive" isCollapsed={isCollapsed} />
-        <NavItem to="/integrations" icon={GitMerge} label="Integrations" isCollapsed={isCollapsed} />
-        <NavItem to="/reports" icon={ChartBar} label="Reports" isCollapsed={isCollapsed} />
+        {navigation.map((item) => (
+          <NavItem key={item.href} to={item.href} icon={item.icon} label={item.name} isCollapsed={isCollapsed} />
+        ))}
       </nav>
       
       <div className="mt-auto pt-3 md:pt-4 border-t">
