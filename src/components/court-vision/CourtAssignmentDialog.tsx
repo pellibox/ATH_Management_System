@@ -26,7 +26,7 @@ interface CourtAssignmentDialogProps {
   courts: CourtProps[];
   availablePeople: PersonData[];
   availableActivities: ActivityData[];
-  timeSlots?: string[]; // Added timeSlots prop
+  timeSlots: string[]; // Added timeSlots prop
   onAssignPerson: (courtId: string, person: PersonData, timeSlot?: string) => void;
   onAssignActivity: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
   onRemovePerson?: (personId: string, timeSlot?: string) => void;
