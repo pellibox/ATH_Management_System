@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { useDrop } from "react-dnd";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { PersonData, ActivityData } from "./types";
@@ -16,7 +16,7 @@ interface TimeSlotProps {
   onRemoveActivity: (activityId: string, time: string) => void;
 }
 
-export function TimeSlot({ 
+export const TimeSlot = memo(function TimeSlot({ 
   courtId, 
   time, 
   occupants, 
@@ -26,6 +26,16 @@ export function TimeSlot({
   onRemovePerson, 
   onRemoveActivity 
 }: TimeSlotProps) {
+  // Use memoized callback handlers for better performance
+  const handleRemovePerson = useCallback((personId: string) => {
+    onRemovePerson(personId, time);
+  }, [onRemovePerson, time]);
+
+  const handleRemoveActivity = useCallback((activityId: string) => {
+    onRemoveActivity(activityId, time);
+  }, [onRemoveActivity, time]);
+
+  // Optimize the drag & drop logic
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
     drop: (item: any) => {
@@ -38,7 +48,7 @@ export function TimeSlot({
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
-  }));
+  }), [courtId, time, onDrop, onActivityDrop]);
 
   return (
     <div 
@@ -80,7 +90,7 @@ export function TimeSlot({
             >
               {activity.name}
               <button
-                onClick={() => onRemoveActivity(activity.id, time)}
+                onClick={() => handleRemoveActivity(activity.id)}
                 className="ml-1 text-gray-300 hover:text-white"
               >
                 ×
@@ -103,7 +113,7 @@ export function TimeSlot({
             >
               {person.name.substring(0, 10)}
               <button
-                onClick={() => onRemovePerson(person.id, time)}
+                onClick={() => handleRemovePerson(person.id)}
                 className="ml-1 text-gray-300 hover:text-white"
               >
                 ×
@@ -114,4 +124,5 @@ export function TimeSlot({
       )}
     </div>
   );
-}
+});
+
