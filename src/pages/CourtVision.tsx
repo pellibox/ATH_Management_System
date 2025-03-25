@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -804,3 +805,106 @@ export default function CourtVision() {
                       <TabsTrigger value="time-slots" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
                         <Clock className="h-4 w-4 mr-1" />
                         Time Slots
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="courts" className="space-y-4">
+                      <CourtManagement 
+                        courts={courts} 
+                        onAddCourt={handleAddCourt}
+                        onRemoveCourt={handleRemoveCourt}
+                        onRenameCourt={handleRenameCourt}
+                        onChangeCourtType={handleChangeCourtType}
+                        onChangeCourtNumber={handleChangeCourtNumber}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="people" className="space-y-4">
+                      <PeopleManagement 
+                        playersList={playersList}
+                        coachesList={coachesList}
+                        onAddToDragArea={handleAddToDragArea}
+                        onAddPerson={handleAddPerson}
+                        programs={programs}
+                        onAssignProgram={handleAssignProgram}
+                        onRemovePerson={handleRemovePerson}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="activities" className="space-y-4">
+                      <AvailableActivities 
+                        activities={activities} 
+                        onAddActivity={handleAddActivity}
+                        onRemoveActivity={handleRemoveActivity}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="time-slots" className="space-y-4">
+                      <TimeSlotSelector 
+                        timeSlots={timeSlots} 
+                        onAddTimeSlot={handleAddTimeSlot}
+                        onRemoveTimeSlot={handleRemoveTimeSlot}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex-grow px-4 pb-4 overflow-auto">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="w-full md:w-3/4 space-y-4">
+              {courts.map((court) => (
+                <Court
+                  key={court.id}
+                  court={court}
+                  timeSlots={timeSlots}
+                  onDrop={handleDrop}
+                  onActivityDrop={handleActivityDrop}
+                  onRemovePerson={handleRemovePerson}
+                  onRemoveActivity={handleRemoveActivity}
+                  onAssignPerson={handleAssignPerson}
+                  onAssignActivity={handleAssignActivity}
+                  people={playersList.concat(coachesList)}
+                  activities={activities}
+                  programs={programs}
+                />
+              ))}
+            </div>
+            
+            <div className="w-full md:w-1/4 space-y-4">
+              <AvailablePeople 
+                people={people}
+                onAddPerson={handleAddPerson}
+                onRemovePerson={handleRemovePerson} 
+              />
+              
+              <AvailableActivities 
+                activities={activities} 
+                onAddActivity={handleAddActivity}
+                onRemoveActivity={handleRemoveActivity} 
+              />
+              
+              <ScheduleTemplates 
+                templates={templates} 
+                onSaveTemplate={saveAsTemplate} 
+                onApplyTemplate={applyTemplate} 
+              />
+              
+              <AssignmentsDashboard
+                courts={courts}
+                people={playersList.concat(coachesList)}
+                programs={programs}
+                onChangeTimeSlot={handleChangePersonTimeSlot}
+                onChangeCourt={handleChangePersonCourt}
+                onRemovePerson={handleRemovePerson}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </DndProvider>
+  );
+}
