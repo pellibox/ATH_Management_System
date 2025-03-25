@@ -3,15 +3,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserPlus, User, UserCog, Phone, Mail, Calendar } from "lucide-react";
-import { PersonData } from "./types";
+import { Users, UserPlus, User, UserCog, Phone, Mail, Calendar, Tag } from "lucide-react";
+import { PersonData, Program } from "./types";
 import { PERSON_TYPES } from "./constants";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useDrag } from "react-dnd";
 
 // Create a draggable person component for the floating menu
-function DraggablePerson({ person, onAddToDragArea }: { person: PersonData, onAddToDragArea: (person: PersonData) => void }) {
+function DraggablePerson({ 
+  person, 
+  programs, 
+  onAddToDragArea, 
+  onAssignProgram 
+}: { 
+  person: PersonData, 
+  programs: Program[], 
+  onAddToDragArea: (person: PersonData) => void,
+  onAssignProgram: (personId: string, programId: string) => void
+}) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
     item: person,
@@ -20,22 +30,91 @@ function DraggablePerson({ person, onAddToDragArea }: { person: PersonData, onAd
     }),
   }));
 
+  const [showProgramDialog, setShowProgramDialog] = useState(false);
+
   return (
     <div className="flex items-center justify-between p-2 mb-1 rounded bg-gray-50 hover:bg-gray-100">
       <div className="flex items-center">
         <div 
           ref={drag}
-          className={`w-6 h-6 rounded-full cursor-grab ${isDragging ? "opacity-50" : ""} ${
-            person.type === PERSON_TYPES.PLAYER 
-              ? "bg-ath-red-clay-dark text-white" 
-              : "bg-ath-black text-white"
-          } flex items-center justify-center text-xs font-medium mr-2`}
+          className={`w-8 h-8 rounded-full cursor-grab ${isDragging ? "opacity-50" : ""}`}
+          style={{ 
+            backgroundColor: person.programColor || (person.type === PERSON_TYPES.PLAYER 
+              ? "#8B5CF6" // Default purple for players
+              : "#1A1F2C"  // Default dark for coaches
+            ),
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "medium",
+            marginRight: "0.5rem",
+            fontSize: "0.75rem"
+          }}
         >
           {person.name.substring(0, 2)}
         </div>
-        <span className="text-sm">{person.name}</span>
+        <div>
+          <span className="text-sm block">{person.name}</span>
+          {person.programId && (
+            <span className="text-xs text-gray-500 block">
+              {programs.find(p => p.id === person.programId)?.name || ""}
+            </span>
+          )}
+        </div>
       </div>
+
       <div className="flex gap-1">
+        <Dialog open={showProgramDialog} onOpenChange={setShowProgramDialog}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0"
+            >
+              <Tag className="h-3 w-3" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <DialogTitle>Assegna {person.name} a un Programma</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Seleziona Programma</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {programs.map(program => (
+                    <button
+                      key={program.id}
+                      className="flex items-center p-2 rounded border border-gray-200 hover:bg-gray-50 text-left"
+                      onClick={() => {
+                        onAssignProgram(person.id, program.id);
+                        setShowProgramDialog(false);
+                      }}
+                    >
+                      <div 
+                        className="w-4 h-4 rounded-full mr-2" 
+                        style={{ backgroundColor: program.color }}
+                      ></div>
+                      <span>{program.name}</span>
+                    </button>
+                  ))}
+                  <button
+                    className="flex items-center p-2 rounded border border-gray-200 hover:bg-gray-50 text-left"
+                    onClick={() => {
+                      onAssignProgram(person.id, "");
+                      setShowProgramDialog(false);
+                    }}
+                  >
+                    <div className="w-4 h-4 rounded-full border border-gray-300 mr-2"></div>
+                    <span>Rimuovi dal programma</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
         <Dialog>
           <DialogTrigger asChild>
             <Button 
@@ -75,6 +154,7 @@ function DraggablePerson({ person, onAddToDragArea }: { person: PersonData, onAd
             </div>
           </DialogContent>
         </Dialog>
+        
         <Button 
           variant="ghost" 
           size="sm" 
@@ -91,21 +171,24 @@ function DraggablePerson({ person, onAddToDragArea }: { person: PersonData, onAd
 export interface PeopleManagementProps {
   playersList: PersonData[];
   coachesList: PersonData[];
+  programs: Program[];
   onAddPerson: (person: {name: string, type: string}) => void;
   onRemovePerson: (id: string) => void;
   onAddToDragArea: (person: PersonData) => void;
+  onAssignProgram: (personId: string, programId: string) => void;
 }
 
 export function PeopleManagement({ 
   playersList, 
   coachesList, 
+  programs,
   onAddPerson, 
   onRemovePerson,
-  onAddToDragArea 
+  onAddToDragArea,
+  onAssignProgram
 }: PeopleManagementProps) {
   const [newPersonName, setNewPersonName] = useState("");
   const [selectedTab, setSelectedTab] = useState("players");
-  const [selectedPerson, setSelectedPerson] = useState<PersonData | null>(null);
   const { toast } = useToast();
   
   const handleAddPerson = (type: string) => {
@@ -117,26 +200,6 @@ export function PeopleManagement({
     });
     
     setNewPersonName("");
-  };
-  
-  const handleAddToDragArea = (person: PersonData) => {
-    onAddToDragArea(person);
-  };
-
-  const handleSendSchedule = (person: PersonData) => {
-    // Simulate sending a schedule via WhatsApp
-    toast({
-      title: "Schedule Sent",
-      description: `Schedule has been sent to ${person.name} via WhatsApp.`,
-    });
-  };
-
-  const handleSendEmail = (person: PersonData) => {
-    // Simulate sending a schedule via Email
-    toast({
-      title: "Email Sent",
-      description: `Schedule has been sent to ${person.name} via Email.`,
-    });
   };
 
   return (
@@ -176,13 +239,25 @@ export function PeopleManagement({
         
         <TabsContent value="players" className="max-h-[180px] overflow-y-auto mt-0">
           {playersList.map((player) => (
-            <DraggablePerson key={player.id} person={player} onAddToDragArea={handleAddToDragArea} />
+            <DraggablePerson 
+              key={player.id} 
+              person={player} 
+              programs={programs}
+              onAddToDragArea={onAddToDragArea}
+              onAssignProgram={onAssignProgram}
+            />
           ))}
         </TabsContent>
         
         <TabsContent value="coaches" className="max-h-[180px] overflow-y-auto mt-0">
           {coachesList.map((coach) => (
-            <DraggablePerson key={coach.id} person={coach} onAddToDragArea={handleAddToDragArea} />
+            <DraggablePerson 
+              key={coach.id} 
+              person={coach}
+              programs={programs}
+              onAddToDragArea={onAddToDragArea}
+              onAssignProgram={onAssignProgram}
+            />
           ))}
         </TabsContent>
       </Tabs>

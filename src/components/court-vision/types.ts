@@ -9,6 +9,8 @@ export interface PersonData {
   date?: string; // ISO date string
   durationHours?: number; // Duration in hours
   endTimeSlot?: string; // End time slot for spanning multiple slots
+  programId?: string; // Program assignment
+  programColor?: string; // Color for visual representation
 }
 
 export interface ActivityData {
@@ -42,4 +44,10 @@ export interface ScheduleTemplate {
 export interface DateSchedule {
   date: string; // ISO date string
   courts: CourtProps[];
+}
+
+export interface Program {
+  id: string;
+  name: string;
+  color: string;
 }

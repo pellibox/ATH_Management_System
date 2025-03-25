@@ -34,11 +34,12 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
   return (
     <div 
       ref={drag}
-      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
-        person.type === PERSON_TYPES.PLAYER 
-          ? "bg-ath-red-clay-dark text-white"
-          : "bg-ath-black text-white"
-      } ${isDragging ? "opacity-50" : ""} cursor-move`}
+      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${isDragging ? "opacity-50" : ""} cursor-move`}
+      style={{
+        backgroundColor: person.programColor || 
+          (person.type === PERSON_TYPES.PLAYER ? "#8B5CF6" : "#1A1F2C"),
+        color: "white"
+      }}
     >
       {person.name.substring(0, 10)}
       <button
@@ -117,23 +118,29 @@ export const TimeSlot = memo(function TimeSlot({
       console.log("Dropping in time slot:", time, "Item:", item);
       
       if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
+        // Handle person drop
+        const personItem = item as PersonData;
+        
         // Remove reference to original time slot if needed
-        if (item.sourceTimeSlot && item.sourceTimeSlot !== time && item.courtId === courtId) {
-          console.log("Moving from time slot", item.sourceTimeSlot, "to", time);
-          onRemovePerson(item.id, item.sourceTimeSlot);
+        if (personItem.sourceTimeSlot && personItem.sourceTimeSlot !== time && personItem.courtId === courtId) {
+          console.log("Moving person from time slot", personItem.sourceTimeSlot, "to", time);
+          onRemovePerson(personItem.id, personItem.sourceTimeSlot);
         }
         
         // Update with the new time slot
-        onDrop(courtId, time, item);
-      } else if (item.type.startsWith("activity")) {
+        onDrop(courtId, time, personItem);
+      } else if (item.type && item.type.toString().startsWith("activity")) {
+        // Handle activity drop
+        const activityItem = item as ActivityData;
+        
         // Remove reference to original time slot if needed
-        if (item.sourceTimeSlot && item.sourceTimeSlot !== time && item.courtId === courtId) {
-          console.log("Moving activity from time slot", item.sourceTimeSlot, "to", time);
-          onRemoveActivity(item.id, item.sourceTimeSlot);
+        if (activityItem.sourceTimeSlot && activityItem.sourceTimeSlot !== time && activityItem.courtId === courtId) {
+          console.log("Moving activity from time slot", activityItem.sourceTimeSlot, "to", time);
+          onRemoveActivity(activityItem.id, activityItem.sourceTimeSlot);
         }
         
         // Update with the new time slot
-        onActivityDrop(courtId, time, item);
+        onActivityDrop(courtId, time, activityItem);
       }
     },
     collect: (monitor) => ({

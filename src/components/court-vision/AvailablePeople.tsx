@@ -2,16 +2,17 @@
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { Person } from "./Person";
-import { PersonData } from "./types";
+import { PersonData, Program } from "./types";
 import { PERSON_TYPES } from "./constants";
 
 export interface AvailablePeopleProps {
   people: PersonData[];
+  programs?: Program[];
   onAddPerson: (person: {name: string, type: string}) => void;
   onRemovePerson: (id: string) => void;
 }
 
-export function AvailablePeople({ people, onAddPerson, onRemovePerson }: AvailablePeopleProps) {
+export function AvailablePeople({ people, programs = [], onAddPerson, onRemovePerson }: AvailablePeopleProps) {
   const [newPerson, setNewPerson] = useState({ name: "", type: PERSON_TYPES.PLAYER });
 
   const handleAddPerson = () => {

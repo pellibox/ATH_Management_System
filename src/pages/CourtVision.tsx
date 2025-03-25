@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
-import { format, addDays, startOfWeek, addWeeks, parseISO } from "date-fns";
+import { format, addDays, startOfWeek, addWeeks } from "date-fns";
 import { 
   CalendarIcon, 
   Clock, 
   Plus, 
-  MenuIcon, 
-  Settings, 
   Users, 
-  PlusCircle, 
   Calendar, 
   Film,
   Layers,
-  MoveVertical,
   ArrowDown,
   ArrowUp,
-  Send,
 } from "lucide-react";
 
 // Import court vision components
@@ -27,18 +22,17 @@ import { AvailableActivities } from "@/components/court-vision/AvailableActiviti
 import { ScheduleTemplates } from "@/components/court-vision/ScheduleTemplates";
 import { DateSelector } from "@/components/court-vision/DateSelector";
 import { PeopleManagement } from "@/components/court-vision/PeopleManagement";
-import { CourtLegend } from "@/components/court-vision/CourtLegend";
 import { CourtAssignmentDialog } from "@/components/court-vision/CourtAssignmentDialog";
 import { TimeSlotSelector } from "@/components/court-vision/TimeSlotSelector";
 import { CourtManagement } from "@/components/court-vision/CourtManagement";
 import { SendScheduleDialog } from "@/components/court-vision/SendScheduleDialog";
-import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vision/constants";
-import { PersonData, ActivityData, CourtProps, ScheduleTemplate, DateSchedule } from "@/components/court-vision/types";
+import { ProgramManagement } from "@/components/court-vision/ProgramManagement";
+import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES, DEFAULT_PROGRAMS } from "@/components/court-vision/constants";
+import { PersonData, ActivityData, CourtProps, ScheduleTemplate, DateSchedule, Program } from "@/components/court-vision/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 
 export default function CourtVision() {
   const { toast } = useToast();
@@ -49,13 +43,11 @@ export default function CourtVision() {
   const [dateSchedules, setDateSchedules] = useState<DateSchedule[]>([]);
   const [activeTab, setActiveTab] = useState<"courts" | "people" | "activities" | "time-slots" | "templates">("courts");
   
-  // Define time slots
   const [timeSlots, setTimeSlots] = useState<string[]>([
     "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", 
     "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
   ]);
   
-  // Initialize empty courts
   const defaultCourts: CourtProps[] = [
     { id: "court1", type: COURT_TYPES.TENNIS_CLAY, name: "Center Court", number: 1, occupants: [], activities: [] },
     { id: "court2", type: COURT_TYPES.TENNIS_CLAY, name: "Tennis", number: 2, occupants: [], activities: [] },
@@ -67,34 +59,6 @@ export default function CourtVision() {
   ];
   
   const [courts, setCourts] = useState<CourtProps[]>(defaultCourts);
-
-  // Sort courts by type and number whenever they change
-  useEffect(() => {
-    const sortedCourts = [...courts].sort((a, b) => {
-      // First sort by court type
-      if (a.type !== b.type) {
-        // Define the type order: Clay first, then Hard, then Padel, etc.
-        const typeOrder = {
-          [COURT_TYPES.TENNIS_CLAY]: 1,
-          [COURT_TYPES.TENNIS_HARD]: 2,
-          [COURT_TYPES.PADEL]: 3,
-          [COURT_TYPES.PICKLEBALL]: 4,
-          [COURT_TYPES.TOUCH_TENNIS]: 5,
-        };
-        
-        return (typeOrder[a.type as keyof typeof typeOrder] || 99) - 
-               (typeOrder[b.type as keyof typeof typeOrder] || 99);
-      }
-      
-      // If same type, sort by number
-      return a.number - b.number;
-    });
-    
-    // Only update if the order has changed
-    if (JSON.stringify(sortedCourts.map(c => c.id)) !== JSON.stringify(courts.map(c => c.id))) {
-      setCourts(sortedCourts);
-    }
-  }, [courts]);
 
   const [people, setPeople] = useState<PersonData[]>([
     { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
@@ -124,7 +88,8 @@ export default function CourtVision() {
     { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH },
   ]);
 
-  // Load courts for the selected date
+  const [programs, setPrograms] = useState<Program[]>(DEFAULT_PROGRAMS);
+
   useEffect(() => {
     const dateString = selectedDate.toISOString().split('T')[0];
     const existingSchedule = dateSchedules.find(schedule => schedule.date === dateString);
@@ -136,7 +101,6 @@ export default function CourtVision() {
     }
   }, [selectedDate, dateSchedules]);
 
-  // Save courts when they change
   useEffect(() => {
     const dateString = selectedDate.toISOString().split('T')[0];
     const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === dateString);
@@ -151,12 +115,13 @@ export default function CourtVision() {
   }, [courts]);
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
-    // Check if this is a drag from one court/timeslot to another
     const isMovingFromExistingAssignment = courts.some(court => 
       court.occupants.some(p => p.id === person.id)
     );
 
     const personDuration = person.durationHours || 1;
+    
+    const program = programs.find(p => p.id === person.programId);
     
     const personWithCourtInfo = { 
       ...person, 
@@ -164,7 +129,8 @@ export default function CourtVision() {
       position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
       timeSlot,
       date: selectedDate.toISOString().split('T')[0],
-      durationHours: personDuration
+      durationHours: personDuration,
+      programColor: program?.color
     };
 
     if (timeSlot) {
@@ -177,7 +143,6 @@ export default function CourtVision() {
 
     let updatedCourts = [...courts];
 
-    // Remove the person from any existing court assignment
     updatedCourts = updatedCourts.map((court) => {
       return {
         ...court,
@@ -185,7 +150,6 @@ export default function CourtVision() {
       };
     });
 
-    // Add the person to the new court
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
         return {
@@ -198,7 +162,6 @@ export default function CourtVision() {
 
     setCourts(updatedCourts);
 
-    // Only add to the available list if not already assigned somewhere
     const isFromAvailableList = people.some(p => p.id === person.id);
     if (isFromAvailableList) {
       setPeople(people.filter(p => p.id !== person.id));
@@ -211,7 +174,6 @@ export default function CourtVision() {
   };
 
   const handleActivityDrop = (courtId: string, activity: ActivityData, timeSlot?: string) => {
-    // Check if this is a drag from one court/timeslot to another
     const isMovingFromExistingAssignment = courts.some(court => 
       court.activities.some(a => a.id === activity.id)
     );
@@ -251,7 +213,6 @@ export default function CourtVision() {
 
     let updatedCourts = [...courts];
 
-    // Remove the activity from any existing court assignment
     updatedCourts = updatedCourts.map((court) => {
       return {
         ...court,
@@ -259,7 +220,6 @@ export default function CourtVision() {
       };
     });
 
-    // Add the activity to the new court
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
         return {
@@ -653,13 +613,73 @@ export default function CourtVision() {
     });
   };
 
+  const handleAddProgram = (program: Program) => {
+    setPrograms([...programs, program]);
+    
+    toast({
+      title: "Programma Aggiunto",
+      description: `${program.name} è stato aggiunto ai programmi disponibili`,
+    });
+  };
+
+  const handleRemoveProgram = (programId: string) => {
+    const isProgramInUse = playersList.some(p => p.programId === programId) || 
+                           coachesList.some(c => c.programId === programId);
+    
+    if (isProgramInUse) {
+      toast({
+        title: "Impossibile Rimuovere",
+        description: "Questo programma è assegnato a persone. Rimuovi prima le assegnazioni.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setPrograms(programs.filter(p => p.id !== programId));
+    
+    toast({
+      title: "Programma Rimosso",
+      description: `Il programma è stato rimosso`,
+    });
+  };
+
+  const handleAssignProgram = (personId: string, programId: string) => {
+    const program = programs.find(p => p.id === programId);
+    
+    const updatePerson = (person: PersonData): PersonData => {
+      if (person.id === personId) {
+        return {
+          ...person,
+          programId: programId || undefined,
+          programColor: program?.color
+        };
+      }
+      return person;
+    };
+    
+    setPlayersList(prev => prev.map(updatePerson));
+    setCoachesList(prev => prev.map(updatePerson));
+    
+    setPeople(prev => prev.map(updatePerson));
+    
+    setCourts(prev => prev.map(court => ({
+      ...court,
+      occupants: court.occupants.map(updatePerson)
+    })));
+    
+    toast({
+      title: programId ? "Programma Assegnato" : "Programma Rimosso",
+      description: programId 
+        ? `La persona è stata assegnata al programma ${program?.name}`
+        : `La persona è stata rimossa dal programma`,
+    });
+  };
+
   const [showFloatingPanel, setShowFloatingPanel] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  // Check if sidebar is collapsed
   useEffect(() => {
     const checkSidebarState = () => {
-      // Check for the sidebar width by looking at its class
       const sidebar = document.querySelector('aside');
       if (sidebar) {
         setIsSidebarCollapsed(sidebar.classList.contains('w-16'));
@@ -668,7 +688,6 @@ export default function CourtVision() {
     
     checkSidebarState();
     
-    // Create a MutationObserver to watch for class changes on the sidebar
     const observer = new MutationObserver(checkSidebarState);
     const sidebar = document.querySelector('aside');
     if (sidebar) {
@@ -786,11 +805,22 @@ export default function CourtVision() {
                     </TabsContent>
                     
                     <TabsContent value="people" className="mt-0 w-full">
-                      <AvailablePeople 
-                        people={people} 
-                        onAddPerson={handleAddPerson}
-                        onRemovePerson={(personId) => handleRemovePerson(personId)}
-                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <ProgramManagement 
+                          programs={programs}
+                          onAddProgram={handleAddProgram}
+                          onRemoveProgram={handleRemoveProgram}
+                        />
+                        <PeopleManagement 
+                          playersList={playersList} 
+                          coachesList={coachesList}
+                          programs={programs}
+                          onAddPerson={handleAddPerson}
+                          onRemovePerson={(personId) => handleRemovePerson(personId)}
+                          onAddToDragArea={handleAddToDragArea}
+                          onAssignProgram={handleAssignProgram}
+                        />
+                      </div>
                     </TabsContent>
                     
                     <TabsContent value="activities" className="mt-0 w-full">
@@ -843,18 +873,27 @@ export default function CourtVision() {
                   {people.map((person) => (
                     <div 
                       key={person.id}
-                      className={`flex items-center gap-2 p-2 rounded-md ${
-                        person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay/10" : "bg-ath-black/10" 
-                      }`}
+                      className={`flex items-center gap-2 p-2 rounded-md`}
+                      style={{ backgroundColor: person.programColor ? `${person.programColor}20` : (
+                        person.type === PERSON_TYPES.PLAYER ? "rgba(139, 92, 246, 0.1)" : "rgba(26, 31, 44, 0.1)"
+                      )}}
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
-                      }`}>
+                      <div 
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+                        style={{ backgroundColor: person.programColor || (
+                          person.type === PERSON_TYPES.PLAYER ? "#8B5CF6" : "#1A1F2C"
+                        )}}
+                      >
                         {person.name.substring(0, 2)}
                       </div>
                       <div className="flex-grow">
                         <p className="text-sm font-medium">{person.name}</p>
-                        <p className="text-xs text-gray-500">{person.type === PERSON_TYPES.PLAYER ? "Giocatore" : "Allenatore"}</p>
+                        <p className="text-xs text-gray-500">
+                          {person.type === PERSON_TYPES.PLAYER ? "Giocatore" : "Allenatore"}
+                          {person.programId && (
+                            <> • {programs.find(p => p.id === person.programId)?.name}</>
+                          )}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -914,4 +953,3 @@ export default function CourtVision() {
     </DndProvider>
   );
 }
-
