@@ -3,7 +3,7 @@ import { useState, useCallback, memo } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { PersonData, ActivityData } from "./types";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, Move } from "lucide-react";
 
 interface TimeSlotProps {
   courtId: string;
@@ -29,18 +29,26 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      // Aggiungi un callback per quando il trascinamento termina
+      const didDrop = monitor.didDrop();
+      if (!didDrop) {
+        console.log("Il trascinamento è stato annullato");
+      }
+    }
   }));
 
   return (
     <div 
       ref={drag}
-      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${isDragging ? "opacity-50" : ""} cursor-move`}
+      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${isDragging ? "opacity-50" : ""} cursor-move relative`}
       style={{
         backgroundColor: person.programColor || 
           (person.type === PERSON_TYPES.PLAYER ? "#8B5CF6" : "#1A1F2C"),
         color: "white"
       }}
     >
+      <Move className="h-3 w-3 mr-1 absolute right-1 opacity-50" />
       {person.name.substring(0, 10)}
       <button
         onClick={onRemove}
@@ -55,7 +63,7 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
 // Crea un componente attività trascinabile per la fascia oraria
 function DraggableActivity({ activity, time, onRemove }: { activity: ActivityData, time: string, onRemove: () => void }) {
   const [{ isDragging }, drag] = useDrag(() => ({
-    type: activity.type,
+    type: "activity",
     item: { 
       ...activity, 
       sourceTimeSlot: time,  // Includi la fascia oraria di origine per tracciare il movimento
@@ -64,6 +72,13 @@ function DraggableActivity({ activity, time, onRemove }: { activity: ActivityDat
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      // Aggiungi un callback per quando il trascinamento termina
+      const didDrop = monitor.didDrop();
+      if (!didDrop) {
+        console.log("Il trascinamento è stato annullato");
+      }
+    }
   }));
 
   return (
@@ -79,8 +94,9 @@ function DraggableActivity({ activity, time, onRemove }: { activity: ActivityDat
           : activity.type === ACTIVITY_TYPES.GAME
           ? "bg-ath-black text-white"
           : "bg-ath-gray-medium text-white"
-      } ${isDragging ? "opacity-50" : ""} cursor-move`}
+      } ${isDragging ? "opacity-50" : ""} cursor-move relative`}
     >
+      <Move className="h-3 w-3 mr-1 absolute right-1 opacity-50" />
       {activity.name}
       <button
         onClick={onRemove}
@@ -113,7 +129,7 @@ export const TimeSlot = memo(function TimeSlot({
 
   // Ottimizza la logica di drag & drop
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, ACTIVITY_TYPES.MATCH, ACTIVITY_TYPES.TRAINING, ACTIVITY_TYPES.BASKET_DRILL, ACTIVITY_TYPES.GAME, "activity"],
+    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
     drop: (item: any) => {
       console.log("Trascinamento nella fascia oraria:", time, "Elemento:", item);
       
@@ -122,26 +138,20 @@ export const TimeSlot = memo(function TimeSlot({
         const personItem = item as PersonData;
         
         // Rimuovi il riferimento alla fascia oraria originale se necessario
-        if (personItem.sourceTimeSlot && personItem.sourceTimeSlot !== time && personItem.courtId === courtId) {
+        if (personItem.sourceTimeSlot && personItem.sourceTimeSlot !== time) {
           console.log("Spostamento persona dalla fascia oraria", personItem.sourceTimeSlot, "a", time);
           onRemovePerson(personItem.id, personItem.sourceTimeSlot);
         }
         
         // Aggiorna con la nuova fascia oraria
         onDrop(courtId, time, personItem);
-      } else if (item.type && (
-        item.type === "activity" || 
-        item.type === ACTIVITY_TYPES.MATCH || 
-        item.type === ACTIVITY_TYPES.TRAINING || 
-        item.type === ACTIVITY_TYPES.BASKET_DRILL || 
-        item.type === ACTIVITY_TYPES.GAME || 
-        item.type.toString().startsWith("activity")
-      )) {
+      } else if (item.type === "activity" || 
+                Object.values(ACTIVITY_TYPES).includes(item.type as any)) {
         // Gestisci il trascinamento dell'attività
         const activityItem = item as ActivityData;
         
         // Rimuovi il riferimento alla fascia oraria originale se necessario
-        if (activityItem.sourceTimeSlot && activityItem.sourceTimeSlot !== time && activityItem.courtId === courtId) {
+        if (activityItem.sourceTimeSlot && activityItem.sourceTimeSlot !== time) {
           console.log("Spostamento attività dalla fascia oraria", activityItem.sourceTimeSlot, "a", time);
           onRemoveActivity(activityItem.id, activityItem.sourceTimeSlot);
         }

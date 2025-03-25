@@ -12,7 +12,15 @@ interface ActivityProps {
 export function Activity({ activity, onRemove }: ActivityProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "activity",
-    item: { id: activity.id, type: activity.type, name: activity.name },
+    item: { 
+      id: activity.id,
+      type: activity.type, 
+      name: activity.name,
+      duration: activity.duration,
+      startTime: activity.startTime,
+      courtId: activity.courtId,
+      durationHours: activity.durationHours
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),

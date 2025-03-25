@@ -1,6 +1,6 @@
 
 import { useDrag } from "react-dnd";
-import { User, Users, Clock, Layers } from "lucide-react";
+import { User, Users, Clock, Layers, Move } from "lucide-react";
 import { PERSON_TYPES } from "./constants";
 import { PersonData } from "./types";
 import { ScrollArea } from "../ui/scroll-area";
@@ -29,11 +29,25 @@ export function Person({
     type: person.type,
     item: { 
       ...person,
-      sourceTimeSlot: person.timeSlot // Add source time slot to identify where the person came from
+      sourceTimeSlot: person.timeSlot, // Aggiungi sourceTimeSlot per tracciare la sorgente
+      id: person.id,
+      name: person.name,
+      type: person.type,
+      timeSlot: person.timeSlot,
+      programColor: person.programColor,
+      programId: person.programId,
+      courtId: person.courtId,
+      durationHours: person.durationHours
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      const didDrop = monitor.didDrop();
+      if (!didDrop) {
+        console.log("Il trascinamento della persona è stato annullato");
+      }
+    }
   }));
 
   return (
@@ -41,7 +55,7 @@ export function Person({
       ref={drag}
       className={`flex flex-col p-2 rounded-md mb-1 ${
         isDragging ? "opacity-40" : "opacity-100"
-      } cursor-move`}
+      } cursor-move relative`}
       style={person.programColor ? { backgroundColor: `${person.programColor}20` } : {}}
     >
       <div className="flex items-center">
@@ -53,10 +67,11 @@ export function Person({
           {person.name.substring(0, 1)}
         </div>
         <span className="text-sm">{person.name}</span>
+        <Move className="h-3 w-3 ml-2 opacity-50" title="Trascina per assegnare" />
         <button
           onClick={onRemove}
           className="ml-auto text-gray-500 hover:text-red-500"
-          aria-label="Remove person"
+          aria-label="Rimuovi persona"
         >
           ×
         </button>
@@ -72,7 +87,7 @@ export function Person({
                 onValueChange={(value) => onChangeCourt(person.id, value)}
               >
                 <SelectTrigger className="h-7 text-xs py-0 px-2">
-                  <SelectValue placeholder="Select court" />
+                  <SelectValue placeholder="Seleziona campo" />
                 </SelectTrigger>
                 <SelectContent>
                   <ScrollArea className="h-[200px]">
@@ -95,7 +110,7 @@ export function Person({
                 onValueChange={(value) => onChangeTimeSlot(person.id, value)}
               >
                 <SelectTrigger className="h-7 text-xs py-0 px-2">
-                  <SelectValue placeholder="Select time" />
+                  <SelectValue placeholder="Seleziona orario" />
                 </SelectTrigger>
                 <SelectContent>
                   <ScrollArea className="h-[200px]">
