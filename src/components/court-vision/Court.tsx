@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -126,8 +125,8 @@ export function Court({ court, onDrop, onActivityDrop, onRemovePerson, onRemoveA
                     person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
                   }`}
                   style={{
-                    left: `${((index % 3) * 0.5 + 0.25) * 100}%`,
-                    top: `${(Math.floor(index / 3) * 0.5 + 0.25) * 100}%`,
+                    left: `${(person.position?.x || 0.25) * 100}%`,
+                    top: `${(person.position?.y || 0.25) * 100}%`,
                   }}
                   title={person.name}
                 >

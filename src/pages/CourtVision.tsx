@@ -63,15 +63,10 @@ export default function CourtVision() {
   ]);
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }) => {
-    const draggablePerson = people.find((p) => p.id === person.id) || 
-                            courts.flatMap(c => c.occupants).find(p => p.id === person.id);
-    
-    if (!draggablePerson) return;
-
-    const personCopy = { 
-      ...draggablePerson, 
+    const personWithCourtInfo = { 
+      ...person, 
       courtId,
-      position 
+      position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 }
     };
 
     const updatedCourts = courts.map((court) => {
@@ -81,43 +76,39 @@ export default function CourtVision() {
           occupants: court.occupants.filter((p) => p.id !== person.id),
         };
       }
+      
+      if (court.id === courtId) {
+        const personExists = court.occupants.some(p => p.id === person.id);
+        
+        if (personExists) {
+          return {
+            ...court,
+            occupants: court.occupants.map(p => 
+              p.id === person.id ? { ...p, position: personWithCourtInfo.position } : p
+            ),
+          };
+        } else {
+          return {
+            ...court,
+            occupants: [...court.occupants, personWithCourtInfo],
+          };
+        }
+      }
+      
       return court;
     });
 
-    const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
+    const isFromAvailableList = people.some(p => p.id === person.id);
     
-    if (targetCourtIndex !== -1) {
-      if (!updatedCourts[targetCourtIndex].occupants.some(p => p.id === person.id)) {
-        updatedCourts[targetCourtIndex] = {
-          ...updatedCourts[targetCourtIndex],
-          occupants: [
-            ...updatedCourts[targetCourtIndex].occupants,
-            personCopy,
-          ],
-        };
-      } else {
-        updatedCourts[targetCourtIndex] = {
-          ...updatedCourts[targetCourtIndex],
-          occupants: updatedCourts[targetCourtIndex].occupants.map(p => 
-            p.id === person.id ? { ...p, position } : p
-          ),
-        };
-      }
-    }
-
-    const wasOnCourt = courts.some(court => 
-      court.occupants.some(p => p.id === person.id)
-    );
-    
-    if (!wasOnCourt) {
-      setPeople(people.filter((p) => p.id !== person.id));
+    if (isFromAvailableList) {
+      setPeople(people.filter(p => p.id !== person.id));
     }
     
     setCourts(updatedCourts);
 
     toast({
       title: "Persona Assegnata",
-      description: `${draggablePerson.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
+      description: `${person.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
     });
   };
 
@@ -181,7 +172,9 @@ export default function CourtVision() {
     const personToRemove = courts.flatMap(c => c.occupants).find(p => p.id === personId);
     
     if (personToRemove) {
-      setPeople([...people, { ...personToRemove, courtId: undefined, position: undefined }]);
+      const { courtId, position, ...personWithoutCourtInfo } = personToRemove;
+      
+      setPeople([...people, personWithoutCourtInfo]);
       
       setCourts(
         courts.map((court) => ({
@@ -324,7 +317,34 @@ export default function CourtVision() {
   };
 
   const handleAddToDragArea = (person: PersonData) => {
-    setPeople(prev => [...prev, person]);
+    const isAlreadyAvailable = people.some(p => p.id === person.id);
+    
+    if (!isAlreadyAvailable) {
+      const isOnCourt = courts.some(court => 
+        court.occupants.some(p => p.id === person.id)
+      );
+      
+      if (!isOnCourt) {
+        setPeople([...people, person]);
+        
+        toast({
+          title: "Persona Aggiunta",
+          description: `${person.name} è stata aggiunta all'area di trascinamento`,
+        });
+      } else {
+        toast({
+          title: "Persona già assegnata",
+          description: `${person.name} è già assegnata ad un campo. Rimuovila prima.`,
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Persona già disponibile",
+        description: `${person.name} è già nell'area di trascinamento`,
+        variant: "destructive",
+      });
+    }
   };
 
   return (

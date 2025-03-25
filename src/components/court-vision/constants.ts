@@ -21,4 +21,5 @@ export const ACTIVITY_TYPES = {
   BASKET_DRILL: "basket-drill",
   GAME: "game",
   LESSON: "lesson",
+  OTHER: "other", // Added OTHER activity type
 };
