@@ -120,7 +120,6 @@ export default function CourtVision() {
   }, [courts]);
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
-    // Create a copy of the person with court information
     const personWithCourtInfo = { 
       ...person, 
       courtId,
@@ -131,35 +130,28 @@ export default function CourtVision() {
 
     let updatedCourts = [...courts];
 
-    // If person is already on a court for this time slot, remove them
     if (timeSlot) {
-      // Look for the person in this specific time slot
       updatedCourts = updatedCourts.map((court) => {
         return {
           ...court,
           occupants: court.occupants.filter((p) => {
-            // Keep the person if they're not the same person or not in the same time slot
             return !(p.id === person.id && p.timeSlot === timeSlot);
           })
         };
       });
     } else {
-      // For general court assignment (no time slot), check all courts
       updatedCourts = updatedCourts.map((court) => {
         return {
           ...court,
           occupants: court.occupants.filter((p) => {
-            // Keep the person if they're not the same person or they have a specific time slot
             return !(p.id === person.id && !p.timeSlot);
           })
         };
       });
     }
 
-    // Add person to the target court
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
-        // Add new person
         return {
           ...court,
           occupants: [...court.occupants, personWithCourtInfo],
@@ -170,7 +162,6 @@ export default function CourtVision() {
 
     setCourts(updatedCourts);
 
-    // If the person is from the available list, remove them
     const isFromAvailableList = people.some(p => p.id === person.id);
     if (isFromAvailableList) {
       setPeople(people.filter(p => p.id !== person.id));
@@ -197,7 +188,6 @@ export default function CourtVision() {
 
     let updatedCourts = [...courts];
 
-    // If activity is already scheduled for this time slot, remove it
     if (timeSlot) {
       updatedCourts = updatedCourts.map((court) => {
         return {
@@ -208,7 +198,6 @@ export default function CourtVision() {
         };
       });
     } else {
-      // For general assignment (no time slot), check all courts
       updatedCourts = updatedCourts.map((court) => {
         return {
           ...court,
@@ -219,7 +208,6 @@ export default function CourtVision() {
       });
     }
 
-    // Add activity to the target court
     updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
         return {
@@ -262,7 +250,6 @@ export default function CourtVision() {
     if (personToRemove) {
       const { courtId, position, timeSlot, date, ...personWithoutCourtInfo } = personToRemove;
       
-      // Only add back to available people if they don't have other assignments
       const hasOtherAssignments = courts.some(court => 
         court.occupants.some(p => p.id === personId && p.timeSlot !== timeSlot)
       );
@@ -293,7 +280,6 @@ export default function CourtVision() {
     if (activityToRemove) {
       const { courtId, startTime, date, ...activityWithoutCourtInfo } = activityToRemove;
       
-      // Only add back to available activities if they don't have other assignments
       const hasOtherAssignments = courts.some(court => 
         court.activities.some(a => a.id === activityId && a.startTime !== timeSlot)
       );
@@ -333,10 +319,8 @@ export default function CourtVision() {
       type: personData.type,
     };
 
-    // Add to people list
     setPeople(prevPeople => [...prevPeople, personToAdd]);
     
-    // Also add to the appropriate list based on type
     if (personData.type === PERSON_TYPES.PLAYER) {
       setPlayersList(prevList => [...prevList, personToAdd]);
     } else if (personData.type === PERSON_TYPES.COACH) {
@@ -385,7 +369,6 @@ export default function CourtVision() {
   };
 
   const handleRemoveTimeSlot = (time: string) => {
-    // Check if this time slot is in use
     const isTimeSlotInUse = courts.some(court => 
       court.occupants.some(p => p.timeSlot === time) || 
       court.activities.some(a => a.startTime === time)
@@ -436,7 +419,6 @@ export default function CourtVision() {
   const applyTemplate = (template: ScheduleTemplate) => {
     setCourts(template.courts);
 
-    // Add to date schedules
     const dateString = selectedDate.toISOString().split('T')[0];
     const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === dateString);
     
@@ -458,7 +440,6 @@ export default function CourtVision() {
     const nextDay = addDays(selectedDate, 1);
     const nextDayString = nextDay.toISOString().split('T')[0];
     
-    // Save current courts to the next day
     const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === nextDayString);
     
     if (existingScheduleIndex >= 0) {
@@ -481,12 +462,10 @@ export default function CourtVision() {
     const startOfCurrentWeek = startOfWeek(selectedDate);
     const nextWeekStart = addWeeks(startOfCurrentWeek, 1);
     
-    // Loop through each day of the week and copy courts
     for (let i = 0; i < 7; i++) {
       const targetDay = addDays(nextWeekStart, i);
       const targetDayString = targetDay.toISOString().split('T')[0];
       
-      // Save current courts to the target day
       const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === targetDayString);
       
       if (existingScheduleIndex >= 0) {
@@ -541,7 +520,6 @@ export default function CourtVision() {
     const courtIndex = courts.findIndex(court => court.id === courtId);
     if (courtIndex < 0) return;
     
-    // Cannot move first court up or last court down
     if ((direction === 'up' && courtIndex === 0) || 
         (direction === 'down' && courtIndex === courts.length - 1)) {
       return;
@@ -566,6 +544,66 @@ export default function CourtVision() {
     });
   };
 
+  const handleAddCourt = (courtData: { name: string, type: string, number: number }) => {
+    const newCourtId = `court-${Date.now()}`;
+    const newCourt: CourtProps = {
+      id: newCourtId,
+      name: courtData.name,
+      type: courtData.type,
+      number: courtData.number,
+      occupants: [],
+      activities: []
+    };
+    
+    setCourts([...courts, newCourt]);
+    
+    toast({
+      title: "Campo Aggiunto",
+      description: `${courtData.name} #${courtData.number} è stato aggiunto`,
+    });
+  };
+  
+  const handleRemoveCourt = (courtId: string) => {
+    const courtToRemove = courts.find(c => c.id === courtId);
+    if (!courtToRemove) return;
+    
+    if (courtToRemove.occupants.length > 0 || courtToRemove.activities.length > 0) {
+      toast({
+        title: "Impossibile Rimuovere",
+        description: "Questo campo ha persone o attività assegnate. Rimuovile prima.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setCourts(courts.filter(court => court.id !== courtId));
+    
+    toast({
+      title: "Campo Rimosso",
+      description: `${courtToRemove.name} #${courtToRemove.number} è stato rimosso`,
+    });
+  };
+  
+  const handleRenameCourt = (courtId: string, name: string) => {
+    setCourts(
+      courts.map(court => 
+        court.id === courtId 
+          ? { ...court, name } 
+          : court
+      )
+    );
+  };
+  
+  const handleChangeCourtType = (courtId: string, type: string) => {
+    setCourts(
+      courts.map(court => 
+        court.id === courtId 
+          ? { ...court, type } 
+          : court
+      )
+    );
+  };
+
   const [showFloatingPanel, setShowFloatingPanel] = useState(true);
 
   return (
@@ -573,7 +611,6 @@ export default function CourtVision() {
       <div className="container mx-auto py-4 relative">
         <h1 className="text-2xl font-bold mb-4">Court Vision</h1>
         
-        {/* Fixed/Floating control panel */}
         <div className={`transition-all duration-300 ${showFloatingPanel ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}>
           <div className="bg-white rounded-xl shadow-md p-4 mb-6 sticky top-4 z-30">
             <div className="flex justify-between items-center mb-4">
@@ -614,7 +651,6 @@ export default function CourtVision() {
             
             {showFloatingPanel && (
               <>
-                {/* Court Type Legend */}
                 <div className="mb-4">
                   <div className="flex flex-wrap items-center gap-4">
                     <span className="text-sm font-medium">Court Types:</span>
@@ -633,7 +669,6 @@ export default function CourtVision() {
                   </div>
                 </div>
                 
-                {/* Top Tab Navigation */}
                 <Tabs defaultValue="courts" className="w-full">
                   <TabsList className="w-full justify-start mb-4 bg-gray-100 p-1 rounded-md">
                     <TabsTrigger value="courts" className="data-[state=active]:bg-ath-black data-[state=active]:text-white">
@@ -720,7 +755,6 @@ export default function CourtVision() {
           </div>
         </div>
         
-        {/* Floating People & Activities Panel */}
         <div className={`fixed right-4 top-24 z-20 w-64 transition-all duration-300 ${showFloatingPanel ? 'translate-x-0' : 'translate-x-64'}`}>
           <div className="bg-white rounded-xl shadow-lg p-3 mb-4">
             <Tabs defaultValue="floatingPeople">
@@ -754,7 +788,6 @@ export default function CourtVision() {
           </div>
         </div>
         
-        {/* Courts Grid - Make courts larger and add reordering buttons */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {courts.map((court, index) => (
             <div key={court.id} className="relative">
