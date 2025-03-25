@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
-import { Tennis, Racquet, Users, User } from "lucide-react";
+import { ChartBar, Users, User } from "lucide-react";
 
 // Court types and their properties
 const COURT_TYPES = {

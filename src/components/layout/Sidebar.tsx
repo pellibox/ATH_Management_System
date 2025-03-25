@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Calendar, Settings, Home, Users, BookOpen, MapPin, ChartBar, Video, Award, GitMerge, Layers, Racquet, Trophy, BarChart3, Link } from 'lucide-react';
+import { Calendar, Settings, Home, Users, BookOpen, MapPin, ChartBar, Video, Award, GitMerge, Layers, Trophy, BarChart3, Link } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -41,7 +42,7 @@ export default function Sidebar() {
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Calendar", href: "/calendar", icon: Calendar },
     { name: "Courts", href: "/courts", icon: Layers },
-    { name: "Court Vision", href: "/court-vision", icon: Racquet },
+    { name: "Court Vision", href: "/court-vision", icon: ChartBar },
     { name: "Staff", href: "/staff", icon: Users },
     { name: "Programs", href: "/programs", icon: BookOpen },
     { name: "Tournaments", href: "/tournaments", icon: Trophy },
