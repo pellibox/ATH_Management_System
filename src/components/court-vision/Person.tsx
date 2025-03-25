@@ -12,7 +12,10 @@ interface PersonProps {
 export function Person({ person, onRemove }: PersonProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
-    item: person,  // Pass the entire person object
+    item: { 
+      ...person,
+      sourceTimeSlot: person.timeSlot // Add source time slot to identify where the person came from
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
