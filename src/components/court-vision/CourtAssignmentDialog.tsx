@@ -26,16 +26,18 @@ interface CourtAssignmentDialogProps {
   courts: CourtProps[];
   availablePeople: PersonData[];
   availableActivities: ActivityData[];
-  onAssignPerson: (courtId: string, person: PersonData) => void;
-  onAssignActivity: (courtId: string, activity: ActivityData) => void;
-  onRemovePerson?: (personId: string) => void;
-  onRemoveActivity?: (activityId: string) => void;
+  timeSlots?: string[]; // Added timeSlots prop
+  onAssignPerson: (courtId: string, person: PersonData, timeSlot?: string) => void;
+  onAssignActivity: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
+  onRemovePerson?: (personId: string, timeSlot?: string) => void;
+  onRemoveActivity?: (activityId: string, timeSlot?: string) => void;
 }
 
 export function CourtAssignmentDialog({
   courts,
   availablePeople,
   availableActivities,
+  timeSlots = [], // Default to empty array
   onAssignPerson,
   onAssignActivity,
   onRemovePerson,
@@ -44,6 +46,7 @@ export function CourtAssignmentDialog({
   const [selectedTab, setSelectedTab] = useState<"people" | "activities">("people");
   const [selectedCourt, setSelectedCourt] = useState<CourtProps | null>(null);
   const [showAssigned, setShowAssigned] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>(undefined);
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
@@ -67,6 +70,24 @@ export function CourtAssignmentDialog({
           <CalendarIcon className="h-4 w-4 mr-2" /> Activities
         </Button>
       </div>
+
+      {timeSlots && timeSlots.length > 0 && (
+        <div className="mb-4">
+          <label className="text-sm font-medium mb-2 block">Select Time Slot (Optional)</label>
+          <select
+            className="w-full px-3 py-2 text-sm border rounded"
+            value={selectedTimeSlot || ""}
+            onChange={(e) => setSelectedTimeSlot(e.target.value || undefined)}
+          >
+            <option value="">No specific time</option>
+            {timeSlots.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {selectedTab === "people" ? (
         <div>
@@ -108,34 +129,36 @@ export function CourtAssignmentDialog({
               {showAssigned ? (
                 selectedCourt.occupants.length > 0 ? (
                   <div className="space-y-2">
-                    {selectedCourt.occupants.map((person) => (
-                      <div
-                        key={person.id}
-                        className="flex items-center justify-between p-2 border rounded"
-                      >
-                        <div className="flex items-center">
-                          <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2 ${
-                              person.type === PERSON_TYPES.PLAYER
-                                ? "bg-ath-red-clay text-white"
-                                : "bg-ath-black text-white"
-                            }`}
-                          >
-                            {person.name.substring(0, 2)}
+                    {selectedCourt.occupants
+                      .filter(person => !selectedTimeSlot || person.timeSlot === selectedTimeSlot)
+                      .map((person) => (
+                        <div
+                          key={person.id}
+                          className="flex items-center justify-between p-2 border rounded"
+                        >
+                          <div className="flex items-center">
+                            <div
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2 ${
+                                person.type === PERSON_TYPES.PLAYER
+                                  ? "bg-ath-red-clay text-white"
+                                  : "bg-ath-black text-white"
+                              }`}
+                            >
+                              {person.name.substring(0, 2)}
+                            </div>
+                            <span className="text-sm">{person.name}</span>
                           </div>
-                          <span className="text-sm">{person.name}</span>
+                          {onRemovePerson && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => onRemovePerson(person.id, person.timeSlot)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" /> Remove
+                            </Button>
+                          )}
                         </div>
-                        {onRemovePerson && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => onRemovePerson(person.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" /> Remove
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500 italic p-2">
@@ -166,7 +189,7 @@ export function CourtAssignmentDialog({
                           size="sm"
                           className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
                           onClick={() => {
-                            onAssignPerson(selectedCourt.id, person);
+                            onAssignPerson(selectedCourt.id, person, selectedTimeSlot);
                           }}
                         >
                           Assign
@@ -223,39 +246,41 @@ export function CourtAssignmentDialog({
               {showAssigned ? (
                 selectedCourt.activities.length > 0 ? (
                   <div className="space-y-2">
-                    {selectedCourt.activities.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className="flex items-center justify-between p-2 border rounded"
-                      >
-                        <div className="flex items-center">
-                          <div
-                            className={`px-2 py-1 rounded-full text-xs mr-2 ${
-                              activity.type === ACTIVITY_TYPES.MATCH
-                                ? "bg-ath-black-light text-white"
-                                : activity.type === ACTIVITY_TYPES.TRAINING
-                                ? "bg-ath-red-clay-dark text-white"
-                                : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                                ? "bg-ath-red-clay text-white"
-                                : activity.type === ACTIVITY_TYPES.GAME
-                                ? "bg-ath-black text-white"
-                                : "bg-ath-gray-medium text-white"
-                            }`}
-                          >
-                            {activity.name}
+                    {selectedCourt.activities
+                      .filter(activity => !selectedTimeSlot || activity.startTime === selectedTimeSlot)
+                      .map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="flex items-center justify-between p-2 border rounded"
+                        >
+                          <div className="flex items-center">
+                            <div
+                              className={`px-2 py-1 rounded-full text-xs mr-2 ${
+                                activity.type === ACTIVITY_TYPES.MATCH
+                                  ? "bg-ath-black-light text-white"
+                                  : activity.type === ACTIVITY_TYPES.TRAINING
+                                  ? "bg-ath-red-clay-dark text-white"
+                                  : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+                                  ? "bg-ath-red-clay text-white"
+                                  : activity.type === ACTIVITY_TYPES.GAME
+                                  ? "bg-ath-black text-white"
+                                  : "bg-ath-gray-medium text-white"
+                              }`}
+                            >
+                              {activity.name}
+                            </div>
                           </div>
+                          {onRemoveActivity && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => onRemoveActivity(activity.id, activity.startTime)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" /> Remove
+                            </Button>
+                          )}
                         </div>
-                        {onRemoveActivity && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => onRemoveActivity(activity.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" /> Remove
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500 italic p-2">
@@ -291,7 +316,7 @@ export function CourtAssignmentDialog({
                           size="sm"
                           className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
                           onClick={() => {
-                            onAssignActivity(selectedCourt.id, activity);
+                            onAssignActivity(selectedCourt.id, activity, selectedTimeSlot);
                           }}
                         >
                           Assign
