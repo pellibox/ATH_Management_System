@@ -17,7 +17,6 @@ import {
   MoveVertical,
   ArrowDown,
   ArrowUp,
-  Move
 } from "lucide-react";
 
 // Import court vision components
@@ -37,131 +36,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 // Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Define the DraggableCourt component for drag-and-drop reordering
-interface DraggableCourtProps {
-  court: CourtProps;
-  index: number;
-  date: Date;
-  timeSlots: string[];
-  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, time?: string) => void;
-  onActivityDrop: (courtId: string, activity: ActivityData, time?: string) => void;
-  onRemovePerson: (personId: string, time?: string) => void;
-  onRemoveActivity: (activityId: string, time?: string) => void;
-  onCourtRename: (courtId: string, name: string) => void;
-  onCourtTypeChange: (courtId: string, type: string) => void;
-  onCourtRemove: (courtId: string) => void;
-  moveCourt: (dragIndex: number, hoverIndex: number) => void;
-}
-
-const DraggableCourt = ({ 
-  court, 
-  index, 
-  date, 
-  timeSlots, 
-  onDrop, 
-  onActivityDrop, 
-  onRemovePerson, 
-  onRemoveActivity, 
-  onCourtRename, 
-  onCourtTypeChange, 
-  onCourtRemove, 
-  moveCourt 
-}: DraggableCourtProps) => {
-  const ref = React.useRef<HTMLDivElement>(null);
-  
-  const [{ isDragging }, drag] = useDrag({
-    type: 'court',
-    item: { index },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  });
-  
-  const [{ handlerId }, drop] = useDrop({
-    accept: 'court',
-    collect(monitor) {
-      return {
-        handlerId: monitor.getHandlerId(),
-      };
-    },
-    hover(item: any, monitor) {
-      if (!ref.current) {
-        return;
-      }
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      
-      // Don't replace items with themselves
-      if (dragIndex === hoverIndex) {
-        return;
-      }
-      
-      // Determine rectangle on screen
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      
-      // Get vertical middle
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      
-      // Determine mouse position
-      const clientOffset = monitor.getClientOffset();
-      
-      // Get pixels to the top
-      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
-      
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
-      
-      // Dragging downwards
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return;
-      }
-      
-      // Dragging upwards
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return;
-      }
-      
-      // Time to actually perform the action
-      moveCourt(dragIndex, hoverIndex);
-      
-      // Note: we're mutating the monitor item here!
-      // Generally it's better to avoid mutations,
-      // but it's good here for the sake of performance
-      // to avoid expensive index searches.
-      item.index = hoverIndex;
-    },
-  });
-  
-  drag(drop(ref));
-  
-  return (
-    <div 
-      ref={ref} 
-      className={`relative mb-8 ${isDragging ? 'opacity-50' : 'opacity-100'}`}
-      data-handler-id={handlerId}
-    >
-      <div className="absolute -left-8 top-1/2 transform -translate-y-1/2 flex items-center z-10">
-        <div className="p-2 rounded-full bg-ath-black text-white hover:bg-ath-black-light cursor-move">
-          <Move size={16} />
-        </div>
-      </div>
-      <Court
-        court={court}
-        date={date}
-        timeSlots={timeSlots}
-        onDrop={onDrop}
-        onActivityDrop={onActivityDrop}
-        onRemovePerson={onRemovePerson}
-        onRemoveActivity={onRemoveActivity}
-        onCourtRename={onCourtRename}
-        onCourtTypeChange={onCourtTypeChange}
-        onCourtRemove={onCourtRemove}
-      />
-    </div>
-  );
-};
 
 export default function CourtVision() {
   const { toast } = useToast();
@@ -670,21 +544,6 @@ export default function CourtVision() {
     }
   };
 
-  const moveCourt = (dragIndex: number, hoverIndex: number) => {
-    const draggedCourt = courts[dragIndex];
-    
-    const newCourts = [...courts];
-    newCourts.splice(dragIndex, 1);
-    newCourts.splice(hoverIndex, 0, draggedCourt);
-    
-    setCourts(newCourts);
-    
-    toast({
-      title: "Court Reordered",
-      description: `${draggedCourt.name} #${draggedCourt.number} has been moved`,
-    });
-  };
-
   const handleAddCourt = (courtData: { name: string, type: string, number: number }) => {
     const newCourtId = `court-${Date.now()}`;
     const newCourt: CourtProps = {
@@ -941,11 +800,10 @@ export default function CourtVision() {
         </div>
         
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {courts.map((court, index) => (
-            <DraggableCourt
+          {courts.map((court) => (
+            <Court
               key={court.id}
               court={court}
-              index={index}
               date={selectedDate}
               timeSlots={timeSlots}
               onDrop={handleDrop}
@@ -955,7 +813,6 @@ export default function CourtVision() {
               onCourtRename={handleRenameCourt}
               onCourtTypeChange={handleChangeCourtType}
               onCourtRemove={handleRemoveCourt}
-              moveCourt={moveCourt}
             />
           ))}
         </div>
