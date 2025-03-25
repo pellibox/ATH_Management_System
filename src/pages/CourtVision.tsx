@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -69,14 +68,12 @@ export default function CourtVision() {
     
     if (!draggablePerson) return;
 
-    // Create a copy of the person with the new position and courtId
     const personCopy = { 
       ...draggablePerson, 
       courtId,
       position 
     };
 
-    // If person is already on a court, remove them from that court
     const updatedCourts = courts.map((court) => {
       if (court.id !== courtId && court.occupants.some((p) => p.id === person.id)) {
         return {
@@ -87,11 +84,9 @@ export default function CourtVision() {
       return court;
     });
 
-    // Add person to the target court (if not already there)
     const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
     
     if (targetCourtIndex !== -1) {
-      // If the person is not already on this court, add them
       if (!updatedCourts[targetCourtIndex].occupants.some(p => p.id === person.id)) {
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
@@ -101,7 +96,6 @@ export default function CourtVision() {
           ],
         };
       } else {
-        // If they are already on this court, just update their position
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
           occupants: updatedCourts[targetCourtIndex].occupants.map(p => 
@@ -111,7 +105,6 @@ export default function CourtVision() {
       }
     }
 
-    // Remove from available people only if they weren't already on a court
     const wasOnCourt = courts.some(court => 
       court.occupants.some(p => p.id === person.id)
     );
@@ -123,8 +116,8 @@ export default function CourtVision() {
     setCourts(updatedCourts);
 
     toast({
-      title: "Person Assigned",
-      description: `${draggablePerson.name} has been assigned to ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
+      title: "Persona Assegnata",
+      description: `${draggablePerson.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
     });
   };
 
@@ -134,10 +127,8 @@ export default function CourtVision() {
     
     if (!draggableActivity) return;
 
-    // Create a copy of the activity with the courtId
     const activityCopy = { ...draggableActivity, courtId };
 
-    // If activity is already on a court, remove it from that court
     const updatedCourts = courts.map((court) => {
       if (court.id !== courtId && court.activities.some((a) => a.id === activity.id)) {
         return {
@@ -148,11 +139,9 @@ export default function CourtVision() {
       return court;
     });
 
-    // Add activity to the target court (if not already there)
     const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
     
     if (targetCourtIndex !== -1) {
-      // If the activity is not already on this court, add it
       if (!updatedCourts[targetCourtIndex].activities.some(a => a.id === activity.id)) {
         updatedCourts[targetCourtIndex] = {
           ...updatedCourts[targetCourtIndex],
@@ -164,7 +153,6 @@ export default function CourtVision() {
       }
     }
 
-    // Remove from available activities only if it wasn't already on a court
     const wasOnCourt = courts.some(court => 
       court.activities.some(a => a.id === activity.id)
     );
@@ -176,8 +164,8 @@ export default function CourtVision() {
     setCourts(updatedCourts);
 
     toast({
-      title: "Activity Assigned",
-      description: `${draggableActivity.name} has been assigned to ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
+      title: "Attività Assegnata",
+      description: `${draggableActivity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
     });
   };
 
@@ -203,8 +191,8 @@ export default function CourtVision() {
       );
 
       toast({
-        title: "Person Removed",
-        description: `${personToRemove.name} has been removed from the court`,
+        title: "Persona Rimossa",
+        description: `${personToRemove.name} è stata rimossa dal campo`,
       });
     }
   };
@@ -223,8 +211,8 @@ export default function CourtVision() {
       );
 
       toast({
-        title: "Activity Removed",
-        description: `${activityToRemove.name} has been removed from the court`,
+        title: "Attività Rimossa",
+        description: `${activityToRemove.name} è stata rimossa dal campo`,
       });
     }
   };
@@ -249,8 +237,8 @@ export default function CourtVision() {
     setPeople([...people, personToAdd]);
 
     toast({
-      title: "Person Added",
-      description: `${personToAdd.name} has been added to the available list`,
+      title: "Persona Aggiunta",
+      description: `${personToAdd.name} è stata aggiunta alla lista disponibile`,
     });
   };
 
@@ -275,8 +263,8 @@ export default function CourtVision() {
     setActivities([...activities, activityToAdd]);
 
     toast({
-      title: "Activity Added",
-      description: `${activityToAdd.name} has been added to the available list`,
+      title: "Attività Aggiunta",
+      description: `${activityToAdd.name} è stata aggiunta alla lista disponibile`,
     });
   };
 
@@ -300,8 +288,8 @@ export default function CourtVision() {
     setTemplates([...templates, template]);
 
     toast({
-      title: "Template Saved",
-      description: `Template "${name}" has been saved and can be applied to other days`,
+      title: "Template Salvato",
+      description: `Template "${name}" è stato salvato e può essere applicato a giorni futuri`,
     });
   };
 
@@ -309,8 +297,8 @@ export default function CourtVision() {
     setCourts(template.courts);
 
     toast({
-      title: "Template Applied",
-      description: `Template "${template.name}" has been applied to ${format(selectedDate, "MMMM d, yyyy")}`,
+      title: "Template Applicato",
+      description: `Template "${template.name}" è stato applicato al giorno ${format(selectedDate, "MMMM d, yyyy")}`,
     });
   };
 
@@ -319,8 +307,8 @@ export default function CourtVision() {
     setSelectedDate(nextDay);
 
     toast({
-      title: "Schedule Copied",
-      description: `Court assignments have been copied to ${format(nextDay, "MMMM d, yyyy")}`,
+      title: "Piano Copiato",
+      description: `Le assegnazioni del campo sono state copiate al giorno ${format(nextDay, "MMMM d, yyyy")}`,
     });
   };
 
@@ -330,145 +318,6 @@ export default function CourtVision() {
     setSelectedDate(nextWeekStart);
 
     toast({
-      title: "Schedule Copied to Next Week",
-      description: `Court assignments have been copied to week of ${format(nextWeekStart, "MMMM d, yyyy")}`,
-    });
-  };
+      title: "Piano Copiato alla Prossima Settimana",
+     
 
-  const handleAddPersonToSystem = (newPerson: PersonData) => {
-    if (!newPerson.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a name",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPerson.type === PERSON_TYPES.PLAYER) {
-      setPlayersList([...playersList, newPerson]);
-    } else {
-      setCoachesList([...coachesList, newPerson]);
-    }
-
-    setPeople([...people, newPerson]);
-
-    toast({
-      title: `${newPerson.type === PERSON_TYPES.PLAYER ? 'Player' : 'Coach'} Added`,
-      description: `${newPerson.name} has been added to the system`,
-    });
-  };
-
-  const handleRemovePersonFromSystem = (personToRemove: PersonData) => {
-    if (personToRemove.type === PERSON_TYPES.PLAYER) {
-      setPlayersList(playersList.filter(p => p.id !== personToRemove.id));
-    } else {
-      setCoachesList(coachesList.filter(c => c.id !== personToRemove.id));
-    }
-
-    setPeople(people.filter(p => p.id !== personToRemove.id));
-
-    setCourts(courts.map(court => ({
-      ...court,
-      occupants: court.occupants.filter(p => p.id !== personToRemove.id)
-    })));
-
-    toast({
-      title: `${personToRemove.type === PERSON_TYPES.PLAYER ? 'Player' : 'Coach'} Removed`,
-      description: `${personToRemove.name} has been removed from the system`,
-    });
-  };
-
-  const addPersonToDragArea = (personToAdd: PersonData) => {
-    if (!people.some(p => p.id === personToAdd.id)) {
-      setPeople([...people, personToAdd]);
-      
-      toast({
-        title: "Added to Available",
-        description: `${personToAdd.name} is now available for court assignment`,
-      });
-    } else {
-      toast({
-        title: "Already Available",
-        description: `${personToAdd.name} is already in the available list`,
-      });
-    }
-  };
-
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="max-w-7xl mx-auto animate-fade-in p-4 bg-white">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-ath-black">Court Vision</h1>
-          <p className="text-ath-gray-dark mt-1">
-            {isMobile 
-              ? "Use the dialog to assign people and activities to courts" 
-              : "Drag and drop players, coaches, and activities to assign them to courts"}
-          </p>
-        </div>
-
-        <DateSelector 
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
-          onCopyToNextDay={copyToNextDay}
-          onCopyToWeek={copyToWeek}
-        />
-
-        {isMobile && (
-          <CourtAssignmentDialog
-            courts={courts}
-            availablePeople={people}
-            availableActivities={activities}
-            onAssignPerson={handleAssignPerson}
-            onAssignActivity={handleAssignActivity}
-          />
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div className="md:col-span-3 lg:col-span-2 space-y-4">
-            <PeopleManagement 
-              playersList={playersList}
-              coachesList={coachesList}
-              onAddPerson={handleAddPersonToSystem}
-              onRemovePerson={handleRemovePersonFromSystem}
-              onAddToDragArea={addPersonToDragArea}
-            />
-            
-            <AvailablePeople 
-              people={people}
-              onAddPerson={handleAddPerson}
-              onRemovePerson={handleRemovePerson}
-            />
-            
-            <AvailableActivities 
-              activities={activities}
-              onAddActivity={handleAddActivity}
-              onRemoveActivity={handleRemoveActivity}
-            />
-            
-            <ScheduleTemplates 
-              templates={templates}
-              onSaveTemplate={saveAsTemplate}
-              onApplyTemplate={applyTemplate}
-            />
-          </div>
-
-          <div className="md:col-span-9 lg:col-span-10">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {courts.map((court) => (
-                <Court 
-                  key={court.id} 
-                  court={court} 
-                  onDrop={handleDrop} 
-                  onActivityDrop={handleActivityDrop}
-                />
-              ))}
-            </div>
-            
-            <CourtLegend />
-          </div>
-        </div>
-      </div>
-    </DndProvider>
-  );
-}

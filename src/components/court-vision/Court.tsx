@@ -1,17 +1,21 @@
+
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { CourtProps, PersonData, ActivityData } from "./types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { X } from "lucide-react";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { X, Trash2, Edit } from "lucide-react";
 
 interface CourtComponentProps {
   court: CourtProps;
   onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }) => void;
   onActivityDrop: (courtId: string, activity: ActivityData) => void;
+  onRemovePerson?: (personId: string) => void;
+  onRemoveActivity?: (activityId: string) => void;
 }
 
-export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
+export function Court({ court, onDrop, onActivityDrop, onRemovePerson, onRemoveActivity }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
   
   const [{ isOver }, drop] = useDrop(() => ({
@@ -115,19 +119,31 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
           )}
 
           {visibleOccupants.map((person, index) => (
-            <div
-              key={person.id}
-              className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
-                person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
-              }`}
-              style={{
-                left: `${((index % 3) * 0.5 + 0.25) * 100}%`,
-                top: `${(Math.floor(index / 3) * 0.5 + 0.25) * 100}%`,
-              }}
-              title={person.name}
-            >
-              {person.name.substring(0, 2)}
-            </div>
+            <ContextMenu key={person.id}>
+              <ContextMenuTrigger>
+                <div
+                  className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
+                    person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
+                  }`}
+                  style={{
+                    left: `${((index % 3) * 0.5 + 0.25) * 100}%`,
+                    top: `${(Math.floor(index / 3) * 0.5 + 0.25) * 100}%`,
+                  }}
+                  title={person.name}
+                >
+                  {person.name.substring(0, 2)}
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="bg-white shadow-md border border-gray-200">
+                <ContextMenuItem 
+                  className="flex items-center text-red-500 cursor-pointer"
+                  onClick={() => onRemovePerson && onRemovePerson(person.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  <span>Rimuovi</span>
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           ))}
 
           {hasMoreOccupants && (
@@ -140,22 +156,34 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
             <div className="absolute top-10 left-2 right-2 bg-ath-black/30 p-1 rounded">
               <div className="flex flex-wrap gap-1">
                 {court.activities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      activity.type === ACTIVITY_TYPES.MATCH
-                        ? "bg-ath-black-light text-white"
-                        : activity.type === ACTIVITY_TYPES.TRAINING
-                        ? "bg-ath-red-clay-dark/90 text-white"
-                        : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                        ? "bg-ath-red-clay/90 text-white"
-                        : activity.type === ACTIVITY_TYPES.GAME
-                        ? "bg-ath-black text-white"
-                        : "bg-ath-gray-medium text-white"
-                    }`}
-                  >
-                    {activity.name}
-                  </div>
+                  <ContextMenu key={activity.id}>
+                    <ContextMenuTrigger>
+                      <div
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          activity.type === ACTIVITY_TYPES.MATCH
+                            ? "bg-ath-black-light text-white"
+                            : activity.type === ACTIVITY_TYPES.TRAINING
+                            ? "bg-ath-red-clay-dark/90 text-white"
+                            : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+                            ? "bg-ath-red-clay/90 text-white"
+                            : activity.type === ACTIVITY_TYPES.GAME
+                            ? "bg-ath-black text-white"
+                            : "bg-ath-gray-medium text-white"
+                        }`}
+                      >
+                        {activity.name}
+                      </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent className="bg-white shadow-md border border-gray-200">
+                      <ContextMenuItem 
+                        className="flex items-center text-red-500 cursor-pointer"
+                        onClick={() => onRemoveActivity && onRemoveActivity(activity.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        <span>Rimuovi</span>
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 ))}
               </div>
             </div>
@@ -193,21 +221,30 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
               {court.occupants.map((person) => (
                 <div 
                   key={person.id} 
-                  className="flex items-center p-2 rounded-md bg-gray-50 hover:bg-gray-100"
+                  className="flex items-center justify-between p-2 rounded-md bg-gray-50 hover:bg-gray-100"
                 >
-                  <div 
-                    className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
-                      person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
-                    }`}
+                  <div className="flex items-center">
+                    <div 
+                      className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+                        person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
+                      }`}
+                    >
+                      {person.name.substring(0, 2)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{person.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {person.type === PERSON_TYPES.PLAYER ? "Giocatore" : "Allenatore"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onRemovePerson && onRemovePerson(person.id)}
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Remove person"
                   >
-                    {person.name.substring(0, 2)}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{person.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {person.type === PERSON_TYPES.PLAYER ? "Giocatore" : "Allenatore"}
-                    </p>
-                  </div>
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -220,7 +257,7 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
                 {court.activities.map((activity) => (
                   <div 
                     key={activity.id}
-                    className={`text-sm px-3 py-2 rounded-md ${
+                    className={`flex items-center justify-between text-sm px-3 py-2 rounded-md ${
                       activity.type === ACTIVITY_TYPES.MATCH
                         ? "bg-ath-black-light/10 text-ath-black-light"
                         : activity.type === ACTIVITY_TYPES.TRAINING
@@ -232,10 +269,19 @@ export function Court({ court, onDrop, onActivityDrop }: CourtComponentProps) {
                         : "bg-ath-gray-medium/10 text-ath-gray-medium"
                     }`}
                   >
-                    <div className="font-medium">{activity.name}</div>
-                    <div className="text-xs">
-                      Durata: {activity.duration}
+                    <div>
+                      <div className="font-medium">{activity.name}</div>
+                      <div className="text-xs">
+                        Durata: {activity.duration}
+                      </div>
                     </div>
+                    <button
+                      onClick={() => onRemoveActivity && onRemoveActivity(activity.id)}
+                      className="text-red-500 hover:text-red-700"
+                      aria-label="Remove activity"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 ))}
               </div>

@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,7 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Users, CalendarIcon } from "lucide-react";
+import { ChevronRight, Users, CalendarIcon, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { PersonData, ActivityData, CourtProps } from "./types";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -27,6 +28,8 @@ interface CourtAssignmentDialogProps {
   availableActivities: ActivityData[];
   onAssignPerson: (courtId: string, person: PersonData) => void;
   onAssignActivity: (courtId: string, activity: ActivityData) => void;
+  onRemovePerson?: (personId: string) => void;
+  onRemoveActivity?: (activityId: string) => void;
 }
 
 export function CourtAssignmentDialog({
@@ -35,9 +38,12 @@ export function CourtAssignmentDialog({
   availableActivities,
   onAssignPerson,
   onAssignActivity,
+  onRemovePerson,
+  onRemoveActivity,
 }: CourtAssignmentDialogProps) {
   const [selectedTab, setSelectedTab] = useState<"people" | "activities">("people");
   const [selectedCourt, setSelectedCourt] = useState<CourtProps | null>(null);
+  const [showAssigned, setShowAssigned] = useState(false);
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
@@ -86,43 +92,93 @@ export function CourtAssignmentDialog({
 
           {selectedCourt && (
             <>
-              <h3 className="text-sm font-medium mb-2">Assign People</h3>
-              {availablePeople.length > 0 ? (
-                <div className="space-y-2">
-                  {availablePeople.map((person) => (
-                    <div
-                      key={person.id}
-                      className="flex items-center justify-between p-2 border rounded"
-                    >
-                      <div className="flex items-center">
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2 ${
-                            person.type === PERSON_TYPES.PLAYER
-                              ? "bg-ath-red-clay text-white"
-                              : "bg-ath-black text-white"
-                          }`}
-                        >
-                          {person.name.substring(0, 2)}
-                        </div>
-                        <span className="text-sm">{person.name}</span>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
-                        onClick={() => {
-                          onAssignPerson(selectedCourt.id, person);
-                          // Keep the dialog open to allow multiple assignments
-                        }}
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium">
+                  {showAssigned ? "Assigned People" : "Assign People"}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAssigned(!showAssigned)}
+                >
+                  {showAssigned ? "Show Available" : "Show Assigned"}
+                </Button>
+              </div>
+
+              {showAssigned ? (
+                selectedCourt.occupants.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedCourt.occupants.map((person) => (
+                      <div
+                        key={person.id}
+                        className="flex items-center justify-between p-2 border rounded"
                       >
-                        Assign
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                        <div className="flex items-center">
+                          <div
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2 ${
+                              person.type === PERSON_TYPES.PLAYER
+                                ? "bg-ath-red-clay text-white"
+                                : "bg-ath-black text-white"
+                            }`}
+                          >
+                            {person.name.substring(0, 2)}
+                          </div>
+                          <span className="text-sm">{person.name}</span>
+                        </div>
+                        {onRemovePerson && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => onRemovePerson(person.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 italic p-2">
+                    No people assigned to this court
+                  </div>
+                )
               ) : (
-                <div className="text-sm text-gray-500 italic p-2">
-                  All people assigned to courts
-                </div>
+                availablePeople.length > 0 ? (
+                  <div className="space-y-2">
+                    {availablePeople.map((person) => (
+                      <div
+                        key={person.id}
+                        className="flex items-center justify-between p-2 border rounded"
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-2 ${
+                              person.type === PERSON_TYPES.PLAYER
+                                ? "bg-ath-red-clay text-white"
+                                : "bg-ath-black text-white"
+                            }`}
+                          >
+                            {person.name.substring(0, 2)}
+                          </div>
+                          <span className="text-sm">{person.name}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
+                          onClick={() => {
+                            onAssignPerson(selectedCourt.id, person);
+                          }}
+                        >
+                          Assign
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 italic p-2">
+                    All people assigned to courts
+                  </div>
+                )
               )}
             </>
           )}
@@ -151,48 +207,103 @@ export function CourtAssignmentDialog({
 
           {selectedCourt && (
             <>
-              <h3 className="text-sm font-medium mb-2">Assign Activities</h3>
-              {availableActivities.length > 0 ? (
-                <div className="space-y-2">
-                  {availableActivities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-center justify-between p-2 border rounded"
-                    >
-                      <div className="flex items-center">
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs mr-2 ${
-                            activity.type === ACTIVITY_TYPES.MATCH
-                              ? "bg-ath-black-light text-white"
-                              : activity.type === ACTIVITY_TYPES.TRAINING
-                              ? "bg-ath-red-clay-dark text-white"
-                              : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-                              ? "bg-ath-red-clay text-white"
-                              : activity.type === ACTIVITY_TYPES.GAME
-                              ? "bg-ath-black text-white"
-                              : "bg-ath-gray-medium text-white"
-                          }`}
-                        >
-                          {activity.name}
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
-                        onClick={() => {
-                          onAssignActivity(selectedCourt.id, activity);
-                          // Keep the dialog open to allow multiple assignments
-                        }}
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium">
+                  {showAssigned ? "Assigned Activities" : "Assign Activities"}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAssigned(!showAssigned)}
+                >
+                  {showAssigned ? "Show Available" : "Show Assigned"}
+                </Button>
+              </div>
+
+              {showAssigned ? (
+                selectedCourt.activities.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedCourt.activities.map((activity) => (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-2 border rounded"
                       >
-                        Assign
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                        <div className="flex items-center">
+                          <div
+                            className={`px-2 py-1 rounded-full text-xs mr-2 ${
+                              activity.type === ACTIVITY_TYPES.MATCH
+                                ? "bg-ath-black-light text-white"
+                                : activity.type === ACTIVITY_TYPES.TRAINING
+                                ? "bg-ath-red-clay-dark text-white"
+                                : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+                                ? "bg-ath-red-clay text-white"
+                                : activity.type === ACTIVITY_TYPES.GAME
+                                ? "bg-ath-black text-white"
+                                : "bg-ath-gray-medium text-white"
+                            }`}
+                          >
+                            {activity.name}
+                          </div>
+                        </div>
+                        {onRemoveActivity && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => onRemoveActivity(activity.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 italic p-2">
+                    No activities assigned to this court
+                  </div>
+                )
               ) : (
-                <div className="text-sm text-gray-500 italic p-2">
-                  All activities assigned to courts
-                </div>
+                availableActivities.length > 0 ? (
+                  <div className="space-y-2">
+                    {availableActivities.map((activity) => (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-2 border rounded"
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className={`px-2 py-1 rounded-full text-xs mr-2 ${
+                              activity.type === ACTIVITY_TYPES.MATCH
+                                ? "bg-ath-black-light text-white"
+                                : activity.type === ACTIVITY_TYPES.TRAINING
+                                ? "bg-ath-red-clay-dark text-white"
+                                : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+                                ? "bg-ath-red-clay text-white"
+                                : activity.type === ACTIVITY_TYPES.GAME
+                                ? "bg-ath-black text-white"
+                                : "bg-ath-gray-medium text-white"
+                            }`}
+                          >
+                            {activity.name}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
+                          onClick={() => {
+                            onAssignActivity(selectedCourt.id, activity);
+                          }}
+                        >
+                          Assign
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 italic p-2">
+                    All activities assigned to courts
+                  </div>
+                )
               )}
             </>
           )}
