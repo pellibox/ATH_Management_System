@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -51,7 +52,7 @@ export function Court({ court, onDrop, onActivityDrop, onRemovePerson, onRemoveA
   const getCourtStyles = () => {
     switch (court.type) {
       case COURT_TYPES.TENNIS_CLAY:
-        return "bg-ath-red-clay/10 border-ath-red-clay";
+        return "bg-ath-clay/10 border-ath-clay";
       case COURT_TYPES.TENNIS_HARD:
         return "bg-ath-hard/20 border-ath-hard";
       case COURT_TYPES.PADEL:

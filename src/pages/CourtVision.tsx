@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -63,24 +64,41 @@ export default function CourtVision() {
   ]);
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }) => {
+    // Check if the person is already on any court
+    const isOnAnyCourt = courts.some(court => 
+      court.occupants.some(p => p.id === person.id)
+    );
+
+    // Create a copy of the person with court information
     const personWithCourtInfo = { 
       ...person, 
       courtId,
       position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 }
     };
 
-    const updatedCourts = courts.map((court) => {
-      if (court.id !== courtId && court.occupants.some((p) => p.id === person.id)) {
-        return {
-          ...court,
-          occupants: court.occupants.filter((p) => p.id !== person.id),
-        };
-      }
-      
+    let updatedCourts = [...courts];
+
+    // If person is already on a court, remove them from that court
+    if (isOnAnyCourt) {
+      updatedCourts = updatedCourts.map((court) => {
+        if (court.occupants.some((p) => p.id === person.id)) {
+          return {
+            ...court,
+            occupants: court.occupants.filter((p) => p.id !== person.id),
+          };
+        }
+        return court;
+      });
+    }
+
+    // Add person to the target court
+    updatedCourts = updatedCourts.map(court => {
       if (court.id === courtId) {
+        // Check if person already exists on this court
         const personExists = court.occupants.some(p => p.id === person.id);
         
         if (personExists) {
+          // Update position if person already exists
           return {
             ...court,
             occupants: court.occupants.map(p => 
@@ -88,23 +106,23 @@ export default function CourtVision() {
             ),
           };
         } else {
+          // Add new person if they don't exist
           return {
             ...court,
             occupants: [...court.occupants, personWithCourtInfo],
           };
         }
       }
-      
       return court;
     });
 
+    setCourts(updatedCourts);
+
+    // If the person is from the available list, remove them
     const isFromAvailableList = people.some(p => p.id === person.id);
-    
     if (isFromAvailableList) {
       setPeople(people.filter(p => p.id !== person.id));
     }
-    
-    setCourts(updatedCourts);
 
     toast({
       title: "Persona Assegnata",
@@ -421,4 +439,240 @@ export default function CourtVision() {
       </div>
     </DndProvider>
   );
+
+  // Define the remaining functions
+  function handleActivityDrop(courtId: string, activity: ActivityData) {
+    const draggableActivity = activities.find((a) => a.id === activity.id) || 
+                              courts.flatMap(c => c.activities).find(a => a.id === activity.id);
+    
+    if (!draggableActivity) return;
+
+    const activityCopy = { ...draggableActivity, courtId };
+
+    const updatedCourts = courts.map((court) => {
+      if (court.id !== courtId && court.activities.some((a) => a.id === activity.id)) {
+        return {
+          ...court,
+          activities: court.activities.filter((a) => a.id !== activity.id),
+        };
+      }
+      return court;
+    });
+
+    const targetCourtIndex = updatedCourts.findIndex((court) => court.id === courtId);
+    
+    if (targetCourtIndex !== -1) {
+      if (!updatedCourts[targetCourtIndex].activities.some(a => a.id === activity.id)) {
+        updatedCourts[targetCourtIndex] = {
+          ...updatedCourts[targetCourtIndex],
+          activities: [
+            ...updatedCourts[targetCourtIndex].activities,
+            activityCopy,
+          ],
+        };
+      }
+    }
+
+    const wasOnCourt = courts.some(court => 
+      court.activities.some(a => a.id === activity.id)
+    );
+    
+    if (!wasOnCourt) {
+      setActivities(activities.filter((a) => a.id !== activity.id));
+    }
+    
+    setCourts(updatedCourts);
+
+    toast({
+      title: "Attività Assegnata",
+      description: `${draggableActivity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
+    });
+  }
+
+  function handleAssignPerson(courtId: string, person: PersonData) {
+    handleDrop(courtId, person, { x: 0.5, y: 0.5 });
+  }
+
+  function handleAssignActivity(courtId: string, activity: ActivityData) {
+    handleActivityDrop(courtId, activity);
+  }
+
+  function handleRemovePerson(personId: string) {
+    const personToRemove = courts.flatMap(c => c.occupants).find(p => p.id === personId);
+    
+    if (personToRemove) {
+      const { courtId, position, ...personWithoutCourtInfo } = personToRemove;
+      
+      setPeople([...people, personWithoutCourtInfo]);
+      
+      setCourts(
+        courts.map((court) => ({
+          ...court,
+          occupants: court.occupants.filter((p) => p.id !== personId),
+        }))
+      );
+
+      toast({
+        title: "Persona Rimossa",
+        description: `${personToRemove.name} è stata rimossa dal campo`,
+      });
+    }
+  }
+
+  function handleRemoveActivity(activityId: string) {
+    const activityToRemove = courts.flatMap(c => c.activities).find(a => a.id === activityId);
+    
+    if (activityToRemove) {
+      setActivities([...activities, { ...activityToRemove, courtId: undefined }]);
+      
+      setCourts(
+        courts.map((court) => ({
+          ...court,
+          activities: court.activities.filter((a) => a.id !== activityId),
+        }))
+      );
+
+      toast({
+        title: "Attività Rimossa",
+        description: `${activityToRemove.name} è stata rimossa dal campo`,
+      });
+    }
+  }
+
+  function handleAddPerson(personData: {name: string, type: string}) {
+    if (personData.name.trim() === "") {
+      toast({
+        title: "Error",
+        description: "Please enter a name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newId = `${personData.type}-${Date.now()}`;
+    const personToAdd = {
+      id: newId,
+      name: personData.name,
+      type: personData.type,
+    };
+
+    setPeople([...people, personToAdd]);
+
+    toast({
+      title: "Persona Aggiunta",
+      description: `${personToAdd.name} è stata aggiunta alla lista disponibile`,
+    });
+  }
+
+  function handleAddActivity(activityData: {name: string, type: string, duration: string}) {
+    if (activityData.name.trim() === "") {
+      toast({
+        title: "Error",
+        description: "Please enter an activity name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newId = `activity-${Date.now()}`;
+    const activityToAdd = {
+      id: newId,
+      name: activityData.name,
+      type: activityData.type,
+      duration: activityData.duration,
+    };
+
+    setActivities([...activities, activityToAdd]);
+
+    toast({
+      title: "Attività Aggiunta",
+      description: `${activityToAdd.name} è stata aggiunta alla lista disponibile`,
+    });
+  }
+
+  function saveAsTemplate(name: string) {
+    if (name.trim() === "") {
+      toast({
+        title: "Error",
+        description: "Please enter a template name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const template: ScheduleTemplate = {
+      id: `template-${Date.now()}`,
+      name: name,
+      date: selectedDate,
+      courts: [...courts],
+    };
+
+    setTemplates([...templates, template]);
+
+    toast({
+      title: "Template Salvato",
+      description: `Template "${name}" è stato salvato e può essere applicato a giorni futuri`,
+    });
+  }
+
+  function applyTemplate(template: ScheduleTemplate) {
+    setCourts(template.courts);
+
+    toast({
+      title: "Template Applicato",
+      description: `Template "${template.name}" è stato applicato al giorno ${format(selectedDate, "MMMM d, yyyy")}`,
+    });
+  }
+
+  function copyToNextDay() {
+    const nextDay = addDays(selectedDate, 1);
+    setSelectedDate(nextDay);
+
+    toast({
+      title: "Piano Copiato",
+      description: `Le assegnazioni del campo sono state copiate al giorno ${format(nextDay, "MMMM d, yyyy")}`,
+    });
+  }
+
+  function copyToWeek() {
+    const startOfCurrentWeek = startOfWeek(selectedDate);
+    const nextWeekStart = addWeeks(startOfCurrentWeek, 1);
+    setSelectedDate(nextWeekStart);
+
+    toast({
+      title: "Piano Copiato alla Prossima Settimana",
+      description: `Le assegnazioni del campo sono state copiate alla settimana che inizia ${format(nextWeekStart, "MMMM d, yyyy")}`,
+    });
+  }
+
+  function handleAddToDragArea(person: PersonData) {
+    const isAlreadyAvailable = people.some(p => p.id === person.id);
+    
+    if (!isAlreadyAvailable) {
+      const isOnCourt = courts.some(court => 
+        court.occupants.some(p => p.id === person.id)
+      );
+      
+      if (!isOnCourt) {
+        setPeople([...people, person]);
+        
+        toast({
+          title: "Persona Aggiunta",
+          description: `${person.name} è stata aggiunta all'area di trascinamento`,
+        });
+      } else {
+        toast({
+          title: "Persona già assegnata",
+          description: `${person.name} è già assegnata ad un campo. Rimuovila prima.`,
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Persona già disponibile",
+        description: `${person.name} è già nell'area di trascinamento`,
+        variant: "destructive",
+      });
+    }
+  }
 }
