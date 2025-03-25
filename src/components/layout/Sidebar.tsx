@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Calendar, Settings, Users, Activity, Layout, ChevronRight, ChevronDown,
-  Racquet, Menu, X
+  Menu, X, Dumbbell
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -73,7 +73,7 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
                   } ${collapsed ? 'justify-center' : 'justify-between'}`}
                 >
                   <div className="flex items-center">
-                    <Racquet className="h-5 w-5" />
+                    <Dumbbell className="h-5 w-5" />
                     {!collapsed && <span className="ml-3">Court Vision</span>}
                   </div>
                   {!collapsed && <ChevronDown className="h-4 w-4" />}

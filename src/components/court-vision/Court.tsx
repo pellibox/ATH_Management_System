@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -17,9 +18,10 @@ interface CourtComponentProps {
   onActivityDrop: (courtId: string, activity: ActivityData, time?: string) => void;
   onRemovePerson?: (personId: string, time?: string) => void;
   onRemoveActivity?: (activityId: string, time?: string) => void;
-  onRename?: (courtId: string, name: string) => void; // Add this to match onRenameCourt in CourtGrid
-  onChangeType?: (courtId: string, type: string) => void; // Add this to match onChangeCourtType in CourtGrid
-  onChangeNumber?: (courtId: string, number: number) => void; // Add this to match onChangeCourtNumber in CourtGrid
+  onRename?: (courtId: string, name: string) => void; 
+  onChangeType?: (courtId: string, type: string) => void;
+  onChangeNumber?: (courtId: string, number: number) => void;
+  onCourtRemove?: (courtId: string) => void; // Add this missing prop
   isSidebarCollapsed?: boolean;
   onAssignPerson?: (courtId: string, person: PersonData, timeSlot?: string, durationHours?: number) => void;
   onAssignActivity?: (courtId: string, activity: ActivityData, timeSlot?: string, durationHours?: number) => void;
@@ -39,6 +41,7 @@ export function Court({
   onRename,
   onChangeType,
   onChangeNumber,
+  onCourtRemove, // Add the prop here
   isSidebarCollapsed = false
 }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);

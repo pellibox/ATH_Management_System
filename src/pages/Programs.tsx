@@ -4,6 +4,16 @@ import { Calendar, Plus, Search, Users, Clock, BookOpen, Filter } from "lucide-r
 import { cn } from "@/lib/utils";
 import { DEFAULT_PROGRAMS } from "@/components/court-vision/constants";
 
+// Extend DEFAULT_PROGRAMS with the missing properties for our display
+const enhancedPrograms = DEFAULT_PROGRAMS.map(program => ({
+  ...program,
+  description: `Description for ${program.name}`,
+  details: [`Detail 1 for ${program.name}`, `Detail 2 for ${program.name}`],
+  cost: `€${Math.floor(Math.random() * 1000) + 500}`,
+  weeklyHours: Math.floor(Math.random() * 10) + 2,
+  totalWeeks: Math.floor(Math.random() * 20) + 10
+}));
+
 // Define program categories for filtering
 const PROGRAM_CATEGORIES = {
   PERFORMANCE: "performance",
@@ -15,6 +25,10 @@ const PROGRAM_CATEGORIES = {
 
 // Map our programs to categories
 const programCategoryMap = {
+  "program1": PROGRAM_CATEGORIES.PERFORMANCE,
+  "program2": PROGRAM_CATEGORIES.PADEL,
+  "program3": PROGRAM_CATEGORIES.JUNIOR,
+  "program4": PROGRAM_CATEGORIES.PERFORMANCE,
   "perf2": PROGRAM_CATEGORIES.PERFORMANCE,
   "perf3": PROGRAM_CATEGORIES.PERFORMANCE,
   "perf4": PROGRAM_CATEGORIES.PERFORMANCE,
@@ -35,7 +49,7 @@ export default function Programs() {
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
   
   // Filter programs based on category and search query
-  const filteredPrograms = DEFAULT_PROGRAMS
+  const filteredPrograms = enhancedPrograms
     .filter(program => {
       if (filter === "all") return true;
       return programCategoryMap[program.id] === filter;

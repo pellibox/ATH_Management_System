@@ -18,7 +18,7 @@ export const ACTIVITY_TYPES = {
   BASKET_DRILL: "activity-basket-drill",
   GAME: "activity-game",
   LESSON: "activity-lesson",
-  FITNESS: "activity-fitness", // Add this line
+  FITNESS: "activity-fitness", // Make sure this exists
   OTHER: "activity-other"
 };
 
@@ -28,3 +28,13 @@ export const DEFAULT_PROGRAMS = [
   { id: "program3", name: "Junior Development", color: "#f59e0b" },
   { id: "program4", name: "High Performance", color: "#ef4444" },
 ];
+
+// Add the PROGRAM_COLORS constant
+export const PROGRAM_COLORS = {
+  RED: "#ef4444",
+  ORANGE: "#f59e0b",
+  GREEN: "#10b981",
+  BLUE: "#3b82f6",
+  PURPLE: "#8b5cf6",
+  PINK: "#ec4899",
+};
