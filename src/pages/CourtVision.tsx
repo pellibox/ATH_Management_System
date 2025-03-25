@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek, addWeeks } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
 // Import court vision components
 import { Court } from "@/components/court-vision/Court";
@@ -13,11 +13,14 @@ import { ScheduleTemplates } from "@/components/court-vision/ScheduleTemplates";
 import { DateSelector } from "@/components/court-vision/DateSelector";
 import { PeopleManagement } from "@/components/court-vision/PeopleManagement";
 import { CourtLegend } from "@/components/court-vision/CourtLegend";
+import { CourtAssignmentDialog } from "@/components/court-vision/CourtAssignmentDialog";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "@/components/court-vision/constants";
 import { PersonData, ActivityData, CourtProps, ScheduleTemplate } from "@/components/court-vision/types";
+import { useMobile } from "@/hooks/use-mobile";
 
 export default function CourtVision() {
   const { toast } = useToast();
+  const isMobile = useMobile();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [courts, setCourts] = useState<CourtProps[]>([
@@ -141,6 +144,14 @@ export default function CourtVision() {
       title: "Activity Assigned",
       description: `${draggableActivity.name} has been assigned to ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}`,
     });
+  };
+
+  const handleAssignPerson = (courtId: string, person: PersonData) => {
+    handleDrop(courtId, person, { x: 0.5, y: 0.5 });
+  };
+
+  const handleAssignActivity = (courtId: string, activity: ActivityData) => {
+    handleActivityDrop(courtId, activity);
   };
 
   const handleRemovePerson = (personId: string) => {
@@ -354,7 +365,11 @@ export default function CourtVision() {
       <div className="max-w-7xl mx-auto animate-fade-in p-4">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Court Vision</h1>
-          <p className="text-gray-600 mt-1">Drag and drop players, coaches, and activities to assign them to courts</p>
+          <p className="text-gray-600 mt-1">
+            {isMobile 
+              ? "Use the dialog to assign people and activities to courts" 
+              : "Drag and drop players, coaches, and activities to assign them to courts"}
+          </p>
         </div>
 
         <DateSelector 
@@ -363,6 +378,16 @@ export default function CourtVision() {
           onCopyToNextDay={copyToNextDay}
           onCopyToWeek={copyToWeek}
         />
+
+        {isMobile && (
+          <CourtAssignmentDialog
+            courts={courts}
+            availablePeople={people}
+            availableActivities={activities}
+            onAssignPerson={handleAssignPerson}
+            onAssignActivity={handleAssignActivity}
+          />
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-3 lg:col-span-2 space-y-4">

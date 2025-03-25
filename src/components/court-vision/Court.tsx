@@ -1,6 +1,6 @@
 
 import { useDrop } from "react-dnd";
-import { COURT_TYPES, PERSON_TYPES } from "./constants";
+import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { CourtProps, PersonData, ActivityData } from "./types";
 
 interface CourtComponentProps {
