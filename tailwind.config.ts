@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+        ath: {
+          blue: '#0EA5E9',
+          'blue-light': '#E0F2FE',
+          'blue-dark': '#0369A1',
+          gray: '#F8FAFC',
+          'gray-light': '#F1F5F9',
+          'gray-medium': '#CBD5E1',
+          'gray-dark': '#64748B',
+          'clay': '#E97451',
+          'grass': '#4CAF50',
+          'hard': '#3B82F6',
+          'central': '#8B5CF6'
+        }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,12 +98,55 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
+        'fade-out': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' }
+        },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0)' }
+        },
+        'slide-out-left': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' }
+        },
+        'scale-in': {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' }
+        },
+        'blur-in': {
+          '0%': { filter: 'blur(12px)', opacity: '0' },
+          '100%': { filter: 'blur(0)', opacity: '1' }
+        }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-in': 'fade-in 0.5s ease-out forwards',
+        'fade-out': 'fade-out 0.5s ease-out forwards',
+        'slide-in-right': 'slide-in-right 0.4s ease-out forwards',
+        'slide-out-left': 'slide-out-left 0.4s ease-out forwards',
+        'scale-in': 'scale-in 0.4s ease-out forwards',
+        'blur-in': 'blur-in 0.5s ease-out forwards'
+			},
+      transitionProperty: {
+        'height': 'height',
+        'spacing': 'margin, padding',
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      boxShadow: {
+        'soft': '0 4px 15px rgba(0, 0, 0, 0.05)',
+        'medium': '0 8px 30px rgba(0, 0, 0, 0.07)',
+        'hard': '0 12px 40px rgba(0, 0, 0, 0.1)',
+        'inner-soft': 'inset 0 2px 5px rgba(0, 0, 0, 0.05)',
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
