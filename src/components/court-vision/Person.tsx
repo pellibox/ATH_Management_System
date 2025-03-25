@@ -37,7 +37,8 @@ export function Person({
       programColor: person.programColor,
       programId: person.programId,
       courtId: person.courtId,
-      durationHours: person.durationHours
+      durationHours: person.durationHours,
+      hoursAssigned: person.hoursAssigned // Include tracking hours
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),

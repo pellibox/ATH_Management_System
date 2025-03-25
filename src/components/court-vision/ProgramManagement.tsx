@@ -1,24 +1,29 @@
 
 import { useState } from "react";
-import { Plus, Trash2, Check } from "lucide-react";
+import { Plus, Trash2, Check, Clock, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Program } from "./types";
 import { PROGRAM_COLORS, DEFAULT_PROGRAMS } from "./constants";
+import { Input } from "@/components/ui/input";
 
 interface ProgramManagementProps {
   programs: Program[];
   onAddProgram: (program: Program) => void;
   onRemoveProgram: (programId: string) => void;
+  onUpdateProgram?: (program: Program) => void;
 }
 
 export function ProgramManagement({
   programs,
   onAddProgram,
-  onRemoveProgram
+  onRemoveProgram,
+  onUpdateProgram
 }: ProgramManagementProps) {
   const { toast } = useToast();
   const [newProgramName, setNewProgramName] = useState("");
   const [newProgramColor, setNewProgramColor] = useState(PROGRAM_COLORS.RED);
+  const [newWeeklyHours, setNewWeeklyHours] = useState(2);
+  const [newTotalWeeks, setNewTotalWeeks] = useState(12);
   const [showAddForm, setShowAddForm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -37,10 +42,15 @@ export function ProgramManagement({
       id: `program-${Date.now()}`,
       name: newProgramName,
       color: newProgramColor,
+      weeklyHours: newWeeklyHours,
+      totalWeeks: newTotalWeeks,
+      remainingWeeks: newTotalWeeks,
     };
 
     onAddProgram(newProgram);
     setNewProgramName("");
+    setNewWeeklyHours(2);
+    setNewTotalWeeks(12);
     setShowAddForm(false);
     
     toast({
@@ -64,7 +74,7 @@ export function ProgramManagement({
 
       {showAddForm && (
         <form onSubmit={handleSubmit} className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-1 gap-3 mb-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Nome</label>
               <input
@@ -75,6 +85,7 @@ export function ProgramManagement({
                 placeholder="Nome del programma"
               />
             </div>
+            
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Colore</label>
               <div className="flex flex-wrap gap-1">
@@ -95,7 +106,40 @@ export function ProgramManagement({
                 ))}
               </div>
             </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <Clock className="h-3 w-3 inline mr-1" />
+                  Ore settimanali
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={newWeeklyHours}
+                  onChange={(e) => setNewWeeklyHours(parseInt(e.target.value, 10) || 1)}
+                  className="h-8 text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <Calendar className="h-3 w-3 inline mr-1" />
+                  Settimane totali
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="52"
+                  value={newTotalWeeks}
+                  onChange={(e) => setNewTotalWeeks(parseInt(e.target.value, 10) || 1)}
+                  className="h-8 text-sm"
+                />
+              </div>
+            </div>
           </div>
+          
           <div className="flex justify-end">
             <button
               type="button"
@@ -126,6 +170,20 @@ export function ProgramManagement({
                 style={{ backgroundColor: program.color }}
               ></div>
               <span className="text-sm">{program.name}</span>
+            </div>
+            <div className="flex items-center text-xs text-gray-500 mr-2">
+              {program.weeklyHours && (
+                <span className="mr-2">
+                  <Clock className="h-3 w-3 inline mr-1" /> 
+                  {program.weeklyHours}h/sett.
+                </span>
+              )}
+              {program.totalWeeks && (
+                <span>
+                  <Calendar className="h-3 w-3 inline mr-1" /> 
+                  {program.totalWeeks} sett.
+                </span>
+              )}
             </div>
             <button
               onClick={() => onRemoveProgram(program.id)}

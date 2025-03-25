@@ -1,3 +1,4 @@
+
 export interface PersonData {
   id: string;
   name: string;
@@ -11,6 +12,7 @@ export interface PersonData {
   programId?: string; // Program assignment
   programColor?: string; // Color for visual representation
   sourceTimeSlot?: string; // Source time slot for drag and drop operations
+  hoursAssigned?: number; // Total hours assigned in current week
 }
 
 export interface ActivityData {
@@ -51,4 +53,8 @@ export interface Program {
   id: string;
   name: string;
   color: string;
+  weeklyHours?: number; // Weekly hours assigned to this program
+  totalWeeks?: number; // Total weeks for the program duration
+  remainingWeeks?: number; // Remaining weeks in the program
 }
+
