@@ -654,6 +654,31 @@ export default function CourtVision() {
   };
 
   const [showFloatingPanel, setShowFloatingPanel] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // Check if sidebar is collapsed
+  useEffect(() => {
+    const checkSidebarState = () => {
+      // Check for the sidebar width by looking at its class
+      const sidebar = document.querySelector('aside');
+      if (sidebar) {
+        setIsSidebarCollapsed(sidebar.classList.contains('w-16'));
+      }
+    };
+    
+    checkSidebarState();
+    
+    // Create a MutationObserver to watch for class changes on the sidebar
+    const observer = new MutationObserver(checkSidebarState);
+    const sidebar = document.querySelector('aside');
+    if (sidebar) {
+      observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+    }
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -776,93 +801,4 @@ export default function CourtVision() {
                       />
                     </TabsContent>
                     
-                    <TabsContent value="time-slots" className="mt-0 w-full">
-                      <TimeSlotSelector
-                        timeSlots={timeSlots}
-                        onAddTimeSlot={handleAddTimeSlot}
-                        onRemoveTimeSlot={handleRemoveTimeSlot}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="templates" className="mt-0 w-full">
-                      <ScheduleTemplates 
-                        templates={templates} 
-                        onApplyTemplate={applyTemplate} 
-                        onSaveTemplate={saveAsTemplate}
-                      />
-                    </TabsContent>
-                  </div>
-                  
-                  <div className="flex justify-between items-center mb-4">
-                    <CourtAssignmentDialog 
-                      courts={courts}
-                      availablePeople={people}
-                      availableActivities={activities}
-                      timeSlots={timeSlots}
-                      onAssignPerson={handleAssignPerson}
-                      onAssignActivity={handleAssignActivity}
-                      onRemovePerson={handleRemovePerson}
-                      onRemoveActivity={handleRemoveActivity}
-                    />
-                  </div>
-                </Tabs>
-              </>
-            )}
-          </div>
-        </div>
-        
-        <div className={`fixed right-4 top-24 z-20 w-64 transition-all duration-300 ${showFloatingPanel ? 'translate-x-0' : 'translate-x-64'}`}>
-          <div className="bg-white rounded-xl shadow-lg p-3 mb-4">
-            <Tabs defaultValue="floatingPeople">
-              <TabsList className="w-full mb-2">
-                <TabsTrigger value="floatingPeople" className="text-xs">
-                  <Users className="h-3 w-3 mr-1" /> People
-                </TabsTrigger>
-                <TabsTrigger value="floatingActivities" className="text-xs">
-                  <Film className="h-3 w-3 mr-1" /> Activities
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="floatingPeople" className="mt-0">
-                <PeopleManagement
-                  playersList={playersList}
-                  coachesList={coachesList}
-                  onAddPerson={handleAddPerson}
-                  onRemovePerson={(id) => {}}
-                  onAddToDragArea={handleAddToDragArea}
-                />
-              </TabsContent>
-              
-              <TabsContent value="floatingActivities" className="mt-0">
-                <AvailableActivities 
-                  activities={activities}
-                  onAddActivity={handleAddActivity}
-                  onRemoveActivity={(activityId) => handleRemoveActivity(activityId)}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {courts.map((court) => (
-            <Court
-              key={court.id}
-              court={court}
-              date={selectedDate}
-              timeSlots={timeSlots}
-              onDrop={handleDrop}
-              onActivityDrop={handleActivityDrop}
-              onRemovePerson={handleRemovePerson}
-              onRemoveActivity={handleRemoveActivity}
-              onCourtRename={handleRenameCourt}
-              onCourtTypeChange={handleChangeCourtType}
-              onCourtRemove={handleRemoveCourt}
-              onCourtNumberChange={handleChangeCourtNumber}
-            />
-          ))}
-        </div>
-      </div>
-    </DndProvider>
-  );
-}
+                    <TabsContent value="time

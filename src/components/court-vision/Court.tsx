@@ -21,6 +21,7 @@ interface CourtComponentProps {
   onCourtTypeChange?: (courtId: string, type: string) => void;
   onCourtRemove?: (courtId: string) => void;
   onCourtNumberChange?: (courtId: string, number: number) => void;
+  isSidebarCollapsed?: boolean;
 }
 
 export function Court({ 
@@ -34,7 +35,8 @@ export function Court({
   onCourtRename,
   onCourtTypeChange,
   onCourtRemove,
-  onCourtNumberChange
+  onCourtNumberChange,
+  isSidebarCollapsed = false
 }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"layout" | "schedule">("layout");
@@ -202,6 +204,9 @@ export function Court({
   const hasMoreOccupants = visibleOccupants.length > 12;
   const personSize = getPersonSize();
 
+  // Calculate court height based on sidebar state
+  const courtHeight = isSidebarCollapsed ? "h-[675px]" : "h-96 sm:h-[450px]";
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -210,7 +215,7 @@ export function Court({
           ref={drop}
           className={`relative rounded-lg border-2 ${getCourtStyles()} ${
             isOver ? "ring-2 ring-ath-red-clay" : ""
-          } transition-all h-96 sm:h-[450px] flex flex-col cursor-pointer animate-fade-in`}
+          } transition-all ${courtHeight} flex flex-col cursor-pointer animate-fade-in`}
         >
           <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
             <span className="text-xs font-medium bg-ath-black/70 text-white px-2 py-1 rounded">

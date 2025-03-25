@@ -71,13 +71,22 @@ export default function Sidebar() {
     };
   }, []);
 
+  useEffect(() => {
+    // Dispatch a custom event when sidebar state changes
+    const event = new CustomEvent('sidebarStateChange', { detail: { isCollapsed } });
+    window.dispatchEvent(event);
+  }, [isCollapsed]);
+
   if (!mounted) return null; // Prevent hydration mismatch
   
   return (
-    <aside className={cn(
-      "fixed left-0 top-0 z-20 flex h-full flex-col border-r bg-white shadow-soft transition-all duration-300",
-      isCollapsed ? "w-16 p-2" : "w-64 p-4"
-    )}>
+    <aside 
+      className={cn(
+        "fixed left-0 top-0 z-20 flex h-full flex-col border-r bg-white shadow-soft transition-all duration-300",
+        isCollapsed ? "w-16 p-2" : "w-64 p-4"
+      )}
+      data-collapsed={isCollapsed ? "true" : "false"}
+    >
       <div className="flex items-center justify-between mb-6 md:mb-8">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
