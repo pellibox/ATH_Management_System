@@ -72,8 +72,45 @@ export function Court({ court, onDrop, onActivityDrop, onRemovePerson, onRemoveA
     return `${type[0].charAt(0).toUpperCase() + type[0].slice(1)}${surface}`;
   };
 
-  const visibleOccupants = court.occupants.slice(0, 6);
-  const hasMoreOccupants = court.occupants.length > 6;
+  // Calculate person marker size based on how many people are on the court
+  const getPersonSize = () => {
+    const count = court.occupants.length;
+    if (count <= 2) return "w-10 h-10 text-sm";
+    if (count <= 4) return "w-8 h-8 text-xs";
+    if (count <= 8) return "w-7 h-7 text-xs";
+    return "w-6 h-6 text-[10px]";
+  };
+  
+  // Distribute people around the court based on their count
+  const getPersonPosition = (index: number, total: number, position?: {x: number, y: number}) => {
+    if (position) return position;
+    
+    // If person has a custom position, use it
+    if (total <= 4) {
+      // Simple positions for 4 or fewer people
+      const positions = [
+        {x: 0.25, y: 0.25}, // top left
+        {x: 0.75, y: 0.25}, // top right
+        {x: 0.25, y: 0.75}, // bottom left
+        {x: 0.75, y: 0.75}, // bottom right
+      ];
+      return positions[index % positions.length];
+    } else {
+      // More distributed positions for more people
+      const angle = (Math.PI * 2 * index) / total;
+      const radius = 0.35; // Distance from center
+      const centerX = 0.5;
+      const centerY = 0.5;
+      return {
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle)
+      };
+    }
+  };
+  
+  const visibleOccupants = court.occupants.slice(0, 12);
+  const hasMoreOccupants = court.occupants.length > 12;
+  const personSize = getPersonSize();
   
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -118,37 +155,41 @@ export function Court({ court, onDrop, onActivityDrop, onRemovePerson, onRemoveA
             </div>
           )}
 
-          {visibleOccupants.map((person, index) => (
-            <ContextMenu key={person.id}>
-              <ContextMenuTrigger>
-                <div
-                  className={`absolute z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
-                    person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
-                  }`}
-                  style={{
-                    left: `${(person.position?.x || 0.25) * 100}%`,
-                    top: `${(person.position?.y || 0.25) * 100}%`,
-                  }}
-                  title={person.name}
-                >
-                  {person.name.substring(0, 2)}
-                </div>
-              </ContextMenuTrigger>
-              <ContextMenuContent className="bg-white shadow-md border border-gray-200">
-                <ContextMenuItem 
-                  className="flex items-center text-red-500 cursor-pointer"
-                  onClick={() => onRemovePerson && onRemovePerson(person.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  <span>Rimuovi</span>
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
-          ))}
+          {visibleOccupants.map((person, index) => {
+            const position = getPersonPosition(index, visibleOccupants.length, person.position);
+            
+            return (
+              <ContextMenu key={person.id}>
+                <ContextMenuTrigger>
+                  <div
+                    className={`absolute z-10 ${personSize} rounded-full flex items-center justify-center font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
+                      person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
+                    }`}
+                    style={{
+                      left: `${position.x * 100}%`,
+                      top: `${position.y * 100}%`,
+                    }}
+                    title={person.name}
+                  >
+                    {person.name.substring(0, 2)}
+                  </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent className="bg-white shadow-md border border-gray-200">
+                  <ContextMenuItem 
+                    className="flex items-center text-red-500 cursor-pointer"
+                    onClick={() => onRemovePerson && onRemovePerson(person.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    <span>Rimuovi</span>
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
+            );
+          })}
 
           {hasMoreOccupants && (
             <div className="absolute right-3 bottom-3 z-10 bg-ath-black text-white text-xs px-2 py-1 rounded-full">
-              +{court.occupants.length - 6}
+              +{court.occupants.length - 12}
             </div>
           )}
 
