@@ -1,7 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data types
 interface CourseEvent {
@@ -69,8 +70,13 @@ const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 // Time slots from 8:00 to 20:00
 const timeSlots = Array.from({ length: 13 }, (_, i) => `${i + 8}:00`);
 
-export default function CalendarView() {
+interface CalendarViewProps {
+  currentView?: "week" | "day" | "month";
+}
+
+export default function CalendarView({ currentView = "week" }: CalendarViewProps) {
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const { toast } = useToast();
 
   // Get the dates for the current week
   const getWeekDates = () => {
@@ -139,6 +145,23 @@ export default function CalendarView() {
       return eventHour === slotHour && (parseInt(event.id.replace("event", "")) % 7) === dayIndex;
     });
   };
+
+  const handleEventClick = (event: CourseEvent) => {
+    toast({
+      title: event.title,
+      description: `${event.instructor} - ${event.students.length} students - Court ${event.courtNumber}`,
+    });
+  };
+
+  // Effect to show a message when view changes
+  useEffect(() => {
+    if (currentView !== "week") {
+      toast({
+        title: `${currentView.charAt(0).toUpperCase() + currentView.slice(1)} View`,
+        description: `${currentView.charAt(0).toUpperCase() + currentView.slice(1)} view will be implemented soon.`,
+      });
+    }
+  }, [currentView, toast]);
 
   return (
     <div className="rounded-xl bg-white shadow-soft overflow-hidden animate-fade-in">
@@ -215,10 +238,11 @@ export default function CalendarView() {
                         <div
                           key={event.id}
                           className={cn(
-                            "court-event card-hover",
+                            "court-event card-hover cursor-pointer",
                             `court-${event.courtType}`
                           )}
                           style={{ height: `${event.duration * 80}px` }}
+                          onClick={() => handleEventClick(event)}
                         >
                           <div className="flex justify-between items-start">
                             <h4 className="font-medium text-sm">{event.title}</h4>

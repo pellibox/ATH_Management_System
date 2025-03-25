@@ -2,9 +2,32 @@
 import { useState } from "react";
 import { Calendar as CalendarIcon, Filter, ListFilter, MessageSquarePlus } from "lucide-react";
 import CalendarView from "@/components/ui/CalendarView";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Calendar() {
   const [view, setView] = useState<"week" | "day" | "month">("week");
+  const { toast } = useToast();
+  
+  const handleNewBooking = () => {
+    toast({
+      title: "New Booking",
+      description: "Booking creation functionality will be implemented soon.",
+    });
+  };
+
+  const handleFilterClick = () => {
+    toast({
+      title: "Filters",
+      description: "Filtering functionality will be implemented soon.",
+    });
+  };
+
+  const handleViewClick = () => {
+    toast({
+      title: "View Options",
+      description: "Additional view options will be implemented soon.",
+    });
+  };
   
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
@@ -16,20 +39,29 @@ export default function Calendar() {
         
         <div className="flex items-center gap-3">
           <div className="relative">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-sm text-gray-700 hover:bg-gray-50 transition-colors">
+            <button 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={handleFilterClick}
+            >
               <Filter className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium">Filter</span>
             </button>
           </div>
           
           <div className="relative">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-sm text-gray-700 hover:bg-gray-50 transition-colors">
+            <button 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={handleViewClick}
+            >
               <ListFilter className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium">View</span>
             </button>
           </div>
           
-          <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors">
+          <button 
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors"
+            onClick={handleNewBooking}
+          >
             <MessageSquarePlus className="h-4 w-4" />
             <span className="text-sm font-medium">New Booking</span>
           </button>
@@ -92,7 +124,7 @@ export default function Calendar() {
       </div>
       
       {/* Calendar Component */}
-      <CalendarView />
+      <CalendarView currentView={view} />
     </div>
   );
 }

@@ -1,42 +1,123 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+
+/* ... keep existing code */
+
+/* Calendar court event styling */
+.court-event {
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 4px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.court-event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes logo-spin {
+/* Court type styles */
+.court-clay {
+  background-color: rgba(217, 119, 87, 0.15);
+  border-left: 3px solid #d97757;
+}
+
+.court-grass {
+  background-color: rgba(72, 187, 120, 0.15);
+  border-left: 3px solid #48bb78;
+}
+
+.court-hard {
+  background-color: rgba(66, 153, 225, 0.15);
+  border-left: 3px solid #4299e1;
+}
+
+.court-central {
+  background-color: rgba(159, 122, 234, 0.15);
+  border-left: 3px solid #9f7aea;
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
-.card {
-  padding: 2em;
+.animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.read-the-docs {
-  color: #888;
+/* Custom colors */
+:root {
+  --ath-blue: #2563eb;
+  --ath-blue-dark: #1d4ed8;
+  --ath-blue-light: #dbeafe;
+  --ath-orange: #f97316;
+  --ath-clay: #d97757;
+  --ath-grass: #48bb78;
+  --ath-hard: #4299e1;
+  --ath-central: #9f7aea;
+}
+
+.text-ath-blue {
+  color: var(--ath-blue);
+}
+
+.bg-ath-blue {
+  background-color: var(--ath-blue);
+}
+
+.bg-ath-blue-light {
+  background-color: var(--ath-blue-light);
+}
+
+.bg-ath-clay {
+  background-color: var(--ath-clay);
+}
+
+.bg-ath-grass {
+  background-color: var(--ath-grass);
+}
+
+.bg-ath-hard {
+  background-color: var(--ath-hard);
+}
+
+.bg-ath-central {
+  background-color: var(--ath-central);
+}
+
+.hover\:bg-ath-blue-dark:hover {
+  background-color: var(--ath-blue-dark);
+}
+
+/* Shadow styles */
+.shadow-soft {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
