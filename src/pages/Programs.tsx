@@ -1,107 +1,44 @@
 
 import { useState } from "react";
-import { Calendar, Plus, Search, Users, Clock, BookOpen } from "lucide-react";
+import { Calendar, Plus, Search, Users, Clock, BookOpen, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_PROGRAMS } from "@/components/court-vision/constants";
 
-interface Program {
-  id: string;
-  name: string;
-  type: "junior" | "adult" | "advanced" | "private";
-  description: string;
-  ageRange: string;
-  schedule: string[];
-  capacity: number;
-  enrolled: number;
-  instructor: string;
-  price: string;
-}
+// Define program categories for filtering
+const PROGRAM_CATEGORIES = {
+  PERFORMANCE: "performance",
+  JUNIOR: "junior",
+  PERSONAL: "personal",
+  ADULT: "adult",
+  COACH: "coach"
+};
 
-// Mock data for programs
-const mockPrograms: Program[] = [
-  {
-    id: "prog1",
-    name: "Junior Development",
-    type: "junior",
-    description: "Foundation program for young players focusing on technique and fun.",
-    ageRange: "6-10",
-    schedule: ["Monday 4-5:30 PM", "Wednesday 4-5:30 PM"],
-    capacity: 12,
-    enrolled: 8,
-    instructor: "Coach Williams",
-    price: "$120/month",
-  },
-  {
-    id: "prog2",
-    name: "Teen Performance",
-    type: "junior",
-    description: "Competitive training for aspiring tournament players.",
-    ageRange: "11-15",
-    schedule: ["Tuesday 5-7 PM", "Thursday 5-7 PM", "Saturday 10-12 PM"],
-    capacity: 10,
-    enrolled: 10,
-    instructor: "Coach Smith",
-    price: "$180/month",
-  },
-  {
-    id: "prog3",
-    name: "Adult Beginners",
-    type: "adult",
-    description: "Introduction to tennis for adults with little to no experience.",
-    ageRange: "18+",
-    schedule: ["Monday 7-8:30 PM", "Friday 7-8:30 PM"],
-    capacity: 8,
-    enrolled: 5,
-    instructor: "Coach Martinez",
-    price: "$150/month",
-  },
-  {
-    id: "prog4",
-    name: "Adult Intermediate",
-    type: "adult",
-    description: "Refine technique and tactics for recreational players.",
-    ageRange: "18+",
-    schedule: ["Tuesday 7-8:30 PM", "Thursday 7-8:30 PM"],
-    capacity: 8,
-    enrolled: 7,
-    instructor: "Coach Johnson",
-    price: "$150/month",
-  },
-  {
-    id: "prog5",
-    name: "High Performance Academy",
-    type: "advanced",
-    description: "Elite training program for competitive and tournament players.",
-    ageRange: "14-18",
-    schedule: ["Monday 5-7 PM", "Wednesday 5-7 PM", "Friday 5-7 PM"],
-    capacity: 6,
-    enrolled: 5,
-    instructor: "Coach Smith",
-    price: "$250/month",
-  },
-  {
-    id: "prog6",
-    name: "Private Coaching",
-    type: "private",
-    description: "One-on-one coaching sessions tailored to individual needs.",
-    ageRange: "All ages",
-    schedule: ["Available by appointment"],
-    capacity: 1,
-    enrolled: 0,
-    instructor: "Various Coaches",
-    price: "$75/hour",
-  }
-];
+// Map our programs to categories
+const programCategoryMap = {
+  "perf2": PROGRAM_CATEGORIES.PERFORMANCE,
+  "perf3": PROGRAM_CATEGORIES.PERFORMANCE,
+  "perf4": PROGRAM_CATEGORIES.PERFORMANCE,
+  "elite": PROGRAM_CATEGORIES.PERFORMANCE,
+  "elite-full": PROGRAM_CATEGORIES.PERFORMANCE,
+  "junior-sit": PROGRAM_CATEGORIES.JUNIOR,
+  "junior-sat": PROGRAM_CATEGORIES.JUNIOR,
+  "personal-coaching": PROGRAM_CATEGORIES.PERSONAL,
+  "lezioni-private": PROGRAM_CATEGORIES.PERSONAL,
+  "adult": PROGRAM_CATEGORIES.ADULT,
+  "university": PROGRAM_CATEGORIES.ADULT,
+  "coach": PROGRAM_CATEGORIES.COACH
+};
 
 export default function Programs() {
   const [filter, setFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
   
-  // Filter programs based on type and search query
-  const filteredPrograms = mockPrograms
+  // Filter programs based on category and search query
+  const filteredPrograms = DEFAULT_PROGRAMS
     .filter(program => {
       if (filter === "all") return true;
-      return program.type === filter;
+      return programCategoryMap[program.id] === filter;
     })
     .filter(program => {
       if (!searchQuery) return true;
@@ -109,8 +46,8 @@ export default function Programs() {
       const query = searchQuery.toLowerCase();
       return (
         program.name.toLowerCase().includes(query) ||
-        program.description.toLowerCase().includes(query) ||
-        program.instructor.toLowerCase().includes(query)
+        program.description?.toLowerCase().includes(query) ||
+        program.details?.some(detail => detail.toLowerCase().includes(query))
       );
     });
   
@@ -127,8 +64,8 @@ export default function Programs() {
     <div className="max-w-7xl mx-auto animate-fade-in">
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Programs</h1>
-          <p className="text-gray-600 mt-1">Manage training programs and courses</p>
+          <h1 className="text-3xl font-bold">Programmi</h1>
+          <p className="text-gray-600 mt-1">Gestisci i programmi di allenamento e i corsi</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -136,7 +73,7 @@ export default function Programs() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="search"
-              placeholder="Search programs..."
+              placeholder="Cerca programmi..."
               className="h-10 w-64 rounded-lg bg-white shadow-sm pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ath-blue/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -145,27 +82,37 @@ export default function Programs() {
           
           <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors">
             <Plus className="h-4 w-4" />
-            <span className="text-sm font-medium">New Program</span>
+            <span className="text-sm font-medium">Nuovo Programma</span>
           </button>
         </div>
       </div>
       
       {/* Filter */}
-      <div className="mb-6 bg-white shadow-sm rounded-lg p-1 inline-flex items-center">
+      <div className="mb-6 bg-white shadow-sm rounded-lg p-1 inline-flex items-center overflow-x-auto">
         <button
           onClick={() => setFilter("all")}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
             filter === "all"
               ? "bg-ath-blue-light text-ath-blue"
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          All Programs
+          Tutti i Programmi
         </button>
         <button
-          onClick={() => setFilter("junior")}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-            filter === "junior"
+          onClick={() => setFilter(PROGRAM_CATEGORIES.PERFORMANCE)}
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+            filter === PROGRAM_CATEGORIES.PERFORMANCE
+              ? "bg-ath-blue-light text-ath-blue"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          Agonisti Performance
+        </button>
+        <button
+          onClick={() => setFilter(PROGRAM_CATEGORIES.JUNIOR)}
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+            filter === PROGRAM_CATEGORIES.JUNIOR
               ? "bg-ath-blue-light text-ath-blue"
               : "text-gray-600 hover:bg-gray-100"
           }`}
@@ -173,177 +120,134 @@ export default function Programs() {
           Junior
         </button>
         <button
-          onClick={() => setFilter("adult")}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-            filter === "adult"
+          onClick={() => setFilter(PROGRAM_CATEGORIES.PERSONAL)}
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+            filter === PROGRAM_CATEGORIES.PERSONAL
               ? "bg-ath-blue-light text-ath-blue"
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          Adult
+          Personal Coaching
         </button>
         <button
-          onClick={() => setFilter("advanced")}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-            filter === "advanced"
+          onClick={() => setFilter(PROGRAM_CATEGORIES.ADULT)}
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+            filter === PROGRAM_CATEGORIES.ADULT
               ? "bg-ath-blue-light text-ath-blue"
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          Advanced
+          Adulti e Universitari
         </button>
         <button
-          onClick={() => setFilter("private")}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-            filter === "private"
+          onClick={() => setFilter(PROGRAM_CATEGORIES.COACH)}
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+            filter === PROGRAM_CATEGORIES.COACH
               ? "bg-ath-blue-light text-ath-blue"
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          Private
+          Coach
         </button>
       </div>
       
-      {/* Programs Grid */}
-      <div className="space-y-4">
-        {filteredPrograms.map((program) => (
-          <div 
-            key={program.id} 
-            className={cn(
-              "bg-white rounded-xl shadow-soft overflow-hidden transition-all duration-300",
-              expandedProgram === program.id ? "ring-2 ring-ath-blue/20" : "",
-              "card-hover"
-            )}
-          >
-            <div 
-              className="p-6 cursor-pointer"
-              onClick={() => toggleExpand(program.id)}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-semibold">{program.name}</h3>
-                    <span className={cn(
-                      "text-xs px-2 py-0.5 rounded-full",
-                      program.type === "junior" ? "bg-green-100 text-green-700" :
-                      program.type === "adult" ? "bg-blue-100 text-blue-700" :
-                      program.type === "advanced" ? "bg-purple-100 text-purple-700" :
-                      "bg-gray-100 text-gray-700"
-                    )}>
-                      {program.type.charAt(0).toUpperCase() + program.type.slice(1)}
-                    </span>
-                  </div>
-                  <p className="text-gray-600 mt-1">{program.description}</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <div className="text-lg font-semibold text-ath-blue">{program.price}</div>
-                  <div className="text-sm text-gray-500">Age: {program.ageRange}</div>
-                </div>
-              </div>
-              
-              <div className="mt-4 flex flex-wrap gap-6">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">
-                    {program.enrolled}/{program.capacity} enrolled
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{program.instructor}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{program.schedule.length} sessions/week</span>
-                </div>
-              </div>
-              
-              <div className={cn(
-                "mt-2 flex justify-end items-center gap-1",
-                "text-ath-blue transition-transform duration-300",
-                expandedProgram === program.id ? "rotate-180" : ""
-              )}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </div>
-            </div>
+      {/* Category Headers */}
+      {filter === "all" && (
+        <div className="space-y-8">
+          {/* Performance Section */}
+          <div>
+            <h2 className="text-2xl font-bold border-l-4 border-[#8B4513] pl-3 mb-4">
+              Agonisti Performance ed Elite
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Percorsi ad alto contenuto tecnico e fisico, pensati per chi compete a livello FITP, Tennis Europe o ITF. 
+              Programmi di 48 settimane per un percorso verso il proprio massimo potenziale.
+            </p>
             
-            {/* Expanded details */}
-            {expandedProgram === program.id && (
-              <div className="px-6 pb-6 pt-0 border-t-0 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Schedule</h4>
-                    <ul className="space-y-2">
-                      {program.schedule.map((session, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-ath-blue" />
-                          <span className="text-sm">{session}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium text-gray-500 mb-2">Enrollment Status</h4>
-                      <div className="relative pt-1">
-                        <div className="overflow-hidden h-2 text-xs flex rounded bg-gray-200">
-                          <div 
-                            style={{ width: `${(program.enrolled / program.capacity) * 100}%` }}
-                            className={cn(
-                              "shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center",
-                              program.enrolled === program.capacity ? "bg-red-500" : "bg-green-500"
-                            )}
-                          ></div>
-                        </div>
-                        <div className="flex justify-between mt-1">
-                          <span className="text-xs text-gray-500">{program.enrolled} enrolled</span>
-                          <span className="text-xs text-gray-500">{program.capacity} capacity</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Program Details</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Duration:</span>
-                        <span className="text-sm">3 months</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Courts:</span>
-                        <span className="text-sm">Clay Courts 1-3</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Equipment:</span>
-                        <span className="text-sm">Provided</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Next Start Date:</span>
-                        <span className="text-sm">July 1, 2024</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6 flex gap-3 justify-end">
-                      <button className="px-3 py-1.5 rounded bg-gray-100 text-gray-700 text-sm hover:bg-gray-200 transition-colors">
-                        View Details
-                      </button>
-                      <button className="px-3 py-1.5 rounded bg-ath-blue text-white text-sm hover:bg-ath-blue-dark transition-colors">
-                        Edit Program
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {DEFAULT_PROGRAMS
+                .filter(program => programCategoryMap[program.id] === PROGRAM_CATEGORIES.PERFORMANCE)
+                .map(renderProgramCard)}
+            </div>
           </div>
-        ))}
-      </div>
+          
+          {/* Junior Section */}
+          <div>
+            <h2 className="text-2xl font-bold border-l-4 border-[#2E8B57] pl-3 mb-4">
+              Junior Program
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Percorsi dedicati allo sviluppo motorio e tecnico dai 4 ai 12 anni. Programmi di 30 settimane.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {DEFAULT_PROGRAMS
+                .filter(program => programCategoryMap[program.id] === PROGRAM_CATEGORIES.JUNIOR)
+                .map(renderProgramCard)}
+            </div>
+          </div>
+          
+          {/* Personal Coaching Section */}
+          <div>
+            <h2 className="text-2xl font-bold border-l-4 border-[#4682B4] pl-3 mb-4">
+              Personal Coaching e Lezioni Private
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Il Personal Coaching include maestro e sparring dedicati con analisi VICKI™, mentre le Lezioni Private 
+              offrono sessioni personalizzate con un maestro certificato. Entrambi i programmi disponibili su prenotazione.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {DEFAULT_PROGRAMS
+                .filter(program => programCategoryMap[program.id] === PROGRAM_CATEGORIES.PERSONAL)
+                .map(renderProgramCard)}
+            </div>
+          </div>
+          
+          {/* Adult Section */}
+          <div>
+            <h2 className="text-2xl font-bold border-l-4 border-[#4682B4] pl-3 mb-4">
+              Adulti e Universitari
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Programmi per adulti e studenti con esigenze di flessibilità. Programmi di 30 settimane.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {DEFAULT_PROGRAMS
+                .filter(program => programCategoryMap[program.id] === PROGRAM_CATEGORIES.ADULT)
+                .map(renderProgramCard)}
+            </div>
+          </div>
+          
+          {/* Coach Section */}
+          <div>
+            <h2 className="text-2xl font-bold border-l-4 border-[#483D8B] pl-3 mb-4">
+              Programmi per Coach
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Formazione e strumenti avanzati per allenatori di tennis. Disponibili tutto l'anno con prezzi personalizzati.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {DEFAULT_PROGRAMS
+                .filter(program => programCategoryMap[program.id] === PROGRAM_CATEGORIES.COACH)
+                .map(renderProgramCard)}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Filtered Results */}
+      {filter !== "all" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredPrograms.map(renderProgramCard)}
+        </div>
+      )}
       
       {filteredPrograms.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-lg text-gray-500">No programs match your search</p>
+          <p className="text-lg text-gray-500">Nessun programma corrisponde alla tua ricerca</p>
           <button 
             onClick={() => {
               setFilter("all");
@@ -351,10 +255,141 @@ export default function Programs() {
             }}
             className="mt-2 text-ath-blue hover:text-ath-blue-dark"
           >
-            View all programs
+            Visualizza tutti i programmi
           </button>
         </div>
       )}
     </div>
   );
+  
+  function renderProgramCard(program) {
+    return (
+      <div 
+        key={program.id} 
+        className={cn(
+          "bg-white rounded-xl shadow-soft overflow-hidden transition-all duration-300",
+          expandedProgram === program.id ? "ring-2 ring-ath-blue/20" : "",
+          "card-hover"
+        )}
+      >
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleExpand(program.id)}
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-semibold">{program.name}</h3>
+                <span 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: program.color }}
+                ></span>
+              </div>
+              <p className="text-gray-600 mt-1">{program.description}</p>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="text-lg font-semibold text-ath-blue">{program.cost}</div>
+            </div>
+          </div>
+          
+          <div className="mt-4 flex flex-wrap gap-6">
+            {program.weeklyHours > 0 && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gray-500" />
+                <span className="text-sm">
+                  {program.weeklyHours} ore/settimana
+                </span>
+              </div>
+            )}
+            {program.totalWeeks > 0 && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-gray-500" />
+                <span className="text-sm">{program.totalWeeks} settimane</span>
+              </div>
+            )}
+          </div>
+          
+          <div className={cn(
+            "mt-2 flex justify-end items-center gap-1",
+            "text-ath-blue transition-transform duration-300",
+            expandedProgram === program.id ? "rotate-180" : ""
+          )}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </div>
+        
+        {/* Expanded details */}
+        {expandedProgram === program.id && (
+          <div className="px-6 pb-6 pt-0 border-t-0 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-2">Dettagli Programma</h4>
+                <ul className="space-y-2">
+                  {program.details && program.details.map((detail, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-ath-blue mr-2">•</span> 
+                      <span className="text-sm">{detail}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                {program.weeklyHours > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">Monte Ore</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Ore settimanali:</span>
+                        <span className="text-sm font-medium">{program.weeklyHours} ore</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Settimane totali:</span>
+                        <span className="text-sm font-medium">{program.totalWeeks}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Monte ore totale:</span>
+                        <span className="text-sm font-medium">{program.weeklyHours * program.totalWeeks} ore</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-2">Informazioni</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Costo:</span>
+                    <span className="text-sm font-medium">{program.cost}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Iscrizioni:</span>
+                    <span className="text-sm">Aperte</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Integrazione VICKI™:</span>
+                    <span className="text-sm">Disponibile</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Prossimo inizio:</span>
+                    <span className="text-sm">Settembre 2024</span>
+                  </div>
+                </div>
+                
+                <div className="mt-6 flex gap-3 justify-end">
+                  <button className="px-3 py-1.5 rounded bg-gray-100 text-gray-700 text-sm hover:bg-gray-200 transition-colors">
+                    Dettagli
+                  </button>
+                  <button className="px-3 py-1.5 rounded bg-ath-blue text-white text-sm hover:bg-ath-blue-dark transition-colors">
+                    Modifica
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 }
