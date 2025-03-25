@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 
 interface CourtComponentProps {
   court: CourtProps;
-  date: Date;
+  date?: Date;
   timeSlots: string[];
   onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, time?: string) => void;
   onActivityDrop: (courtId: string, activity: ActivityData, time?: string) => void;
@@ -21,6 +21,12 @@ interface CourtComponentProps {
   onCourtRemove?: (courtId: string) => void;
   onCourtNumberChange?: (courtId: string, number: number) => void;
   isSidebarCollapsed?: boolean;
+  // Add the missing props
+  onAssignPerson?: (courtId: string, person: PersonData, timeSlot?: string, durationHours?: number) => void;
+  onAssignActivity?: (courtId: string, activity: ActivityData, timeSlot?: string, durationHours?: number) => void;
+  people?: PersonData[];
+  activities?: ActivityData[];
+  programs?: any[];
 }
 
 export function Court({ 

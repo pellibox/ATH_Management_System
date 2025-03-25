@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -865,11 +864,12 @@ export default function CourtVision() {
                   onActivityDrop={handleActivityDrop}
                   onRemovePerson={handleRemovePerson}
                   onRemoveActivity={handleRemoveActivity}
-                  onAssignPerson={handleAssignPerson}
-                  onAssignActivity={handleAssignActivity}
-                  people={playersList.concat(coachesList)}
-                  activities={activities}
-                  programs={programs}
+                  onCourtRename={handleRenameCourt}
+                  onCourtTypeChange={handleChangeCourtType}
+                  onCourtRemove={handleRemoveCourt}
+                  onCourtNumberChange={handleChangeCourtNumber}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                  date={selectedDate}
                 />
               ))}
             </div>
@@ -895,7 +895,7 @@ export default function CourtVision() {
               
               <AssignmentsDashboard
                 courts={courts}
-                people={playersList.concat(coachesList)}
+                selectedDate={selectedDate}
                 programs={programs}
                 onChangeTimeSlot={handleChangePersonTimeSlot}
                 onChangeCourt={handleChangePersonCourt}

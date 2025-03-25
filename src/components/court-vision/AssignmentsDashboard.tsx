@@ -8,13 +8,16 @@ import { PERSON_TYPES } from "./constants";
 
 interface AssignmentsDashboardProps {
   courts: CourtProps[];
-  selectedDate: Date;
+  selectedDate?: Date;
   programs: Program[];
+  onChangeTimeSlot?: (personId: string, timeSlot: string) => void;
+  onChangeCourt?: (personId: string, courtId: string) => void;
+  onRemovePerson?: (personId: string, timeSlot?: string) => void;
 }
 
 const COACH_MAX_HOURS = 8; // Maximum hours a coach should work
 
-export function AssignmentsDashboard({ courts, selectedDate, programs = [] }: AssignmentsDashboardProps) {
+export function AssignmentsDashboard({ courts, selectedDate, programs = [], onChangeTimeSlot, onChangeCourt, onRemovePerson }: AssignmentsDashboardProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const allAssignedPeople = courts.flatMap(court => 
