@@ -23,7 +23,9 @@ export function PeopleList() {
   
   // Create wrapper functions to handle type conversion
   const handleAddToDragAreaWrapper = (person: PersonData) => {
-    handleAddToDragArea(person.id);
+    if (person && person.id) {
+      handleAddToDragArea(person.id);
+    }
   };
   
   return (

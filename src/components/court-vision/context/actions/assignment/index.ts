@@ -27,6 +27,7 @@ export const useAssignmentActions = ({
     pendingAssignment,
     setPendingAssignment,
     showCoachOverlapDialog,
+    setShowCoachOverlapDialog,
     pendingCoachAssignment,
     handleConfirmCoachOverlap,
     handleCancelCoachOverlap
@@ -88,12 +89,9 @@ export const useAssignmentActions = ({
     handleConfirmExtraHours,
     handleCancelExtraHours,
     showCoachOverlapDialog,
+    setShowCoachOverlapDialog,
     pendingCoachAssignment,
     handleConfirmCoachOverlap,
-    handleCancelCoachOverlap,
-    setShowCoachOverlapDialog: (show: boolean) => {
-      // This is a temporary fix - we should properly manage this state
-      console.log("setShowCoachOverlapDialog called:", show);
-    }
+    handleCancelCoachOverlap
   };
 };

@@ -59,6 +59,7 @@ export const usePersonAssignment = (
     pendingAssignment,
     setPendingAssignment,
     showCoachOverlapDialog,
+    setShowCoachOverlapDialog,
     pendingCoachAssignment,
     handleConfirmCoachOverlap,
     handleCancelCoachOverlap

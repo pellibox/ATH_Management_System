@@ -105,6 +105,6 @@ export interface CourtVisionContextType {
   handleRemoveCoach: (coachId: string) => void;
   
   // Activity actions
-  handleAddActivity: (activity: ActivityData) => void;
+  handleAddActivity: (activity: ActivityData | {name: string, type: string, duration: string}) => void;
   handleUpdateActivity: (activityId: string, activity: Partial<ActivityData>) => void;
 }

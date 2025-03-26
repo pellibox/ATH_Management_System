@@ -51,6 +51,7 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   const [selectedDate, setSelectedDate] = useState(initialState.selectedDate);
   const [showExtraHoursDialog, setShowExtraHoursDialog] = useState(initialState.showExtraHoursDialog);
   const [pendingAssignment, setPendingAssignment] = useState(initialState.pendingAssignment);
+  const [showCoachOverlapDialog, setShowCoachOverlapDialog] = useState(false);
   
   // Track filtered state locally
   const [filteredCourts, setFilteredCourts] = useState(initialState.filteredCourts);
@@ -135,16 +136,53 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     handleSetCoachAvailability,
     ...programHandlers,
     ...actions,
-    // Explicitly map schedule related functions for clarity
-    saveAsTemplate: actions.handleSaveTemplate,
-    applyTemplate: actions.handleLoadTemplate,
-    copyToNextDay: actions.handleDuplicateSchedule 
-      ? () => actions.handleDuplicateSchedule(selectedDate, new Date(selectedDate.getTime() + 86400000)) 
-      : () => console.log("copyToNextDay not implemented"),
-    copyToWeek: () => console.log("copyToWeek not implemented"),
-    checkUnassignedPeople: () => [],
+    
+    // Add all the required functions that might be missing
+    handleCreateProgram: programHandlers.handleCreateProgram || (() => {}),
+    handleUpdateProgram: programHandlers.handleUpdateProgram || (() => {}),
+    handleDeleteProgram: programHandlers.handleDeleteProgram || (() => {}),
+    
+    // Schedule operations
+    handleSaveTemplate: actions.saveAsTemplate || (() => {}),
+    saveAsTemplate: actions.saveAsTemplate || (() => {}),
+    handleLoadTemplate: actions.applyTemplate || (() => {}),
+    applyTemplate: actions.applyTemplate || (() => {}),
+    handleDeleteTemplate: actions.handleDeleteTemplate || (() => {}),
+    handleClearSchedule: actions.handleClearSchedule || (() => {}),
+    handleDuplicateSchedule: actions.handleDuplicateSchedule || (() => {}),
+    copyToNextDay: actions.copyToNextDay || (() => {}),
+    copyToWeek: actions.copyToWeek || (() => {}),
+    checkUnassignedPeople: actions.checkUnassignedPeople || (() => []),
+    
     // Coach overlap dialog state management
+    showCoachOverlapDialog: actions.showCoachOverlapDialog || false,
     setShowCoachOverlapDialog: actions.setShowCoachOverlapDialog || (() => {}),
+    pendingCoachAssignment: actions.pendingCoachAssignment || null,
+    handleConfirmCoachOverlap: actions.handleConfirmCoachOverlap || (() => {}),
+    handleCancelCoachOverlap: actions.handleCancelCoachOverlap || (() => {}),
+    
+    // Add any other missing functions
+    handleRenameCourt: actions.handleRenameCourt || (() => {}),
+    handleChangeCourtType: actions.handleChangeCourtType || (() => {}),
+    handleChangeCourtNumber: actions.handleChangeCourtNumber || (() => {}),
+    
+    // People/Activity actions
+    handleAddPerson: actions.handleAddPerson || (() => {}),
+    handleAddPlayer: actions.handleAddPlayer || (() => {}),
+    handleUpdatePlayer: actions.handleUpdatePlayer || (() => {}),
+    handleRemovePlayer: actions.handleRemovePlayer || (() => {}),
+    handleAddCoach: actions.handleAddCoach || (() => {}),
+    handleUpdateCoach: actions.handleUpdateCoach || (() => {}),
+    handleRemoveCoach: actions.handleRemoveCoach || (() => {}),
+    handleAddActivity: actions.handleAddActivity || (() => {}),
+    handleUpdateActivity: actions.handleUpdateActivity || (() => {}),
+    handleRemoveActivity: actions.handleRemoveActivity || (() => {}),
+    
+    // Any other missing functions based on CourtVisionContextType
+    getCurrentHours: actions.getCurrentHours || (() => 0),
+    getNewHours: actions.getNewHours || (() => 0),
+    handleConfirmExtraHours: actions.handleConfirmExtraHours || (() => {}),
+    handleCancelExtraHours: actions.handleCancelExtraHours || (() => {})
   };
 
   console.log("CourtVisionProvider rendering with context:", { 
@@ -159,27 +197,23 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
           isOpen={actions.showExtraHoursDialog}
           onOpenChange={actions.setShowExtraHoursDialog}
           pendingAssignment={actions.pendingAssignment}
-          currentHours={actions.getCurrentHours()}
-          newHours={actions.getNewHours()}
-          onConfirm={actions.handleConfirmExtraHours}
-          onCancel={actions.handleCancelExtraHours}
+          currentHours={contextValue.getCurrentHours()}
+          newHours={contextValue.getNewHours()}
+          onConfirm={contextValue.handleConfirmExtraHours}
+          onCancel={contextValue.handleCancelExtraHours}
         />
       )}
-      {actions.showCoachOverlapDialog && actions.pendingCoachAssignment && (
+      {contextValue.showCoachOverlapDialog && contextValue.pendingCoachAssignment && (
         <CoachOverlapDialog
-          isOpen={actions.showCoachOverlapDialog}
-          onOpenChange={(open) => {
-            if (typeof actions.setShowCoachOverlapDialog === 'function') {
-              actions.setShowCoachOverlapDialog(open);
-            }
-          }}
-          coach={actions.pendingCoachAssignment.coach}
-          existingCourt={actions.pendingCoachAssignment.existingCourtName}
-          newCourt={courts.find(c => c.id === actions.pendingCoachAssignment?.courtId)?.name + " #" + 
-            courts.find(c => c.id === actions.pendingCoachAssignment?.courtId)?.number || ""}
-          timeSlot={actions.pendingCoachAssignment.timeSlot || ""}
-          onConfirm={actions.handleConfirmCoachOverlap}
-          onCancel={actions.handleCancelCoachOverlap}
+          isOpen={contextValue.showCoachOverlapDialog}
+          onOpenChange={contextValue.setShowCoachOverlapDialog}
+          coach={contextValue.pendingCoachAssignment.coach}
+          existingCourt={contextValue.pendingCoachAssignment.existingCourtName}
+          newCourt={courts.find(c => c.id === contextValue.pendingCoachAssignment?.courtId)?.name + " #" + 
+            courts.find(c => c.id === contextValue.pendingCoachAssignment?.courtId)?.number || ""}
+          timeSlot={contextValue.pendingCoachAssignment.timeSlot || ""}
+          onConfirm={contextValue.handleConfirmCoachOverlap}
+          onCancel={contextValue.handleCancelCoachOverlap}
         />
       )}
     </CourtVisionContext.Provider>
