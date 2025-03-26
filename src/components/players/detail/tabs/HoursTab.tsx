@@ -1,10 +1,9 @@
-
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
-import { Player } from "@/types/player";
+import { Player, ProgramDetails, programDetailsMap } from "@/types/player";
 import { useEffect, useState } from "react";
 
 interface HoursTabProps {
@@ -14,23 +13,9 @@ interface HoursTabProps {
   playerActivities: any[];
 }
 
-interface ProgramDetails {
-  weeks: number;
-  sessionsPerWeek: number;
-  hoursPerSession: number;
-}
-
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
   const [programHours, setProgramHours] = useState(0);
   const [remainingHours, setRemainingHours] = useState(0);
-  
-  // Define program details map
-  const programDetailsMap: Record<string, ProgramDetails> = {
-    "Junior Excellence": { weeks: 40, sessionsPerWeek: 3, hoursPerSession: 1 },
-    "Elite Performance": { weeks: 40, sessionsPerWeek: 5, hoursPerSession: 1.5 },
-    "Foundation": { weeks: 30, sessionsPerWeek: 2, hoursPerSession: 1 },
-    "Pro Circuit": { weeks: 48, sessionsPerWeek: 6, hoursPerSession: 2 },
-  };
   
   useEffect(() => {
     // Calculate total program hours based on program details

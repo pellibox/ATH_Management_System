@@ -1,4 +1,6 @@
-import { Player, mockPlayers } from "@/types/player";
+
+import { Player } from "@/types/player";
+import { mockPlayers } from "@/types/player";
 import { ExtraActivity } from "@/types/extra-activities";
 
 // Initial state for objectives
