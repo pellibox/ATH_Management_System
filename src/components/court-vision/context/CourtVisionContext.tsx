@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { 
@@ -59,7 +58,6 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
   const [filteredPlayers, setFilteredPlayers] = useState<PersonData[]>(DEFAULT_PLAYERS);
   const [filteredCoaches, setFilteredCoaches] = useState<PersonData[]>(DEFAULT_COACHES);
 
-  // Use the filters hook
   useCourtVisionFilters({
     courts,
     currentSport,
@@ -70,7 +68,6 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     setFilteredCoaches
   });
 
-  // Use the actions hook with additional dependencies
   const actions = useCourtVisionActions({
     courts,
     setCourts,
@@ -93,13 +90,11 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     timeSlots
   });
 
-  // Program management functions
   const handleAddProgram = (program: Program) => {
     setPrograms([...programs, program]);
   };
 
   const handleRemoveProgram = (programId: string) => {
-    // Check if the program is assigned to any player or coach
     const isAssigned = [...playersList, ...coachesList].some(person => 
       (person.programId === programId) || 
       (person.programIds && person.programIds.includes(programId))
@@ -122,7 +117,11 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     });
   };
 
-  // Load courts for selected date
+  const handleSetCoachAvailability = (coachId: string, isPresent: boolean, reason?: string) => {
+    const updatedCourts = actions.handleSetCoachAvailability(coachId, isPresent, reason);
+    setCourts(updatedCourts);
+  };
+
   useEffect(() => {
     const dateString = selectedDate.toISOString().split('T')[0];
     const existingSchedule = dateSchedules.find(schedule => schedule.date === dateString);
@@ -139,7 +138,6 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     }
   }, [selectedDate, dateSchedules]);
 
-  // Save courts for selected date
   useEffect(() => {
     const dateString = selectedDate.toISOString().split('T')[0];
     
@@ -160,7 +158,6 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
   }, [courts, selectedDate]);
 
   const contextValue: CourtVisionContextType = {
-    // State
     selectedDate,
     templates,
     dateSchedules,
@@ -177,10 +174,10 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     currentSport,
     isLayoutView,
 
-    // Actions
     setSelectedDate,
     handleAddProgram,
     handleRemoveProgram,
+    handleSetCoachAvailability,
     ...actions
   };
 

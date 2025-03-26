@@ -183,6 +183,16 @@ export const TimeSlot = memo(function TimeSlot({
         // Handle person drop
         const personItem = item as PersonData;
         
+        // Check if coach is unavailable
+        if (item.type === PERSON_TYPES.COACH && personItem.isPresent === false) {
+          toast({
+            title: "Coach Non Disponibile",
+            description: personItem.absenceReason || "Questo coach non è disponibile",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         // Special check for players who can only be assigned once across all courts
         if (item.type === PERSON_TYPES.PLAYER && isPlayerAssignedElsewhere(personItem.id)) {
           toast({

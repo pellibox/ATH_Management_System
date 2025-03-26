@@ -23,6 +23,7 @@ interface CourtVisionHeaderProps {
   playersList: PersonData[];
   coachesList: PersonData[];
   timeSlots: string[];
+  programs?: any[];
   onApplyTemplate: (template: ScheduleTemplate) => void;
   onSaveTemplate: (name: string) => void;
   onCopyToNextDay: () => void;
@@ -34,7 +35,6 @@ interface CourtVisionHeaderProps {
   onAddActivity: (activity: {name: string, type: string, duration: string}) => void;
   onAddToDragArea: (person: PersonData) => void;
   onAssignProgram: (personId: string, programId: string) => void;
-  programs?: any[];
 }
 
 export default function CourtVisionHeader({
@@ -47,6 +47,7 @@ export default function CourtVisionHeader({
   playersList,
   coachesList,
   timeSlots,
+  programs = [],
   onApplyTemplate,
   onSaveTemplate,
   onCopyToNextDay,
@@ -57,8 +58,7 @@ export default function CourtVisionHeader({
   onAddPerson,
   onAddActivity,
   onAddToDragArea,
-  onAssignProgram,
-  programs = []
+  onAssignProgram
 }: CourtVisionHeaderProps) {
   const [activeTab, setActiveTab] = useState<"assignments" | "people" | "activities" | "templates">("assignments");
   
@@ -171,6 +171,7 @@ export default function CourtVisionHeader({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AvailablePeople 
               people={people}
+              programs={programs}
               onAddPerson={onAddPerson}
               onDrop={onDrop}
               onAddToDragArea={onAddToDragArea}

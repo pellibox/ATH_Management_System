@@ -1,12 +1,13 @@
 
-import { useDrag } from "react-dnd";
 import { PersonData, Program } from "./types";
-import { PERSON_TYPES } from "./constants";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MoreHorizontal, Plus, Trash2, Tag, Mail, Phone } from "lucide-react";
+import { MoreHorizontal, Plus, Trash2, Tag, Mail, Phone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { PersonCard } from "./PersonCard";
+import { CoachAvailabilityActions } from "./CoachAvailabilityActions";
+import { PERSON_TYPES } from "./constants";
 
 interface DraggablePersonProps {
   person: PersonData;
@@ -23,118 +24,117 @@ export function DraggablePerson({
   onAssignProgram,
   onRemovePerson
 }: DraggablePersonProps) {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: person.type,
-    item: person,
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  }));
-
-  const personColor = person.type === PERSON_TYPES.PLAYER
-    ? "bg-ath-blue-light text-blue-800"
-    : "bg-ath-red-clay-light text-ath-red-clay";
-
-  // Find the person's current program
-  const currentProgram = programs.find(p => p.id === person.programId);
+  // Find the person's assigned programs
+  const assignedPrograms = person.programIds 
+    ? programs.filter(p => person.programIds?.includes(p.id))
+    : person.programId 
+      ? [programs.find(p => p.id === person.programId)] 
+      : [];
+      
+  // Filter out undefined programs
+  const validPrograms = assignedPrograms.filter(Boolean) as Program[];
 
   return (
-    <div
-      ref={drag}
-      className={`flex items-center justify-between rounded-md border p-2 my-2 hover:bg-gray-50 ${
-        isDragging ? "opacity-50" : ""
-      } cursor-move`}
-    >
-      <div className="flex items-center space-x-2">
-        <div className={`h-6 w-6 rounded-full flex items-center justify-center ${personColor}`}>
-          {person.type === PERSON_TYPES.PLAYER ? "G" : "A"}
-        </div>
-        <div>
-          <div className="text-sm font-medium">{person.name}</div>
-          
-          {person.email && (
-            <div className="text-xs text-gray-500 flex items-center">
-              <Mail className="h-3 w-3 mr-1" />
-              {person.email}
-            </div>
-          )}
-          
-          {person.phone && (
-            <div className="text-xs text-gray-500 flex items-center">
-              <Phone className="h-3 w-3 mr-1" />
-              {person.phone}
-            </div>
-          )}
-          
-          {currentProgram && (
-            <Badge 
-              variant="outline" 
-              className="text-xs mt-1"
-              style={{ 
-                backgroundColor: currentProgram.color, 
-                color: 'white',
-                opacity: 0.8 
-              }}
-            >
-              {currentProgram.name}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center">
-        <Button
-          onClick={() => onAddToDragArea(person)}
-          size="sm"
-          variant="ghost"
-          className="h-7 w-7 p-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="sr-only">Aggiungi</span>
-        </Button>
-        
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 w-7 p-0"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Altre opzioni</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-52 p-2">
-            <div className="space-y-2">
-              <div>
-                <p className="text-xs font-medium mb-1 flex items-center">
-                  <Tag className="h-3 w-3 mr-1" /> Programma
-                </p>
-                <Select
-                  value={person.programId || ""}
-                  onValueChange={(value) => onAssignProgram(person.id, value)}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Seleziona programma" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Nessuno</SelectItem>
-                    {programs.map((program) => (
-                      <SelectItem key={program.id} value={program.id}>
-                        <div className="flex items-center">
-                          <div
-                            className="h-2 w-2 rounded-full mr-1"
-                            style={{ backgroundColor: program.color }}
-                          ></div>
-                          {program.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+    <div className="relative">
+      <PersonCard 
+        person={person}
+        programs={programs}
+        onAddToDragArea={onAddToDragArea}
+        onRemove={onRemovePerson}
+      />
+      
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0 absolute right-2 top-1/2 -translate-y-1/2"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">Altre opzioni</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-60 p-3">
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-medium mb-1 flex items-center">
+                <Tag className="h-3 w-3 mr-1" /> Programmi
+              </p>
+              
+              <div className="flex flex-wrap gap-1 mb-2">
+                {validPrograms.length > 0 ? (
+                  validPrograms.map(program => (
+                    <Badge 
+                      key={program.id} 
+                      variant="outline" 
+                      className="text-xs px-1.5 py-0"
+                      style={{ 
+                        backgroundColor: program.color,
+                        color: 'white',
+                        fontSize: '0.65rem'
+                      }}
+                    >
+                      {program.name}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-500">Nessun programma assegnato</span>
+                )}
               </div>
               
-              {onRemovePerson && (
+              <Select
+                value=""
+                onValueChange={(value) => onAssignProgram(person.id, value)}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Assegna programma" />
+                </SelectTrigger>
+                <SelectContent>
+                  {programs.map((program) => (
+                    <SelectItem key={program.id} value={program.id}>
+                      <div className="flex items-center">
+                        <div
+                          className="h-2 w-2 rounded-full mr-1"
+                          style={{ backgroundColor: program.color }}
+                        ></div>
+                        {program.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {person.type === PERSON_TYPES.COACH && (
+              <div>
+                <p className="text-xs font-medium mb-1 flex items-center">
+                  <AlertCircle className="h-3 w-3 mr-1" /> Disponibilità
+                </p>
+                
+                <CoachAvailabilityActions coach={person} />
+              </div>
+            )}
+            
+            {person.email && (
+              <div>
+                <p className="text-xs font-medium mb-1 flex items-center">
+                  <Mail className="h-3 w-3 mr-1" /> Email
+                </p>
+                <p className="text-xs text-gray-600 break-all">{person.email}</p>
+              </div>
+            )}
+            
+            {person.phone && (
+              <div>
+                <p className="text-xs font-medium mb-1 flex items-center">
+                  <Phone className="h-3 w-3 mr-1" /> Telefono
+                </p>
+                <p className="text-xs text-gray-600">{person.phone}</p>
+              </div>
+            )}
+            
+            {onRemovePerson && (
+              <div className="pt-2 border-t border-gray-200">
                 <Button
                   onClick={() => onRemovePerson(person.id)}
                   variant="destructive"
@@ -143,11 +143,11 @@ export function DraggablePerson({
                 >
                   <Trash2 className="h-3 w-3 mr-1" /> Elimina
                 </Button>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

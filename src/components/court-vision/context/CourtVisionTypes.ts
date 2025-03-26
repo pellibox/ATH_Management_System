@@ -46,6 +46,7 @@ export interface CourtVisionContextType {
   handleAssignProgram: (personId: string, programId: string) => void;
   handleAddProgram: (program: Program) => void;
   handleRemoveProgram: (programId: string) => void;
+  handleSetCoachAvailability: (coachId: string, isPresent: boolean, reason?: string) => void;
   
   // Dialog state and handlers
   showExtraHoursDialog: boolean;
