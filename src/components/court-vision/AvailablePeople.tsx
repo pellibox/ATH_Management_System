@@ -32,7 +32,10 @@ export function AvailablePeople({
   
   // Filter available people by type
   const availablePlayers = people.filter(person => person.type === PERSON_TYPES.PLAYER);
-  const availableCoaches = people.filter(person => person.type === PERSON_TYPES.COACH);
+  
+  // For coaches, we'll show ALL coaches, not just those in the available people list
+  // This ensures coaches are always available for scheduling across multiple time slots
+  const availableCoaches = coachesList;
   
   return (
     <div className="bg-white rounded-xl shadow-soft p-4">
@@ -73,13 +76,14 @@ export function AvailablePeople({
               <Person
                 key={person.id}
                 person={person}
-                // Coaches can't be removed from available list
+                // Coaches should always remain in the list for reuse
                 onRemove={undefined}
+                onAddToDragArea={onAddToDragArea}
               />
             ))
           ) : (
             <div className="text-sm text-gray-500 italic p-2">
-              Tutti gli allenatori sono assegnati ai campi
+              Non ci sono allenatori disponibili
             </div>
           )}
         </TabsContent>

@@ -53,6 +53,12 @@ export const useAssignmentActions = (
     processAssignment(courtId, person, position, timeSlot);
   };
 
+  // Helper to calculate exact duration from hours that may be fractions
+  const calculateSlotsDuration = (hours: number): number => {
+    // For 30-minute time slots, multiply by 2 to get number of slots
+    return Math.ceil(hours * 2);
+  };
+
   const processAssignment = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
     const isMovingFromExistingAssignment = courts.some(court => 
       court.occupants.some(p => p.id === person.id && p.timeSlot === person.sourceTimeSlot)
@@ -77,13 +83,15 @@ export const useAssignmentActions = (
       console.log(`Setting timeSlot to ${timeSlot} for ${person.name}`);
       personWithCourtInfo.timeSlot = timeSlot;
       
-      // Calculate end time slot if duration > 1
-      if (personDuration > 1) {
+      // Calculate end time slot if duration > 1 or has fractional hours (like 1.5)
+      if (personDuration !== 1) {
         const timeSlotIndex = timeSlots.indexOf(timeSlot);
         if (timeSlotIndex >= 0) {
-          const endSlotIndex = Math.min(timeSlotIndex + personDuration - 1, timeSlots.length - 1);
+          // Convert duration to number of slots (considering half-hour slots)
+          const slotsNeeded = calculateSlotsDuration(personDuration);
+          const endSlotIndex = Math.min(timeSlotIndex + slotsNeeded - 1, timeSlots.length - 1);
           personWithCourtInfo.endTimeSlot = timeSlots[endSlotIndex];
-          console.log(`Setting endTimeSlot to ${personWithCourtInfo.endTimeSlot}`);
+          console.log(`Setting endTimeSlot to ${personWithCourtInfo.endTimeSlot} (spanning ${slotsNeeded} slots)`);
         }
       }
     }
@@ -149,8 +157,9 @@ export const useAssignmentActions = (
     setCourts(updatedCourts);
 
     // Remove from available list if coming from there
+    // IMPORTANT: Only remove players from available list, keep coaches always available
     const isFromAvailableList = people.some(p => p.id === person.id);
-    if (isFromAvailableList) {
+    if (isFromAvailableList && person.type === PERSON_TYPES.PLAYER) {
       setPeople(people.filter(p => p.id !== person.id));
     }
 

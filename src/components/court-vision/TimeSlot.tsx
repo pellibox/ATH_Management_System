@@ -113,6 +113,38 @@ export const TimeSlot = memo(function TimeSlot({
     onRemoveActivity(activityId, time);
   }, [onRemoveActivity, time]);
 
+  // Enhanced time slot checking - support for fractional hours
+  const isTimeSlotOccupied = (object: PersonData | ActivityData, timeSlot: string): boolean => {
+    // Use type guards to safely check properties
+    const isPerson = 'type' in object && (object.type === PERSON_TYPES.PLAYER || object.type === PERSON_TYPES.COACH);
+    const isActivity = 'type' in object && object.type.startsWith('activity');
+    
+    let startSlot: string | undefined;
+    
+    if (isPerson && 'timeSlot' in object) {
+      startSlot = object.timeSlot;
+    } else if (isActivity && 'startTime' in object) {
+      startSlot = object.startTime;
+    } else {
+      return false;
+    }
+    
+    if (!startSlot) return false;
+    
+    const startIndex = timeSlots.indexOf(startSlot);
+    const currentIndex = timeSlots.indexOf(timeSlot);
+    
+    if (startIndex === -1 || currentIndex === -1) return false;
+    
+    // For fractional durations like 1.5 hours, calculate actual time slots needed
+    const duration = object.durationHours || 1;
+    // For 30-minute slots, multiply by 2 to get number of half-hour slots
+    const slotsNeeded = Math.ceil(duration * 2);
+    const endIndex = startIndex + slotsNeeded - 1;
+    
+    return currentIndex >= startIndex && currentIndex <= endIndex;
+  };
+
   // Enhanced drop target handling
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
@@ -153,7 +185,7 @@ export const TimeSlot = memo(function TimeSlot({
   return (
     <div 
       ref={drop}
-      className={`border-t border-gray-200 p-2 min-h-[80px] relative ${
+      className={`border-t border-gray-200 p-2 min-h-[60px] relative ${
         isOver ? "bg-ath-red-clay-dark/40" : ""
       }`}
       data-time={time}

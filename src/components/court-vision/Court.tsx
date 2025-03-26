@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -14,7 +13,6 @@ import { CourtSettings } from "./CourtSettings";
 import { CourtHeader } from "./CourtHeader";
 import { CourtControls } from "./CourtControls";
 
-// Update the interface to match what CourtGrid is passing
 interface CourtComponentProps {
   court: CourtProps;
   date?: Date;
@@ -73,15 +71,12 @@ export function Court({
           if (viewMode === "layout") {
             onDrop(court.id, item as PersonData, position);
           } else {
-            // In schedule view, we don't set position
-            // Time slot is handled by the TimeSlot component's drop
             console.log("Court component: schedule view drop - no direct action needed");
           }
         } else if (item.type === "activity") {
           if (viewMode === "layout") {
             onActivityDrop(court.id, item as ActivityData);
           } else {
-            // In schedule view, time slot is handled by the TimeSlot component's drop
             console.log("Court component: schedule view activity drop - no direct action needed");
           }
         }
@@ -90,14 +85,12 @@ export function Court({
           if (viewMode === "layout") {
             onDrop(court.id, item as PersonData);
           } else {
-            // This will be handled by TimeSlot component
             console.log("Court component: schedule view drop without position - no direct action needed");
           }
         } else if (item.type === "activity") {
           if (viewMode === "layout") {
             onActivityDrop(court.id, item as ActivityData);
           } else {
-            // This will be handled by TimeSlot component
             console.log("Court component: schedule view activity drop without position - no direct action needed");
           }
         }
@@ -132,7 +125,6 @@ export function Court({
   };
 
   const isTimeSlotOccupied = (object: PersonData | ActivityData, timeSlot: string): boolean => {
-    // Use type guards to safely check properties
     const isPerson = 'type' in object && (object.type === PERSON_TYPES.PLAYER || object.type === PERSON_TYPES.COACH);
     const isActivity = 'type' in object && object.type.startsWith('activity');
     
@@ -154,7 +146,8 @@ export function Court({
     if (startIndex === -1 || currentIndex === -1) return false;
     
     const duration = object.durationHours || 1;
-    const endIndex = startIndex + Math.ceil(duration) - 1;
+    const slotsNeeded = Math.ceil(duration * 2);
+    const endIndex = startIndex + slotsNeeded - 1;
     
     return currentIndex >= startIndex && currentIndex <= endIndex;
   };
@@ -194,7 +187,6 @@ export function Court({
     : [];
   const hasMoreOccupants = visibleOccupants.length > 12;
 
-  // Add new handlers for person time slot and court changes
   const handleChangePersonTimeSlot = (personId: string, timeSlot: string) => {
     const person = court.occupants.find(p => p.id === personId);
     if (person && onRemovePerson && onDrop) {
@@ -203,7 +195,6 @@ export function Court({
     }
   };
 
-  // Calculate court height based on sidebar state
   const courtHeight = isSidebarCollapsed ? "h-[675px]" : "h-96 sm:h-[600px]";
   const courtWidth = isSidebarCollapsed ? "w-[600px]" : "w-full";
 
@@ -293,7 +284,6 @@ export function Court({
           {viewMode === "schedule" && (
             <div className="flex-1 flex flex-col mt-12 mb-1">
               <div className="sticky top-0 z-10 bg-white shadow-sm">
-                {/* Sticky header for time slots */}
                 <div className="h-8 border-b border-gray-200 flex items-center px-2">
                   <span className="text-xs font-medium">Orari - {court.name} #{court.number}</span>
                 </div>
