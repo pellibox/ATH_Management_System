@@ -19,12 +19,16 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
+import { 
+  CourtVisionProvider, 
+  useCourtVision 
+} from "@/components/court-vision/CourtVisionContext";
 import { PersonData } from "@/components/court-vision/types";
 import { PERSON_TYPES } from "@/components/court-vision/constants";
 import { PlayerCard } from "@/components/court-vision/PlayerCard";
 
-export default function Coaches() {
+// Create a content component that uses the CourtVision context
+function CoachesContent() {
   const { toast } = useToast();
   const { 
     coachesList, 
@@ -49,12 +53,12 @@ export default function Coaches() {
     sportTypes: [],
   });
   
-  // Aggiorna lo stato locale quando coachesList cambia
+  // Update local state when coachesList changes
   useEffect(() => {
     setCoaches(coachesList);
   }, [coachesList]);
 
-  // Ottieni tutti i tipi di sport unici dai giocatori e allenatori
+  // Get all unique sport types from players and coaches
   const allSportTypes = Array.from(
     new Set([
       ...playersList.flatMap(p => p.sportTypes || []),
@@ -66,24 +70,24 @@ export default function Coaches() {
     ])
   );
 
-  // Filtra coaches in base ai criteri di ricerca
+  // Filter coaches based on search criteria
   const filteredCoaches = coaches.filter(coach => {
-    // Filtro di ricerca
+    // Search filter
     const matchesSearch = searchQuery === "" || 
       coach.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (coach.email && coach.email.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    // Filtro per tipo di sport
+    // Sport type filter
     const matchesSportType = sportTypeFilter === "all" || 
       (coach.sportTypes && coach.sportTypes.includes(sportTypeFilter));
     
-    // Filtro per programma
+    // Program filter
     const matchesProgram = programFilter === "all" || coach.programId === programFilter;
     
     return matchesSearch && matchesSportType && matchesProgram;
   });
 
-  // Gestisce l'aggiunta di un nuovo allenatore
+  // Handle adding a new coach
   const handleAddCoach = () => {
     if (!newCoach.name) return;
     
@@ -109,7 +113,7 @@ export default function Coaches() {
     });
   };
 
-  // Gestisce l'assegnazione di un programma a un coach
+  // Handle assigning a program to a coach
   const handleAssignProgram = (coachId: string, programId: string) => {
     setCoaches(prevCoaches => 
       prevCoaches.map(coach => 
@@ -125,7 +129,7 @@ export default function Coaches() {
     });
   };
 
-  // Gestisce l'invio di uno schedule a un coach
+  // Handle sending a schedule to a coach
   const handleSendSchedule = (coachId: string, type: "day" | "week" | "month") => {
     const coach = coaches.find(c => c.id === coachId);
     if (!coach) return;
@@ -136,7 +140,7 @@ export default function Coaches() {
     });
   };
 
-  // Gestisce la selezione/deselezione di un tipo di sport
+  // Handle selecting/deselecting a sport type
   const toggleSportType = (sport: string) => {
     setNewCoach(prev => {
       const sportTypes = prev.sportTypes.includes(sport)
@@ -236,7 +240,7 @@ export default function Coaches() {
         </div>
       </div>
       
-      {/* Filtri */}
+      {/* Filters */}
       <div className="mb-6 bg-white shadow-sm rounded-lg p-4">
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <div className="flex items-center">
@@ -290,7 +294,7 @@ export default function Coaches() {
         </div>
       </div>
       
-      {/* Elenco allenatori */}
+      {/* Coaches list */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredCoaches.length > 0 ? (
           filteredCoaches.map(coach => (
@@ -309,5 +313,14 @@ export default function Coaches() {
         )}
       </div>
     </div>
+  );
+}
+
+// Main Coaches component that provides the CourtVision context
+export default function Coaches() {
+  return (
+    <CourtVisionProvider>
+      <CoachesContent />
+    </CourtVisionProvider>
   );
 }
