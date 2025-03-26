@@ -218,11 +218,11 @@ export function PeopleManagement({
           />
           <Button variant="outline" size="sm" onClick={() => handleAddPerson(PERSON_TYPES.PLAYER)}>
             <User className="h-4 w-4 mr-2" />
-            Player
+            <span className="hidden sm:inline">Player</span>
           </Button>
           <Button variant="outline" size="sm" onClick={() => handleAddPerson(PERSON_TYPES.COACH)}>
             <Users className="h-4 w-4 mr-2" />
-            Coach
+            <span className="hidden sm:inline">Coach</span>
           </Button>
         </div>
       </div>
@@ -230,10 +230,10 @@ export function PeopleManagement({
       <Tabs defaultValue="players" onValueChange={setSelectedTab} value={selectedTab}>
         <TabsList className="grid w-full grid-cols-2 mb-3">
           <TabsTrigger value="players" className="text-xs">
-            <User className="h-3 w-3 mr-1" /> Players ({playersList.length})
+            <User className="h-3 w-3 mr-1" /> <span className="truncate">Players ({playersList.length})</span>
           </TabsTrigger>
           <TabsTrigger value="coaches" className="text-xs">
-            <UserCog className="h-3 w-3 mr-1" /> Coaches ({coachesList.length})
+            <UserCog className="h-3 w-3 mr-1" /> <span className="truncate">Coaches ({coachesList.length})</span>
           </TabsTrigger>
         </TabsList>
         

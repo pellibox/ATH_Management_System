@@ -2,6 +2,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { CourtProps } from "./types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface AssignmentsDashboardProps {
   courts: CourtProps[];
@@ -9,6 +10,8 @@ export interface AssignmentsDashboardProps {
 }
 
 export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashboardProps) {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="space-y-8">
       <h2 className="text-xl font-semibold">Riepilogo Assegnazioni - {format(selectedDate, 'MMMM d, yyyy')}</h2>
@@ -18,7 +21,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
           <p className="text-gray-500">Nessun campo configurato per questa vista</p>
         </div>
       ) : (
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className={`grid gap-6 ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
           {courts.map(court => (
             <div key={court.id} className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex justify-between items-center mb-3">
@@ -30,7 +33,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
                 </span>
               </div>
               
-              <div>
+              <div className="overflow-hidden">
                 <h4 className="text-sm font-medium mb-1">Persone</h4>
                 {court.occupants.length > 0 ? (
                   <div className="flex flex-wrap gap-1 mb-3">

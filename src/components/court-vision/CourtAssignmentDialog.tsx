@@ -59,7 +59,8 @@ export function CourtAssignmentDialog({
           size="sm"
           className={selectedTab === "people" ? "bg-ath-red-clay hover:bg-ath-red-clay-dark" : ""}
         >
-          <Users className="h-4 w-4 mr-2" /> People
+          <Users className="h-4 w-4 mr-1 sm:mr-2" /> 
+          <span className="truncate">Persone</span>
         </Button>
         <Button
           variant={selectedTab === "activities" ? "default" : "outline"}
@@ -67,7 +68,8 @@ export function CourtAssignmentDialog({
           size="sm"
           className={selectedTab === "activities" ? "bg-ath-red-clay hover:bg-ath-red-clay-dark" : ""}
         >
-          <CalendarIcon className="h-4 w-4 mr-2" /> Activities
+          <CalendarIcon className="h-4 w-4 mr-1 sm:mr-2" /> 
+          <span className="truncate">Attività</span>
         </Button>
       </div>
 
@@ -351,12 +353,12 @@ export function CourtAssignmentDialog({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Button variant="outline" className="w-full mb-4 border-ath-red-clay text-ath-red-clay">
-          <Users className="h-4 w-4 mr-2" /> Assign to Courts
+          <Users className="h-4 w-4 mr-2" /> <span className="truncate">Assegna ai Campi</span>
         </Button>
       </DrawerTrigger>
       <DrawerContent className="bg-white">
         <DrawerHeader>
-          <DrawerTitle>Assign to Courts</DrawerTitle>
+          <DrawerTitle>Assegna ai Campi</DrawerTitle>
         </DrawerHeader>
         <AssignmentComponent />
       </DrawerContent>
@@ -365,12 +367,12 @@ export function CourtAssignmentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full mb-4 border-ath-red-clay text-ath-red-clay">
-          <Users className="h-4 w-4 mr-2" /> Assign to Courts
+          <Users className="h-4 w-4 mr-2" /> <span className="truncate">Assegna ai Campi</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>Assign to Courts</DialogTitle>
+          <DialogTitle>Assegna ai Campi</DialogTitle>
         </DialogHeader>
         <AssignmentComponent />
       </DialogContent>
