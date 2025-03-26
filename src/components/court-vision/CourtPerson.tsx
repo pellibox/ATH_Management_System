@@ -11,6 +11,7 @@ interface CourtPersonProps {
   onRemove?: () => void;
   className?: string;
   isSpanning?: boolean;
+  position?: { x: number, y: number };
 }
 
 export function CourtPerson({ 
