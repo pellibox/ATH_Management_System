@@ -88,7 +88,7 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
         <TabsList className="grid grid-cols-4 mb-2 mx-4">
           <TabsTrigger value="info">Info</TabsTrigger>
           <TabsTrigger value="medical">Sanitario</TabsTrigger>
-          <TabsTrigger value="hours">Ore</TabsTrigger>
+          <TabsTrigger value="hours">Attività</TabsTrigger>
           <TabsTrigger value="documents">Documenti</TabsTrigger>
         </TabsList>
         

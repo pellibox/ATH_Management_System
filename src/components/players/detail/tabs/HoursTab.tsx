@@ -22,7 +22,7 @@ interface ProgramDetails {
 
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
   const [programHours, setProgramHours] = useState(0);
-  const completedHours = player.completedHours || 0;
+  const [remainingHours, setRemainingHours] = useState(0);
   
   // Define program details map
   const programDetailsMap: Record<string, ProgramDetails> = {
@@ -33,25 +33,30 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
   };
   
   useEffect(() => {
-    // Calculate program hours based on program details
+    // Calculate total program hours based on program details
     if (player.program && programDetailsMap[player.program]) {
       const details = programDetailsMap[player.program];
       const totalHours = details.weeks * details.sessionsPerWeek * details.hoursPerSession;
+      
+      // Calculate remaining hours by subtracting completed hours
+      const completedHours = player.completedHours || 0;
+      
       setProgramHours(totalHours);
+      setRemainingHours(totalHours - completedHours);
     } else {
       setProgramHours(0);
+      setRemainingHours(0);
     }
-  }, [player.program]);
+  }, [player.program, player.completedHours]);
 
-  const remainingHours = Math.max(0, programHours - completedHours);
-  const hoursProgress = programHours > 0 ? (completedHours / programHours) * 100 : 0;
+  const hoursProgress = programHours > 0 ? ((programHours - remainingHours) / programHours) * 100 : 0;
 
   return (
     <CardContent className="p-4 pt-2">
       <div className="space-y-5">
         <div>
-          <h3 className="text-base font-medium">Ore Programma</h3>
-          <p className="text-sm text-gray-500">Monitoraggio delle ore completate rispetto al programma</p>
+          <h3 className="text-base font-medium">Attività Programma</h3>
+          <p className="text-sm text-gray-500">Monitoraggio delle ore di attività completate</p>
           {player.program && programDetailsMap[player.program] && (
             <div className="mt-1 text-sm text-gray-600">
               <p>
@@ -66,7 +71,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
         
         <div className="space-y-2">
           <div className="flex justify-between">
-            <span className="text-sm">Ore completate</span>
+            <span className="text-sm">Ore di attività completate</span>
             {isEditing ? (
               <Input
                 type="number"
@@ -75,7 +80,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                 className="h-7 w-24"
               />
             ) : (
-              <span className="text-sm font-medium">{completedHours.toFixed(1)} / {programHours.toFixed(1)} ore</span>
+              <span className="text-sm font-medium">{(player.completedHours || 0).toFixed(1)} / {programHours.toFixed(1)} ore</span>
             )}
           </div>
           <Progress value={hoursProgress} className="h-2" />
