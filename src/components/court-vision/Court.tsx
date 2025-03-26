@@ -290,7 +290,7 @@ export function Court({
                 </div>
               </div>
               
-              <ScrollArea className="flex-1 h-[calc(100%-48px)] overflow-y-auto pr-2">
+              <ScrollArea className="flex-1 h-full overflow-y-auto pr-2">
                 <div className="min-h-full">
                   {timeSlots.map((time) => (
                     <TimeSlot

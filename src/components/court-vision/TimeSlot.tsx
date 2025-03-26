@@ -64,13 +64,13 @@ export function TimeSlot({
         isOver ? "bg-gray-100" : ""
       }`}
     >
-      <div className="absolute top-0 left-0 p-1 text-xs text-gray-500">
+      <div className="absolute top-0 left-0 p-1 text-xs font-medium text-gray-500 bg-white/80 rounded">
         {time}
       </div>
       
       {/* Activities */}
       {slotActivities.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-5">
           {slotActivities.map((activity, index) => (
             <CourtActivity
               key={activity.id}
@@ -82,7 +82,7 @@ export function TimeSlot({
       )}
       
       {/* Court occupants (people) */}
-      <div className="relative h-full w-full min-h-[60px] mt-4">
+      <div className="relative h-full w-full min-h-[60px] mt-5">
         {slotOccupants.map((person, index) => (
           <CourtPerson
             key={person.id}

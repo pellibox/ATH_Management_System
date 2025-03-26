@@ -37,43 +37,45 @@ export default function CourtGrid({
   });
   
   return (
-    <div className="space-y-8">
-      {Object.entries(courtsByType).map(([type, typeCourts]) => (
-        <div key={type} className="space-y-4">
-          <h3 className="text-lg font-semibold">{type}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {typeCourts.map((court) => (
-              <Court
-                key={court.id}
-                court={court}
-                timeSlots={timeSlots}
-                onDrop={(courtId, person, position, timeSlot) => {
-                  console.log("CourtGrid onDrop", { courtId, person, position, timeSlot });
-                  onDrop(courtId, person, position, timeSlot);
-                }}
-                onActivityDrop={(courtId, activity, timeSlot) => {
-                  console.log("CourtGrid onActivityDrop", { courtId, activity, timeSlot });
-                  onActivityDrop(courtId, activity, timeSlot);
-                }}
-                onRemovePerson={onRemovePerson}
-                onRemoveActivity={onRemoveActivity}
-                onRename={onRenameCourt}
-                onChangeType={onChangeCourtType}
-                onChangeNumber={onChangeCourtNumber}
-              />
-            ))}
+    <ScrollArea className="h-full">
+      <div className="space-y-8 pb-16">
+        {Object.entries(courtsByType).map(([type, typeCourts]) => (
+          <div key={type} className="space-y-4">
+            <h3 className="text-lg font-semibold">{type}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {typeCourts.map((court) => (
+                <Court
+                  key={court.id}
+                  court={court}
+                  timeSlots={timeSlots}
+                  onDrop={(courtId, person, position, timeSlot) => {
+                    console.log("CourtGrid onDrop", { courtId, person, position, timeSlot });
+                    onDrop(courtId, person, position, timeSlot);
+                  }}
+                  onActivityDrop={(courtId, activity, timeSlot) => {
+                    console.log("CourtGrid onActivityDrop", { courtId, activity, timeSlot });
+                    onActivityDrop(courtId, activity, timeSlot);
+                  }}
+                  onRemovePerson={onRemovePerson}
+                  onRemoveActivity={onRemoveActivity}
+                  onRename={onRenameCourt}
+                  onChangeType={onChangeCourtType}
+                  onChangeNumber={onChangeCourtNumber}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-      
-      {Object.keys(courtsByType).length === 0 && (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-lg text-gray-500">Non ci sono campi configurati per questo tipo</p>
-          <p className="text-sm text-gray-400 mt-1">
-            Puoi aggiungere campi dalle Impostazioni → Campi
-          </p>
-        </div>
-      )}
-    </div>
+        ))}
+        
+        {Object.keys(courtsByType).length === 0 && (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <p className="text-lg text-gray-500">Non ci sono campi configurati per questo tipo</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Puoi aggiungere campi dalle Impostazioni → Campi
+            </p>
+          </div>
+        )}
+      </div>
+    </ScrollArea>
   );
 }

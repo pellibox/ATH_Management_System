@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -12,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, UserCog, Filter, PlaySquare } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AvailableActivities } from "@/components/court-vision/AvailableActivities";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // People management component that shows players and coaches tabs
 function PeopleList() {
@@ -151,7 +153,7 @@ function CourtVisionContent() {
   } = useCourtVision();
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 overflow-hidden">
       {isLayoutView ? (
         <AssignmentsDashboard
           courts={filteredCourts}
@@ -178,7 +180,7 @@ function CourtVisionContent() {
 export default function CourtVision() {
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="mx-auto py-4 relative flex flex-col h-screen">
+      <div className="mx-auto py-4 relative flex flex-col h-[calc(100vh-theme(spacing.16))]">
         <div className="mb-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Visione Campo</h1>
           <ViewModeToggle />
@@ -189,13 +191,17 @@ export default function CourtVision() {
         {/* Main content area with sidebar layout */}
         <div className="flex flex-1 gap-4 overflow-hidden">
           {/* Left sidebar for players, coaches and activities */}
-          <div className="w-80 flex-shrink-0 overflow-y-auto pb-4 flex flex-col">
-            <PeopleList />
-            <ActivitiesPanel />
+          <div className="w-80 flex-shrink-0 flex flex-col">
+            <ScrollArea className="flex-1">
+              <div className="pr-4 pb-4 space-y-4">
+                <PeopleList />
+                <ActivitiesPanel />
+              </div>
+            </ScrollArea>
           </div>
           
           {/* Main content area */}
-          <div className="flex-1 overflow-y-auto pb-20">
+          <div className="flex-1 overflow-hidden">
             <CourtVisionContent />
           </div>
         </div>
