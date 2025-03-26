@@ -3,40 +3,45 @@ import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 import { PROGRAM_CATEGORIES } from "./constants";
 import { ProgramDetail } from "@/components/programs/types";
 
-// Get programs for a specific category ID
-export function getProgramsByCategory(categoryId: string): ProgramDetail[] {
-  switch(categoryId) {
-    case "performance":
-      return TENNIS_PROGRAMS.PERFORMANCE;
-    case "junior":
-      return TENNIS_PROGRAMS.JUNIOR;
-    case "personal":
-      return TENNIS_PROGRAMS.PERSONAL;
-    case "adult":
-      return TENNIS_PROGRAMS.ADULT;
-    case "coach":
-      return TENNIS_PROGRAMS.COACH;
-    case "padel":
-      return TENNIS_PROGRAMS.PADEL;
-    default:
-      return [];
-  }
-}
-
-// Get category ID from program ID
+// Get category from program ID
 export function getCategoryFromId(programId: string): string | null {
-  if (programId.includes("perf") || programId.includes("elite")) {
+  if (TENNIS_PROGRAMS.PERFORMANCE.some(p => p.id === programId)) {
     return "performance";
-  } else if (programId.includes("junior") || programId.includes("sat") || programId.includes("sit")) {
+  }
+  if (TENNIS_PROGRAMS.JUNIOR.some(p => p.id === programId)) {
     return "junior";
-  } else if (programId.includes("personal") || programId.includes("lezioni")) {
+  }
+  if (TENNIS_PROGRAMS.PERSONAL.some(p => p.id === programId)) {
     return "personal";
-  } else if (programId.includes("adult") || programId.includes("university")) {
+  }
+  if (TENNIS_PROGRAMS.ADULT.some(p => p.id === programId)) {
     return "adult";
-  } else if (programId.includes("coach") || programId.includes("club")) {
+  }
+  if (TENNIS_PROGRAMS.COACH.some(p => p.id === programId)) {
     return "coach";
-  } else if (programId.includes("padel")) {
+  }
+  if (TENNIS_PROGRAMS.PADEL.some(p => p.id === programId)) {
     return "padel";
   }
   return null;
+}
+
+// Get programs by category
+export function getProgramsByCategory(categoryId: string): ProgramDetail[] {
+  switch (categoryId) {
+    case "performance":
+      return PROGRAM_CATEGORIES.PERFORMANCE.programs;
+    case "junior":
+      return PROGRAM_CATEGORIES.JUNIOR.programs;
+    case "personal":
+      return PROGRAM_CATEGORIES.PERSONAL.programs;
+    case "adult":
+      return PROGRAM_CATEGORIES.ADULT.programs;
+    case "coach":
+      return PROGRAM_CATEGORIES.COACH.programs;
+    case "padel":
+      return PROGRAM_CATEGORIES.PADEL.programs;
+    default:
+      return [];
+  }
 }

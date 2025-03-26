@@ -4,7 +4,6 @@ import { ProgramsHeader } from "@/components/programs/ProgramsHeader";
 import { ProgramFilters } from "@/components/programs/ProgramFilters";
 import { ProgramList } from "@/components/programs/ProgramList";
 import { FilteredProgramsList } from "@/components/programs/FilteredProgramsList";
-import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Programs() {
@@ -34,7 +33,6 @@ export default function Programs() {
       <ProgramsHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       
       <ProgramFilters 
-        categories={PROGRAM_CATEGORIES} 
         activeFilter={filter} 
         setFilter={setFilter} 
       />

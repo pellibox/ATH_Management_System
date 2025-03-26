@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { ProgramDetail } from "./types";
 import { ProgramCategorySection } from "./ProgramCategorySection";
-import { PROGRAM_CATEGORIES, getCategoryTitle } from "@/contexts/programs/constants";
+import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
 import { getProgramsByCategory } from "@/contexts/programs/utils";
 import { CATEGORY_DESCRIPTIONS, CATEGORY_COLORS } from "@/contexts/programs/constants";
 
@@ -16,13 +16,13 @@ export function ProgramList({ expandedProgram, toggleExpand, onUpdateProgram }: 
   return (
     <div className="space-y-6">
       {/* Dynamic Category Sections */}
-      {Object.entries(PROGRAM_CATEGORIES).map(([category, value]) => (
+      {Object.entries(PROGRAM_CATEGORIES).map(([category, categoryData]) => (
         <ProgramCategorySection
           key={category}
-          title={getCategoryTitle(category)}
-          description={CATEGORY_DESCRIPTIONS[category] || ""}
-          borderColor={CATEGORY_COLORS[category] || "#000"}
-          programs={getProgramsByCategory(value.id)}
+          title={categoryData.title}
+          description={categoryData.description || ""}
+          borderColor={categoryData.color || "#000"}
+          programs={categoryData.programs}
           expandedProgram={expandedProgram}
           toggleExpand={toggleExpand}
           onUpdateProgram={onUpdateProgram}

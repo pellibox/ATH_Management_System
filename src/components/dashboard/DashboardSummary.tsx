@@ -1,10 +1,11 @@
-
-import React from "react";
-import { Calendar, Users, MapPin, ChartBar, Clock, UserCog, Grid, CircleUser } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Calendar, Users, MapPin, ChartBar, Clock, UserCog, Grid, CircleUser, AlertCircle, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { it } from "date-fns/locale";
+import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
+import { PersonData } from "@/components/court-vision/types";
 
 // Statistic Card Component
 interface StatCardProps {
@@ -48,18 +49,35 @@ const StatCard = ({ title, value, change, icon: Icon, positive = true, linkTo }:
   return <CardContent />;
 };
 
-// Recent Activity Component
-interface Activity {
-  id: string;
-  type: string;
-  title: string;
-  time: string;
-  user?: string;
-}
-
 // Dashboard Summary Component
 export function DashboardSummary() {
   const today = new Date();
+  const { coachesList } = useCourtVision();
+  const [presentCoaches, setPresentCoaches] = useState<PersonData[]>([]);
+  const [absentCoaches, setAbsentCoaches] = useState<PersonData[]>([]);
+  
+  // Process coaches presence/absence
+  useEffect(() => {
+    // In a real app, this would likely come from the availability events
+    // For now, we'll simulate some coaches being absent
+    const simulatePresence = (coach: PersonData): PersonData => {
+      const random = Math.random();
+      if (random > 0.7) {
+        // Coach is absent
+        const reasons = ["Malattia", "Vacanza", "Trasferta", "Formazione"];
+        return {
+          ...coach,
+          isPresent: false,
+          absenceReason: reasons[Math.floor(Math.random() * reasons.length)]
+        };
+      }
+      return { ...coach, isPresent: true };
+    };
+    
+    const processedCoaches = coachesList.map(simulatePresence);
+    setPresentCoaches(processedCoaches.filter(coach => coach.isPresent));
+    setAbsentCoaches(processedCoaches.filter(coach => !coach.isPresent));
+  }, [coachesList]);
   
   return (
     <div className="space-y-8">
@@ -177,6 +195,7 @@ export function DashboardSummary() {
       
       {/* Players & Coaches Quick Access */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Players Section */}
         <div className="bg-white rounded-xl shadow-soft p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Giocatori Attivi Oggi</h2>
@@ -218,6 +237,7 @@ export function DashboardSummary() {
           </div>
         </div>
         
+        {/* Coaches Section - Updated to show presence/absence */}
         <div className="bg-white rounded-xl shadow-soft p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Allenatori di Oggi</h2>
@@ -226,36 +246,82 @@ export function DashboardSummary() {
             </Link>
           </div>
           
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <Link 
-                key={i} 
-                to={`/coaches?id=coach${i+1}`} 
-                className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="h-10 w-10 rounded-full bg-ath-blue-light flex items-center justify-center mr-3">
-                  <UserCog className="h-5 w-5 text-ath-blue" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium">
-                    {["Coach Anderson", "Coach Martinez", "Coach Thompson"][i]}
-                  </h3>
-                  <div className="flex text-sm">
-                    <span className="text-gray-600">
-                      {i === 0 ? "Tennis Head Coach" : i === 1 ? "Padel Specialist" : "Junior Coach"}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex space-x-1">
-                  <div className="h-6 w-6 rounded-full flex items-center justify-center bg-gray-100">
-                    <Calendar className="h-3 w-3" />
-                  </div>
-                  <div className="h-6 w-6 rounded-full flex items-center justify-center bg-gray-100">
-                    <Users className="h-3 w-3" />
-                  </div>
-                </div>
-              </Link>
-            ))}
+          {/* Present Coaches */}
+          <div className="mb-4">
+            <h3 className="text-sm font-medium flex items-center mb-2 text-green-600">
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Allenatori Presenti ({presentCoaches.length})
+            </h3>
+            
+            <div className="space-y-2">
+              {presentCoaches.length > 0 ? (
+                presentCoaches.slice(0, 3).map((coach, i) => (
+                  <Link 
+                    key={coach.id} 
+                    to={`/coaches?id=${coach.id}`} 
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="h-10 w-10 rounded-full bg-ath-blue-light flex items-center justify-center mr-3">
+                      <UserCog className="h-5 w-5 text-ath-blue" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium">{coach.name}</h3>
+                      <div className="flex text-sm">
+                        <span className="text-gray-600">
+                          {coach.sportTypes ? coach.sportTypes.join(', ') : "Tennis Coach"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="h-6 w-6 rounded-full flex items-center justify-center bg-green-100">
+                        <CheckCircle className="h-3 w-3 text-green-600" />
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 italic">Nessun allenatore presente oggi</p>
+              )}
+            </div>
+          </div>
+          
+          {/* Absent Coaches */}
+          <div>
+            <h3 className="text-sm font-medium flex items-center mb-2 text-amber-600">
+              <AlertCircle className="h-4 w-4 mr-1" />
+              Allenatori Assenti ({absentCoaches.length})
+            </h3>
+            
+            <div className="space-y-2">
+              {absentCoaches.length > 0 ? (
+                absentCoaches.slice(0, 3).map((coach, i) => (
+                  <Link 
+                    key={coach.id} 
+                    to={`/coaches?id=${coach.id}`} 
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                      <UserCog className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium">{coach.name}</h3>
+                      <div className="flex text-sm">
+                        <span className="text-amber-600">
+                          {coach.absenceReason || "Non disponibile"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="h-6 w-6 rounded-full flex items-center justify-center bg-amber-100">
+                        <AlertCircle className="h-3 w-3 text-amber-600" />
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 italic">Tutti gli allenatori sono presenti oggi</p>
+              )}
+            </div>
           </div>
           
           <div className="mt-4 pt-4 border-t">
@@ -268,11 +334,11 @@ export function DashboardSummary() {
                 <span>Gestisci Campi</span>
               </Link>
               <Link 
-                to="/settings"
+                to="/coaches"
                 className="p-3 rounded-lg bg-gray-100 text-gray-700 font-medium flex items-center justify-center hover:bg-gray-200 transition-colors"
               >
-                <MapPin className="h-4 w-4 mr-2" />
-                <span>Impostazioni Email</span>
+                <UserCog className="h-4 w-4 mr-2" />
+                <span>Gestione Allenatori</span>
               </Link>
             </div>
           </div>

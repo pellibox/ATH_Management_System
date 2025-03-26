@@ -10,6 +10,16 @@ export interface PersonData {
   programId?: string; // For single program assignment
   programIds?: string[]; // For multiple program assignments
   sportTypes?: string[];
+  timeSlot?: string; // Time slot for scheduling
+  courtId?: string; // Court assignment
+  durationHours?: number; // Duration in hours
+  hoursAssigned?: number; // Total hours assigned
+  programColor?: string; // Color based on program
+  position?: { x: number, y: number }; // Position for drag and drop
+  sourceTimeSlot?: string; // Source time slot for drag operations
+  isPresent?: boolean; // Whether coach is present
+  absenceReason?: string; // Reason for coach absence
+  preferredContactMethod?: string; // Contact preference
 }
 
 export interface ActivityData {
