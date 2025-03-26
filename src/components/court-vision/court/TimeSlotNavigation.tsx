@@ -2,7 +2,7 @@
 import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
-interface TimeSlotNavigationProps {
+interface TimeSlotNavigationProps { 
   onNextSlot: () => void;
   onPrevSlot: () => void;
   currentIndex: number;
@@ -21,7 +21,7 @@ export function TimeSlotNavigation({
     : 0;
 
   return (
-    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col items-center bg-white/90 rounded-full shadow-md border border-gray-200 z-10">
+    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col items-center bg-white/90 rounded-full shadow-md border border-gray-200 z-20">
       <button
         className="p-1 hover:bg-gray-100 rounded-t-full disabled:opacity-30 disabled:cursor-not-allowed"
         onClick={onPrevSlot}

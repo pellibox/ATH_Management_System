@@ -169,7 +169,7 @@ export function Court({
               onChangeNumber={handleChangeNumber}
             />
 
-            <div className="flex-1 overflow-hidden" ref={courtRef}>
+            <div className="flex-1 overflow-hidden relative" ref={courtRef}>
               <CourtScheduleView
                 courtId={court.id}
                 courtName={court.name}
@@ -182,15 +182,15 @@ export function Court({
                 onRemovePerson={onRemovePerson || (() => {})}
                 onRemoveActivity={onRemoveActivity || (() => {})}
               />
+              
+              {/* Time slot navigation - now positioned relative to the court */}
+              <TimeSlotNavigation
+                onNextSlot={handleNextTimeSlot}
+                onPrevSlot={handlePrevTimeSlot}
+                currentIndex={currentTimeSlotIndex}
+                totalSlots={timeSlots.length}
+              />
             </div>
-
-            {/* Time slot navigation */}
-            <TimeSlotNavigation
-              onNextSlot={handleNextTimeSlot}
-              onPrevSlot={handlePrevTimeSlot}
-              currentIndex={currentTimeSlotIndex}
-              totalSlots={timeSlots.length}
-            />
 
             <CourtFooter occupants={court.occupants} />
           </CourtDrop>
