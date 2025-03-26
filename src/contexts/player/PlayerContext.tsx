@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from "react";
 import { PlayerContextType } from "./types";
 import { Player, mockPlayers } from "@/types/player";
@@ -96,6 +97,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     selectedActivities,
 
     // State setters
+    setPlayers,  // Add this line to expose setPlayers in the context
     setSearchQuery,
     setLevelFilter,
     setCoachFilter,

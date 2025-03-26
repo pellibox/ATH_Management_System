@@ -55,7 +55,7 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
   const [isEditing, setIsEditing] = useState(false);
   const [editedPlayer, setEditedPlayer] = useState<Player>({ ...player });
   
-  const { players, setPlayers, handleUpdatePlayer } = usePlayerContext();
+  const { players, setPlayers } = usePlayerContext();
   
   // Get all program names from existing players
   const programs = Array.from(
@@ -102,10 +102,12 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
   };
 
   const handleNestedChange = (parent: keyof Player, field: string, value: any) => {
+    const currentParentValue = editedPlayer[parent] || {};
+    
     setEditedPlayer(prev => ({
       ...prev,
       [parent]: {
-        ...prev[parent as keyof Player],
+        ...currentParentValue,
         [field]: value
       }
     }));

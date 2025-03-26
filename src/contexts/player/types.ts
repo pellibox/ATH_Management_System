@@ -21,6 +21,7 @@ export interface PlayerContextType {
   selectedActivities: string[];
   
   // State setters
+  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>; // Add this line
   setSearchQuery: (query: string) => void;
   setLevelFilter: (filter: string) => void;
   setCoachFilter: (filter: string) => void;
