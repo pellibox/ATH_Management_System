@@ -80,6 +80,7 @@ export function CourtScheduleView({
           ))}
         </div>
         
+        {/* Make the scroll control more prominent */}
         <ScrollControl containerRef={scrollContainerRef} />
       </div>
     </div>
