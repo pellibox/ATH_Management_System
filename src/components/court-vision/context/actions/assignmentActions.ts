@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PersonData, ActivityData, CourtProps, Program } from "../../types";
 import { useToast } from "@/hooks/use-toast";
@@ -249,6 +250,20 @@ export const useAssignmentActions = (
   const handleRemovePerson = (personId: string, timeSlot?: string) => {
     console.log("handleRemovePerson:", { personId, timeSlot });
     
+    // First, find the person in the courts
+    let personToReset: PersonData | null = null;
+    let isPlayer = false;
+    
+    // Identify the person and their type
+    courts.forEach(court => {
+      court.occupants.forEach(occupant => {
+        if (occupant.id === personId && (!timeSlot || occupant.timeSlot === timeSlot)) {
+          personToReset = { ...occupant };
+          isPlayer = occupant.type === PERSON_TYPES.PLAYER;
+        }
+      });
+    });
+    
     let updatedCourts;
     
     if (timeSlot) {
@@ -268,6 +283,29 @@ export const useAssignmentActions = (
     }
     
     setCourts(updatedCourts);
+    
+    // If it's a player, add them back to the available list
+    if (personToReset && isPlayer) {
+      // Reset assignment-specific properties
+      const resetPerson: PersonData = {
+        ...personToReset,
+        courtId: undefined,
+        timeSlot: undefined,
+        sourceTimeSlot: undefined,
+        endTimeSlot: undefined,
+        position: undefined,
+        // Maintain other properties like name, programId, etc.
+      };
+      
+      // Check if already in available people list
+      const alreadyInList = people.some(p => p.id === personId);
+      
+      if (!alreadyInList) {
+        // Only add to available list if not already there
+        setPeople(prev => [...prev, resetPerson]);
+        console.log("Player added back to available list:", resetPerson.name);
+      }
+    }
     
     toast({
       title: "Persona Rimossa",
