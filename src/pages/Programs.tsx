@@ -1,21 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { DEFAULT_PROGRAMS } from "@/components/court-vision/constants";
+import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 import { ProgramsHeader } from "@/components/programs/ProgramsHeader";
 import { ProgramFilters } from "@/components/programs/ProgramFilters";
 import { ProgramCategorySection } from "@/components/programs/ProgramCategorySection";
 import { ProgramDetail } from "@/components/programs/ProgramCard";
-
-// Extend DEFAULT_PROGRAMS with the missing properties for our display
-const enhancedPrograms: ProgramDetail[] = DEFAULT_PROGRAMS.map(program => ({
-  ...program,
-  description: `Description for ${program.name}`,
-  details: [`Detail 1 for ${program.name}`, `Detail 2 for ${program.name}`],
-  cost: `€${Math.floor(Math.random() * 1000) + 500}`,
-  weeklyHours: Math.floor(Math.random() * 10) + 2,
-  totalWeeks: Math.floor(Math.random() * 20) + 10
-}));
 
 // Define program categories for filtering
 const PROGRAM_CATEGORIES = {
@@ -25,26 +15,6 @@ const PROGRAM_CATEGORIES = {
   ADULT: "adult",
   COACH: "coach",
   PADEL: "padel"
-};
-
-// Map our programs to categories
-const programCategoryMap = {
-  "program1": PROGRAM_CATEGORIES.PERFORMANCE,
-  "program2": PROGRAM_CATEGORIES.PADEL,
-  "program3": PROGRAM_CATEGORIES.JUNIOR,
-  "program4": PROGRAM_CATEGORIES.PERFORMANCE,
-  "perf2": PROGRAM_CATEGORIES.PERFORMANCE,
-  "perf3": PROGRAM_CATEGORIES.PERFORMANCE,
-  "perf4": PROGRAM_CATEGORIES.PERFORMANCE,
-  "elite": PROGRAM_CATEGORIES.PERFORMANCE,
-  "elite-full": PROGRAM_CATEGORIES.PERFORMANCE,
-  "junior-sit": PROGRAM_CATEGORIES.JUNIOR,
-  "junior-sat": PROGRAM_CATEGORIES.JUNIOR,
-  "personal-coaching": PROGRAM_CATEGORIES.PERSONAL,
-  "lezioni-private": PROGRAM_CATEGORIES.PERSONAL,
-  "adult": PROGRAM_CATEGORIES.ADULT,
-  "university": PROGRAM_CATEGORIES.ADULT,
-  "coach": PROGRAM_CATEGORIES.COACH
 };
 
 // Category section descriptions
@@ -71,23 +41,65 @@ export default function Programs() {
   const [filter, setFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
+  const [allPrograms, setAllPrograms] = useState<ProgramDetail[]>([]);
+  const [filteredPrograms, setFilteredPrograms] = useState<ProgramDetail[]>([]);
   
-  // Filter programs based on category and search query
-  const filteredPrograms = enhancedPrograms
-    .filter(program => {
-      if (filter === "all") return true;
-      return programCategoryMap[program.id] === filter;
-    })
-    .filter(program => {
-      if (!searchQuery) return true;
-      
+  // Initialize all programs
+  useEffect(() => {
+    // Combine all program categories into a single array
+    const programs: ProgramDetail[] = [
+      ...TENNIS_PROGRAMS.PERFORMANCE,
+      ...TENNIS_PROGRAMS.JUNIOR,
+      ...TENNIS_PROGRAMS.PERSONAL, 
+      ...TENNIS_PROGRAMS.ADULT,
+      ...TENNIS_PROGRAMS.COACH,
+      ...TENNIS_PROGRAMS.PADEL
+    ];
+    
+    setAllPrograms(programs);
+    setFilteredPrograms(programs);
+  }, []);
+  
+  // Filter programs when filter or search changes
+  useEffect(() => {
+    let filtered = [...allPrograms];
+    
+    // Apply category filter
+    if (filter !== "all") {
+      filtered = filtered.filter(program => {
+        // Get category from ID mapping or program.category
+        const category = program.id.includes("perf") || program.id.includes("elite") 
+          ? PROGRAM_CATEGORIES.PERFORMANCE
+          : program.id.includes("junior") 
+            ? PROGRAM_CATEGORIES.JUNIOR
+            : program.id.includes("personal") || program.id.includes("lezioni")
+              ? PROGRAM_CATEGORIES.PERSONAL
+              : program.id.includes("adult") || program.id.includes("university")
+                ? PROGRAM_CATEGORIES.ADULT
+                : program.id.includes("coach")
+                  ? PROGRAM_CATEGORIES.COACH
+                  : program.id.includes("padel")
+                    ? PROGRAM_CATEGORIES.PADEL
+                    : null;
+        
+        return category === filter;
+      });
+    }
+    
+    // Apply search filter
+    if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return (
-        program.name.toLowerCase().includes(query) ||
-        program.description?.toLowerCase().includes(query) ||
-        program.details?.some(detail => detail.toLowerCase().includes(query))
-      );
-    });
+      filtered = filtered.filter(program => {
+        return (
+          program.name.toLowerCase().includes(query) ||
+          program.description?.toLowerCase().includes(query) ||
+          program.details?.some(detail => detail.toLowerCase().includes(query))
+        );
+      });
+    }
+    
+    setFilteredPrograms(filtered);
+  }, [filter, searchQuery, allPrograms]);
   
   // Toggle program card expansion
   const toggleExpand = (id: string) => {
@@ -98,11 +110,25 @@ export default function Programs() {
     }
   };
 
-  // Group programs by category
-  const programsByCategory = Object.entries(PROGRAM_CATEGORIES).reduce((acc, [category, value]) => {
-    acc[category] = enhancedPrograms.filter(program => programCategoryMap[program.id] === value);
-    return acc;
-  }, {} as Record<string, ProgramDetail[]>);
+  // Get programs for a specific category
+  const getProgramsByCategory = (category: string) => {
+    switch(category) {
+      case PROGRAM_CATEGORIES.PERFORMANCE:
+        return TENNIS_PROGRAMS.PERFORMANCE;
+      case PROGRAM_CATEGORIES.JUNIOR:
+        return TENNIS_PROGRAMS.JUNIOR;
+      case PROGRAM_CATEGORIES.PERSONAL:
+        return TENNIS_PROGRAMS.PERSONAL;
+      case PROGRAM_CATEGORIES.ADULT:
+        return TENNIS_PROGRAMS.ADULT;
+      case PROGRAM_CATEGORIES.COACH:
+        return TENNIS_PROGRAMS.COACH;
+      case PROGRAM_CATEGORIES.PADEL:
+        return TENNIS_PROGRAMS.PADEL;
+      default:
+        return [];
+    }
+  };
   
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
@@ -118,13 +144,13 @@ export default function Programs() {
       {filter === "all" && (
         <div className="space-y-8">
           {/* Dynamic Category Sections */}
-          {Object.entries(PROGRAM_CATEGORIES).map(([category]) => (
+          {Object.entries(PROGRAM_CATEGORIES).map(([category, value]) => (
             <ProgramCategorySection
               key={category}
               title={getCategoryTitle(category)}
               description={CATEGORY_DESCRIPTIONS[category] || ""}
               borderColor={CATEGORY_COLORS[category] || "#000"}
-              programs={programsByCategory[category] || []}
+              programs={getProgramsByCategory(value)}
               expandedProgram={expandedProgram}
               toggleExpand={toggleExpand}
             />
@@ -134,18 +160,30 @@ export default function Programs() {
       
       {/* Filtered Results */}
       {filter !== "all" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPrograms.map(program => (
-            <ProgramCategorySection
-              key={program.id}
-              title=""
-              description=""
-              borderColor=""
-              programs={[program]}
-              expandedProgram={expandedProgram}
-              toggleExpand={toggleExpand}
-            />
-          ))}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">
+            {getCategoryTitle(Object.keys(PROGRAM_CATEGORIES).find(key => 
+              PROGRAM_CATEGORIES[key] === filter
+            ) || "")}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {CATEGORY_DESCRIPTIONS[Object.keys(PROGRAM_CATEGORIES).find(key => 
+              PROGRAM_CATEGORIES[key] === filter
+            ) || ""]}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredPrograms.map(program => (
+              <ProgramCategorySection
+                key={program.id}
+                title=""
+                description=""
+                borderColor=""
+                programs={[program]}
+                expandedProgram={expandedProgram}
+                toggleExpand={toggleExpand}
+              />
+            ))}
+          </div>
         </div>
       )}
       

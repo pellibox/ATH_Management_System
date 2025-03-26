@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ProgramDetail {
@@ -12,6 +12,7 @@ export interface ProgramDetail {
   cost?: string;
   weeklyHours?: number;
   totalWeeks?: number;
+  vicki?: boolean | string;
 }
 
 interface ProgramCardProps {
@@ -44,6 +45,13 @@ export const ProgramCard = ({ program, expandedProgram, toggleExpand }: ProgramC
                 className="w-3 h-3 rounded-full" 
                 style={{ backgroundColor: program.color }}
               ></span>
+              
+              {program.vicki && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  <Sparkles className="h-3 w-3 mr-1" /> 
+                  {program.vicki === true ? "Vicki™" : "Vicki™ optional"}
+                </span>
+              )}
             </div>
             <p className="text-gray-600 mt-1">{program.description}</p>
           </div>
@@ -89,7 +97,7 @@ export const ProgramCard = ({ program, expandedProgram, toggleExpand }: ProgramC
               <ul className="space-y-2">
                 {program.details && program.details.map((detail, idx) => (
                   <li key={idx} className="flex items-start">
-                    <span className="text-ath-blue mr-2">•</span> 
+                    <Check className="h-4 w-4 text-ath-blue mr-2 mt-0.5 flex-shrink-0" />
                     <span className="text-sm">{detail}</span>
                   </li>
                 ))}
@@ -129,7 +137,13 @@ export const ProgramCard = ({ program, expandedProgram, toggleExpand }: ProgramC
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Integrazione VICKI™:</span>
-                  <span className="text-sm">Disponibile</span>
+                  <span className="text-sm">
+                    {program.vicki === true 
+                      ? "Inclusa" 
+                      : program.vicki === "optional" 
+                        ? "Disponibile su richiesta" 
+                        : "Non disponibile"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Prossimo inizio:</span>
@@ -142,7 +156,7 @@ export const ProgramCard = ({ program, expandedProgram, toggleExpand }: ProgramC
                   Dettagli
                 </button>
                 <button className="px-3 py-1.5 rounded bg-ath-blue text-white text-sm hover:bg-ath-blue-dark transition-colors">
-                  Modifica
+                  Iscriviti
                 </button>
               </div>
             </div>
