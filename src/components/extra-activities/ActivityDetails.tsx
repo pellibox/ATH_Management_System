@@ -34,6 +34,15 @@ export function ActivityDetails({
   playersList,
   coachesList
 }: ActivityDetailsProps) {
+  // State for filtering participants in the add dialog
+  const [participantSearch, setParticipantSearch] = useState("");
+  
+  // Filter players by search term
+  const filteredPlayers = playersList.filter(player => 
+    !activity.participants.includes(player.id) &&
+    player.name.toLowerCase().includes(participantSearch.toLowerCase())
+  );
+
   return (
     <div key={activity.id} className="rounded-lg border p-4">
       <div className="flex justify-between items-start">
@@ -102,23 +111,38 @@ export function ActivityDetails({
                 <DialogTitle>Aggiungi Partecipanti</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <Input placeholder="Cerca giocatori..." className="mb-4" />
+                <Input 
+                  placeholder="Cerca giocatori..." 
+                  className="mb-4" 
+                  value={participantSearch}
+                  onChange={(e) => setParticipantSearch(e.target.value)}
+                />
                 <div className="max-h-[300px] overflow-y-auto space-y-2">
-                  {playersList
-                    .filter(player => !activity.participants.includes(player.id))
-                    .map(player => (
+                  {filteredPlayers.length > 0 ? (
+                    filteredPlayers.map(player => (
                       <div key={player.id} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
                         <span>{player.name}</span>
                         <Button 
                           size="sm" 
                           variant="ghost"
-                          onClick={() => onAddParticipant(activity.id, player.id)}
+                          onClick={() => {
+                            onAddParticipant(activity.id, player.id);
+                            setParticipantSearch("");
+                          }}
                         >
                           Aggiungi
                         </Button>
                       </div>
                     ))
-                  }
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">
+                      {participantSearch 
+                        ? "Nessun giocatore trovato" 
+                        : activity.participants.length === activity.maxParticipants 
+                          ? "Numero massimo di partecipanti raggiunto" 
+                          : "Tutti i giocatori sono già aggiunti"}
+                    </p>
+                  )}
                 </div>
               </div>
             </DialogContent>

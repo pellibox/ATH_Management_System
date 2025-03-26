@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit } from "lucide-react";
 import { ExtraActivity, ACTIVITY_TYPES, generateId } from "@/types/extra-activities";
 import { useToast } from "@/hooks/use-toast";
@@ -44,34 +44,36 @@ export function ExtraActivityForm({
 
   // Reset form when dialog opens
   useEffect(() => {
-    if (activityToEdit) {
-      // If we're editing, populate the form with activity data
-      setNewActivity({
-        name: activityToEdit.name,
-        type: activityToEdit.type,
-        time: activityToEdit.time,
-        duration: activityToEdit.duration,
-        days: [...activityToEdit.days],
-        location: activityToEdit.location,
-        maxParticipants: activityToEdit.maxParticipants,
-        participants: [...activityToEdit.participants],
-        coach: activityToEdit.coach,
-        notes: activityToEdit.notes || ""
-      });
-    } else {
-      // Reset form for new activity
-      setNewActivity({
-        name: "",
-        type: "athletic",
-        time: "16:00",
-        duration: 1,
-        days: [1],
-        location: "",
-        maxParticipants: 8,
-        participants: [],
-        coach: "",
-        notes: ""
-      });
+    if (open) {
+      if (activityToEdit) {
+        // If we're editing, populate the form with activity data
+        setNewActivity({
+          name: activityToEdit.name,
+          type: activityToEdit.type,
+          time: activityToEdit.time,
+          duration: activityToEdit.duration,
+          days: [...activityToEdit.days],
+          location: activityToEdit.location,
+          maxParticipants: activityToEdit.maxParticipants,
+          participants: [...activityToEdit.participants],
+          coach: activityToEdit.coach,
+          notes: activityToEdit.notes || ""
+        });
+      } else {
+        // Reset form for new activity
+        setNewActivity({
+          name: "",
+          type: "athletic",
+          time: "16:00",
+          duration: 1,
+          days: [1],
+          location: "",
+          maxParticipants: 8,
+          participants: [],
+          coach: "",
+          notes: ""
+        });
+      }
     }
   }, [activityToEdit, open]);
 
@@ -99,10 +101,6 @@ export function ExtraActivityForm({
     if (activityToEdit && onEditActivity) {
       // Edit existing activity
       onEditActivity(activityToEdit.id, newActivity);
-      toast({
-        title: "Attività Aggiornata",
-        description: `${newActivity.name} è stata aggiornata con successo`,
-      });
     } else {
       // Add new activity
       const newActivityWithId: ExtraActivity = {
@@ -111,11 +109,6 @@ export function ExtraActivityForm({
       };
       
       onAddActivity(newActivityWithId);
-      
-      toast({
-        title: "Attività Aggiunta",
-        description: `${newActivity.name} è stata aggiunta con successo`,
-      });
     }
     
     // Close dialog and reset form
@@ -125,7 +118,7 @@ export function ExtraActivityForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={buttonVariant} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors">
+        <Button variant={buttonVariant} className="flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:bg-opacity-90 transition-colors">
           {buttonIcon}
           <span className="text-sm font-medium">{buttonLabel}</span>
         </Button>

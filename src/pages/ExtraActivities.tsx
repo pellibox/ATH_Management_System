@@ -7,7 +7,6 @@ import { ExtraActivityForm } from "@/components/extra-activities/ExtraActivityFo
 import { ActivitiesList } from "@/components/extra-activities/ActivitiesList";
 import { ExtraActivitiesCalendar } from "@/components/extra-activities/ExtraActivitiesCalendar";
 import { DailyActivitiesList } from "@/components/extra-activities/DailyActivitiesList";
-import { ActivityDetails } from "@/components/extra-activities/ActivityDetails";
 
 export default function ExtraActivities() {
   const { toast } = useToast();
@@ -153,30 +152,24 @@ export default function ExtraActivities() {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
           />
-        
-          <div className="mt-6 space-y-4">
-            <h2 className="text-xl font-semibold">Attività del {selectedDate.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
-            {activitiesForSelectedDate.length > 0 ? (
-              <div className="space-y-4">
-                {activitiesForSelectedDate.map(activity => (
-                  <ActivityDetails
-                    key={activity.id}
-                    activity={activity}
-                    selectedDate={selectedDate}
-                    getCoachName={getCoachName}
-                    getPlayerName={getPlayerName}
-                    onDelete={handleDeleteActivity}
-                    onEditActivity={handleEditActivity}
-                    onAddParticipant={handleAddParticipant}
-                    onRemoveParticipant={handleRemoveParticipant}
-                    playersList={playersList}
-                    coachesList={coachesList}
-                  />
-                ))}
-              </div>
-            ) : (
+          
+          <div className="mt-6">
+            <DailyActivitiesList
+              activities={activitiesForSelectedDate}
+              selectedDate={selectedDate}
+              getCoachName={getCoachName}
+              getPlayerName={getPlayerName}
+              onDeleteActivity={handleDeleteActivity}
+              onEditActivity={handleEditActivity}
+              onAddParticipant={handleAddParticipant}
+              onRemoveParticipant={handleRemoveParticipant}
+              playersList={playersList}
+              coachesList={coachesList}
+            />
+            
+            {activitiesForSelectedDate.length === 0 && (
               <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <p className="text-gray-500">Nessuna attività programmata per questa data</p>
+                <p className="text-gray-500 mb-4">Nessuna attività programmata per questa data</p>
                 <ExtraActivityForm 
                   onAddActivity={handleAddActivity} 
                   coachesList={coachesList}

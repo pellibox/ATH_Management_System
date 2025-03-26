@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import { ExtraActivity } from "@/types/extra-activities";
 import { ActivityDetails } from "./ActivityDetails";
+import { ExtraActivityForm } from "./ExtraActivityForm";
 
 interface DailyActivitiesListProps {
   activities: ExtraActivity[];
