@@ -12,9 +12,8 @@ export default function Dashboard() {
   
   // Trigger animations after mount
   useEffect(() => {
-    setTimeout(() => {
-      setIsVisible(true);
-    }, 100);
+    // Set visibility immediately to avoid blank screen
+    setIsVisible(true);
     
     const defaultCourts: CourtProps[] = [
       { 
@@ -60,11 +59,15 @@ export default function Dashboard() {
     setCourts(defaultCourts);
   }, []);
   
+  // Add console logs to debug rendering
+  console.log("Dashboard rendering, isVisible:", isVisible);
+  console.log("Courts:", courts);
+  
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto p-4">
       <div className={cn(
-        "mb-8 opacity-0 transform translate-y-4 transition-all duration-700",
-        isVisible ? "opacity-100 translate-y-0" : ""
+        "mb-8 opacity-100 transform transition-all duration-700",
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )}>
         <h1 className="text-3xl font-bold">Benvenuto in ATH Management System</h1>
         <p className="text-gray-600 mt-1">Ecco cosa sta succedendo nella tua accademia oggi</p>
@@ -74,8 +77,9 @@ export default function Dashboard() {
       <DashboardSummary />
       
       {/* Court Assignments Dashboard */}
-      <div className="mt-8 animate-on-scroll">
-        <div className="bg-white rounded-xl shadow-soft p-6">
+      <div className="mt-8">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-xl font-semibold mb-4">Assignazione Campi</h2>
           <AssignmentsDashboard courts={courts} selectedDate={selectedDate} />
         </div>
       </div>

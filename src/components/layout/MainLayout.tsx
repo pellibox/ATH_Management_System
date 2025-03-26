@@ -29,6 +29,8 @@ export default function MainLayout() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  console.log("MainLayout rendering, path:", location.pathname);
+
   return (
     <AnimationProvider>
       <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">

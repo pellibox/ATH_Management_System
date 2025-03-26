@@ -31,13 +31,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <CourtVisionProvider>
+        <CourtVisionProvider>
+          <BrowserRouter>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/*" element={<MainLayout />}>
+              <Route element={<MainLayout />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="calendar" element={<Calendar />} />
                 <Route path="courts" element={<Courts />} />
@@ -57,8 +55,10 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
-          </CourtVisionProvider>
-        </BrowserRouter>
+            <Toaster />
+            <Sonner />
+          </BrowserRouter>
+        </CourtVisionProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
