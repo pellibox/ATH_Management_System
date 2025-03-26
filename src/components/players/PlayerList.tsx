@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Player } from "@/types/player";
 import { MoreVertical, Edit, Trash2, Mail, SortAsc, SortDesc } from "lucide-react";
@@ -21,6 +22,7 @@ import { ScheduleButton } from "./ScheduleMessage";
 import { ActivityRegistration } from "./ActivityRegistration";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { PlayerDetailCard } from "./detail";
+import { DEFAULT_PROGRAMS } from "@/components/court-vision/constants";
 
 export function PlayerList() {
   const { 
@@ -66,11 +68,17 @@ export function PlayerList() {
 
   // Get program color for player
   const getProgramColor = (program: string | undefined) => {
-    if (!program) return "bg-gray-300";
+    if (!program) return "#e0e0e0"; // Default gray
+    
+    // Check if we can find the program in DEFAULT_PROGRAMS
+    const foundProgram = DEFAULT_PROGRAMS.find(p => p.name === program || p.id === program);
+    if (foundProgram) {
+      return foundProgram.color;
+    }
     
     // Create a simple hash of the program name to get a deterministic color
     const hash = program.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500", "bg-teal-500"];
+    const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8B5CF6", "#EC4899"];
     return colors[hash % colors.length];
   };
 
@@ -108,70 +116,84 @@ export function PlayerList() {
         </TableHeader>
         <TableBody>
           {sortedPlayers.length > 0 ? (
-            sortedPlayers.map((player) => (
-              <TableRow 
-                key={player.id} 
-                className="cursor-pointer hover:bg-gray-50" 
-                onClick={() => setSelectedPlayer(player)}
-              >
-                <TableCell className="font-medium">
-                  <div className="flex items-center">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white mr-2 ${getProgramColor(player.program)}`}>
-                      {player.name.substring(0, 1).toUpperCase()}
+            sortedPlayers.map((player) => {
+              const programColor = getProgramColor(player.program);
+              
+              return (
+                <TableRow 
+                  key={player.id} 
+                  className="cursor-pointer hover:bg-gray-50" 
+                  onClick={() => setSelectedPlayer(player)}
+                >
+                  <TableCell className="font-medium">
+                    <div className="flex items-center">
+                      <div 
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-white mr-2"
+                        style={{ backgroundColor: programColor }}
+                      >
+                        {player.name.substring(0, 1).toUpperCase()}
+                      </div>
+                      {player.name}
                     </div>
-                    {player.name}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {player.program ? (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                      {player.program}
-                    </span>
-                  ) : (
-                    <span className="text-gray-500">Non assegnato</span>
-                  )}
-                </TableCell>
-                <TableCell>{player.email}</TableCell>
-                <TableCell>{player.phone}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <ActivityRegistration playerId={player.id} playerName={player.name} />
-                    <ScheduleButton onClick={() => setMessagePlayer(player)} />
+                  </TableCell>
+                  <TableCell>
+                    {player.program ? (
+                      <span 
+                        className="px-2 py-1 rounded-full text-xs font-medium"
+                        style={{ 
+                          backgroundColor: `${programColor}20`, 
+                          color: programColor,
+                          border: `1px solid ${programColor}40`
+                        }}
+                      >
+                        {player.program}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">Non assegnato</span>
+                    )}
+                  </TableCell>
+                  <TableCell>{player.email}</TableCell>
+                  <TableCell>{player.phone}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <ActivityRegistration playerId={player.id} playerName={player.name} />
+                      <ScheduleButton onClick={() => setMessagePlayer(player)} />
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem onClick={(e) => {
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-white">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingPlayer(player);
+                              }}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Modifica
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                          </Dialog>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={(e) => {
                               e.stopPropagation();
-                              setEditingPlayer(player);
-                            }}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Modifica
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                        </Dialog>
-                        <DropdownMenuItem 
-                          className="text-red-600"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeletePlayer(player.id, player.name);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Elimina
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+                              handleDeletePlayer(player.id, player.name);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Elimina
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={5} className="text-center py-8 text-gray-500">
@@ -185,7 +207,7 @@ export function PlayerList() {
       {/* Player Detail Dialog */}
       {selectedPlayer && (
         <Dialog open={!!selectedPlayer} onOpenChange={(open) => !open && setSelectedPlayer(null)}>
-          <DialogContent className="sm:max-w-[800px]">
+          <DialogContent className="sm:max-w-[800px] bg-white">
             <PlayerDetailCard 
               player={selectedPlayer} 
               onClose={() => setSelectedPlayer(null)}

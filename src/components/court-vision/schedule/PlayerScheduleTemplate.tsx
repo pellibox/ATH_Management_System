@@ -58,6 +58,12 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
     });
   }, [player, courts]);
 
+  // Get player program color
+  const getPlayerProgramColor = () => {
+    if (player.programColor) return player.programColor;
+    return "#3b82f6"; // Default blue
+  };
+
   if (playerAssignments.length === 0) {
     return (
       <Card className="bg-white shadow-md">
@@ -78,9 +84,19 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
 
   return (
     <Card className="bg-white shadow-md">
-      <CardHeader className="bg-gray-50 border-b">
+      <CardHeader 
+        className="border-b" 
+        style={{ 
+          backgroundColor: `${getPlayerProgramColor()}20` // Using 20% opacity of program color
+        }}
+      >
         <CardTitle className="text-lg font-semibold flex items-center">
-          <CalendarIcon className="w-5 h-5 mr-2 text-gray-500" />
+          <div 
+            className="w-6 h-6 rounded-full mr-2 flex items-center justify-center text-white text-xs"
+            style={{ backgroundColor: getPlayerProgramColor() }}
+          >
+            {player.name.substring(0, 1).toUpperCase()}
+          </div>
           Programmazione {player.name} - {format(date, "dd/MM/yyyy")}
         </CardTitle>
       </CardHeader>
@@ -123,7 +139,16 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {assignment.coaches.map(coach => (
-                      <Badge key={coach.id} variant="secondary" className="text-sm">
+                      <Badge 
+                        key={coach.id} 
+                        variant="secondary" 
+                        className="text-sm"
+                        style={coach.programColor ? {
+                          backgroundColor: `${coach.programColor}30`,
+                          color: coach.programColor,
+                          borderColor: coach.programColor
+                        } : {}}
+                      >
                         {coach.name}
                       </Badge>
                     ))}
@@ -139,7 +164,16 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {assignment.otherPlayers.map(otherPlayer => (
-                      <Badge key={otherPlayer.id} variant="outline" className="text-sm">
+                      <Badge 
+                        key={otherPlayer.id} 
+                        variant="outline" 
+                        className="text-sm"
+                        style={otherPlayer.programColor ? {
+                          backgroundColor: `${otherPlayer.programColor}20`,
+                          color: otherPlayer.programColor,
+                          borderColor: otherPlayer.programColor
+                        } : {}}
+                      >
                         {otherPlayer.name}
                       </Badge>
                     ))}

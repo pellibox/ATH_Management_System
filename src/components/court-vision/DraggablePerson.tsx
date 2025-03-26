@@ -34,6 +34,11 @@ export function DraggablePerson({
   // Filter out undefined programs
   const validPrograms = assignedPrograms.filter(Boolean) as Program[];
 
+  // Set programColor in person if not already set
+  if (validPrograms.length > 0 && !person.programColor) {
+    person.programColor = validPrograms[0].color;
+  }
+
   return (
     <div className="relative">
       <PersonCard 
@@ -86,7 +91,7 @@ export function DraggablePerson({
                 value=""
                 onValueChange={(value) => onAssignProgram(person.id, value)}
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs bg-white">
                   <SelectValue placeholder="Assegna programma" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
