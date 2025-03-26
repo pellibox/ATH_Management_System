@@ -1,10 +1,12 @@
+
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, RotateCcw } from "lucide-react";
 import { Player, ProgramDetails, programDetailsMap } from "@/types/player";
 import { useEffect, useState } from "react";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 interface HoursTabProps {
   player: Player;
@@ -36,22 +38,67 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
 
   const hoursProgress = programHours > 0 ? ((programHours - remainingHours) / programHours) * 100 : 0;
 
+  const availablePrograms = Object.keys(programDetailsMap);
+
   return (
     <CardContent className="p-4 pt-2">
       <div className="space-y-5">
         <div>
-          <h3 className="text-base font-medium">Attività Programma</h3>
-          <p className="text-sm text-gray-500">Monitoraggio delle ore di attività completate</p>
-          {player.program && programDetailsMap[player.program] && (
-            <div className="mt-1 text-sm text-gray-600">
-              <p>
-                Programma: <span className="font-medium">{player.program}</span> - 
-                {programDetailsMap[player.program].weeks} settimane, 
-                {programDetailsMap[player.program].sessionsPerWeek} sessioni/sett., 
-                {programDetailsMap[player.program].hoursPerSession} ore/sessione
-              </p>
-            </div>
-          )}
+          <h3 className="text-base font-medium">Programma e Attività</h3>
+          <p className="text-sm text-gray-500">Gestione del programma e monitoraggio delle ore di attività</p>
+          
+          <div className="mt-3 mb-5">
+            <label className="text-sm font-medium block mb-1">Programma</label>
+            {isEditing ? (
+              <div className="flex gap-2">
+                <Select
+                  value={player.program || ""}
+                  onValueChange={(value) => handleInputChange('program', value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleziona un programma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nessun Programma</SelectItem>
+                    {availablePrograms.map((program) => (
+                      <SelectItem key={program} value={program}>
+                        {program}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {player.program && (
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => handleInputChange('program', '')}
+                    title="Rimuovi programma"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="text-sm">
+                {player.program ? (
+                  <div className="flex items-center">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                      {player.program}
+                    </span>
+                    {programDetailsMap[player.program] && (
+                      <span className="ml-2 text-gray-600">
+                        ({programDetailsMap[player.program].weeks} settimane, 
+                        {programDetailsMap[player.program].sessionsPerWeek} sessioni/sett., 
+                        {programDetailsMap[player.program].hoursPerSession} ore/sessione)
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-gray-500">Nessun programma assegnato</span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="space-y-2">

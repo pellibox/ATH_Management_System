@@ -50,5 +50,6 @@ export const useActivitiesRegistration = ({
     setSelectedActivities([]);
   };
 
+  // Return just the activity registration functionality
   return { handleRegisterForActivities };
 };
