@@ -81,14 +81,14 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Programma</label>
         <Select 
-          value={formData.program || ""} 
-          onValueChange={(value) => setFormData({...formData, program: value})}
+          value={formData.program || "none"} 
+          onValueChange={(value) => setFormData({...formData, program: value === "none" ? undefined : value})}
         >
           <SelectTrigger>
             <SelectValue placeholder="Seleziona programma" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Nessun programma</SelectItem>
+            <SelectItem value="none">Nessun programma</SelectItem>
             {programs.map(program => (
               <SelectItem key={program} value={program}>{program}</SelectItem>
             ))}
