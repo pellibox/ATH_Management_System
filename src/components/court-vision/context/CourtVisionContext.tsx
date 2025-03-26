@@ -6,6 +6,7 @@ import { useCourtVisionActions } from "./CourtVisionActions";
 import { useCourtVisionFilters } from "./CourtVisionFilters";
 import { useProgramHandlers } from "./useProgramHandlers";
 import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
+import { CoachOverlapDialog } from "../CoachOverlapDialog";
 import { CourtVisionProviderProps } from "./types";
 import { CourtProps, PersonData } from "../types";
 
@@ -152,6 +153,19 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
           newHours={actions.getNewHours()}
           onConfirm={actions.handleConfirmExtraHours}
           onCancel={actions.handleCancelExtraHours}
+        />
+      )}
+      {actions.showCoachOverlapDialog && actions.pendingCoachAssignment && (
+        <CoachOverlapDialog
+          isOpen={actions.showCoachOverlapDialog}
+          onOpenChange={(open) => actions.setShowCoachOverlapDialog(open)}
+          coach={actions.pendingCoachAssignment.coach}
+          existingCourt={actions.pendingCoachAssignment.existingCourtName}
+          newCourt={courts.find(c => c.id === actions.pendingCoachAssignment?.courtId)?.name + " #" + 
+            courts.find(c => c.id === actions.pendingCoachAssignment?.courtId)?.number || ""}
+          timeSlot={actions.pendingCoachAssignment.timeSlot || ""}
+          onConfirm={actions.handleConfirmCoachOverlap}
+          onCancel={actions.handleCancelCoachOverlap}
         />
       )}
     </CourtVisionContext.Provider>

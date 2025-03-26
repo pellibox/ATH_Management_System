@@ -25,7 +25,11 @@ export const useAssignmentActions = ({
     showExtraHoursDialog,
     setShowExtraHoursDialog,
     pendingAssignment,
-    setPendingAssignment
+    setPendingAssignment,
+    showCoachOverlapDialog,
+    pendingCoachAssignment,
+    handleConfirmCoachOverlap,
+    handleCancelCoachOverlap
   } = usePersonAssignment(courts, setCourts, people, setPeople, selectedDate, timeSlots);
 
   // Set up the activity assignment functionality
@@ -82,6 +86,10 @@ export const useAssignmentActions = ({
     getCurrentHours,
     getNewHours,
     handleConfirmExtraHours,
-    handleCancelExtraHours
+    handleCancelExtraHours,
+    showCoachOverlapDialog,
+    pendingCoachAssignment,
+    handleConfirmCoachOverlap,
+    handleCancelCoachOverlap
   };
 };

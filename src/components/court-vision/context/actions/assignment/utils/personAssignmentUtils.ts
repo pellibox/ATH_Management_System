@@ -1,4 +1,3 @@
-
 import { PersonData } from "../../../../types";
 import { PERSON_TYPES } from "../../../../constants";
 import { calculateTimeSlotSpan } from "../../../../time-slot/utils";
@@ -103,4 +102,60 @@ export const addPersonToCourt = (
     }
     return court;
   });
+};
+
+/**
+ * Checks if a coach is already assigned to a different court at the same time slot
+ * @param courts Array of courts
+ * @param coachId ID of the coach to check
+ * @param targetCourtId ID of the target court
+ * @param timeSlot Time slot to check
+ * @returns Object with overlap information or null if no overlap
+ */
+export const checkCoachOverlap = (
+  courts: any[],
+  coachId: string,
+  targetCourtId: string,
+  timeSlot: string
+) => {
+  // Look through all courts
+  for (const court of courts) {
+    // Skip the target court
+    if (court.id === targetCourtId) continue;
+    
+    // Check occupants for this time slot
+    for (const occupant of court.occupants || []) {
+      if (occupant.id === coachId && occupant.type === "coach") {
+        // If coach has a time slot, check if it's the same as the target time slot
+        if (occupant.timeSlot === timeSlot) {
+          return {
+            courtId: court.id,
+            timeSlot
+          };
+        }
+        
+        // If coach spans multiple time slots, check if target time slot is within the span
+        if (occupant.timeSlot && occupant.endTimeSlot) {
+          const timeSlots = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", 
+                         "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
+                         "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", 
+                         "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"];
+                         
+          const slotIndex = timeSlots.indexOf(timeSlot);
+          const startIndex = timeSlots.indexOf(occupant.timeSlot);
+          const endIndex = timeSlots.indexOf(occupant.endTimeSlot);
+          
+          if (slotIndex >= startIndex && slotIndex <= endIndex) {
+            return {
+              courtId: court.id,
+              timeSlot
+            };
+          }
+        }
+      }
+    }
+  }
+  
+  // No overlap found
+  return null;
 };

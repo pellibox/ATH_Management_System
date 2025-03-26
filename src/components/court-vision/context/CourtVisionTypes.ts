@@ -1,18 +1,9 @@
+import { PersonData, CourtProps, ActivityData, Program } from "../types";
 
-import { 
-  PersonData, 
-  ActivityData, 
-  CourtProps, 
-  ScheduleTemplate, 
-  DateSchedule,
-  Program 
-} from "../types";
-
-export interface CourtVisionContextType {
-  // State
+export interface CourtVisionState {
   selectedDate: Date;
-  templates: ScheduleTemplate[];
-  dateSchedules: DateSchedule[];
+  templates: any[];
+  dateSchedules: any[];
   timeSlots: string[];
   courts: CourtProps[];
   filteredCourts: CourtProps[];
@@ -24,37 +15,86 @@ export interface CourtVisionContextType {
   filteredPlayers: PersonData[];
   filteredCoaches: PersonData[];
   currentSport: string;
-  isLayoutView: false; // Always false since we're removing layout view
-
-  // Actions
-  setSelectedDate: (date: Date) => void;
-  handleDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
-  handleActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
-  handleRemovePerson: (personId: string, timeSlot?: string) => void;
-  handleRemoveActivity: (activityId: string, timeSlot?: string) => void;
-  handleAddPerson: (personData: {name: string, type: string, email?: string, phone?: string, sportTypes?: string[]}) => void;
-  handleAddActivity: (activityData: {name: string, type: string, duration: string}) => void;
-  saveAsTemplate: (name: string) => void;
-  applyTemplate: (template: ScheduleTemplate) => void;
-  copyToNextDay: () => void;
-  copyToWeek: () => void;
-  checkUnassignedPeople: (scheduleType: "day" | "week" | "month") => PersonData[];
-  handleAddToDragArea: (person: PersonData) => void;
-  handleRenameCourt: (courtId: string, name: string) => void;
-  handleChangeCourtType: (courtId: string, type: string) => void;
-  handleChangeCourtNumber: (courtId: string, number: number) => void;
-  handleAssignProgram: (personId: string, programId: string) => void;
-  handleAddProgram: (program: Program) => void;
-  handleRemoveProgram: (programId: string) => void;
-  handleSetCoachAvailability: (coachId: string, isPresent: boolean, reason?: string) => void;
-  handleAssignPlayerToActivity: (activityId: string, playerId: string) => void;
-  
-  // Dialog state and handlers
+  isLayoutView: boolean;
   showExtraHoursDialog: boolean;
-  setShowExtraHoursDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  pendingAssignment: { courtId: string; person: PersonData; position?: { x: number, y: number }; timeSlot?: string; } | null;
+  pendingAssignment: any;
+}
+
+export interface CourtVisionContextType {
+  // State properties
+  selectedDate: Date;
+  templates: any[];
+  dateSchedules: any[];
+  timeSlots: string[];
+  courts: any[];
+  filteredCourts: any[];
+  people: any[];
+  activities: any[];
+  playersList: any[];
+  coachesList: any[];
+  programs: any[];
+  filteredPlayers: any[];
+  filteredCoaches: any[];
+  currentSport: string;
+  isLayoutView: boolean;
+
+  // Actions & setters
+  setSelectedDate: (date: Date) => void;
+  handleDrop: (courtId: string, person: any, position?: any, timeSlot?: string) => void;
+  handleRemovePerson: (personId: string, timeSlot?: string) => void;
+  handleActivityDrop: (courtId: string, activity: any, timeSlot?: string) => void;
+  handleRemoveActivity: (activityId: string, timeSlot?: string) => void;
+  handleAddToDragArea: (personId: string) => void;
+  handleAssignPlayerToActivity: (personId: string, activityId: string) => void;
+  handleAssignProgram: (personId: string, programId: string) => void;
+  handleCreateProgram: (program: any) => void;
+  handleUpdateProgram: (programId: string, program: any) => void;
+  handleDeleteProgram: (programId: string) => void;
+  handleSetCoachAvailability: (coachId: string, isPresent: boolean, reason?: string) => void;
+  
+  // Extra hours dialog state and handlers
+  showExtraHoursDialog: boolean;
+  setShowExtraHoursDialog: (show: boolean) => void;
+  pendingAssignment: any;
   getCurrentHours: () => number;
   getNewHours: () => number;
   handleConfirmExtraHours: () => void;
   handleCancelExtraHours: () => void;
+  
+  // Coach overlap dialog state and handlers
+  showCoachOverlapDialog: boolean;
+  pendingCoachAssignment: {
+    courtId: string;
+    coach: any;
+    position?: { x: number; y: number };
+    timeSlot?: string;
+    existingCourtName: string;
+  } | null;
+  handleConfirmCoachOverlap: () => void;
+  handleCancelCoachOverlap: () => void;
+
+  // Schedule actions
+  handleSaveTemplate: (name: string) => void;
+  handleLoadTemplate: (templateId: string) => void;
+  handleDeleteTemplate: (templateId: string) => void;
+  handleClearSchedule: () => void;
+  handleDuplicateSchedule: (sourceDate: Date, targetDate: Date) => void;
+  
+  // Court actions
+  handleAddCourt: (court: CourtProps) => void;
+  handleUpdateCourt: (courtId: string, court: Partial<CourtProps>) => void;
+  handleRemoveCourt: (courtId: string) => void;
+  
+  // People actions
+  handleAddPlayer: (player: PersonData) => void;
+  handleUpdatePlayer: (playerId: string, player: Partial<PersonData>) => void;
+  handleRemovePlayer: (playerId: string) => void;
+  handleAddCoach: (coach: PersonData) => void;
+  handleUpdateCoach: (coachId: string, coach: Partial<PersonData>) => void;
+  handleRemoveCoach: (coachId: string) => void;
+  
+  // Activity actions
+  handleAddActivity: (activity: ActivityData) => void;
+  handleUpdateActivity: (activityId: string, activity: Partial<ActivityData>) => void;
+  handleRemoveActivity: (activityId: string) => void;
 }

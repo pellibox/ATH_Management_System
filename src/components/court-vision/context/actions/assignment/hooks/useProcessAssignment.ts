@@ -1,10 +1,12 @@
 
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { PersonData } from "../../../../types";
 import { 
   preparePersonAssignment, 
   removePersonFromSource, 
-  addPersonToCourt 
+  addPersonToCourt,
+  checkCoachOverlap
 } from "../utils/personAssignmentUtils";
 
 /**
@@ -19,8 +21,47 @@ export const useProcessAssignment = (
   timeSlots: string[]
 ) => {
   const { toast } = useToast();
+  const [showCoachOverlapDialog, setShowCoachOverlapDialog] = useState(false);
+  const [pendingCoachAssignment, setPendingCoachAssignment] = useState<{
+    courtId: string;
+    coach: PersonData;
+    position?: { x: number; y: number };
+    timeSlot?: string;
+    existingCourtName: string;
+  } | null>(null);
 
   const processAssignment = (
+    courtId: string, 
+    person: PersonData, 
+    position?: { x: number, y: number }, 
+    timeSlot?: string
+  ) => {
+    // Check for coach overlap if this is a coach
+    if (person.type === "coach" && timeSlot) {
+      const overlap = checkCoachOverlap(courts, person.id, courtId, timeSlot);
+      
+      if (overlap) {
+        const existingCourt = courts.find(c => c.id === overlap.courtId);
+        const existingCourtName = existingCourt ? `${existingCourt.name} #${existingCourt.number}` : "Unknown";
+        
+        setPendingCoachAssignment({
+          courtId,
+          coach: person,
+          position,
+          timeSlot,
+          existingCourtName
+        });
+        
+        setShowCoachOverlapDialog(true);
+        return;
+      }
+    }
+
+    // Continue with normal assignment process
+    completeAssignment(courtId, person, position, timeSlot);
+  };
+
+  const completeAssignment = (
     courtId: string, 
     person: PersonData, 
     position?: { x: number, y: number }, 
@@ -82,5 +123,35 @@ export const useProcessAssignment = (
     });
   };
 
-  return { processAssignment };
+  const handleConfirmCoachOverlap = () => {
+    if (!pendingCoachAssignment) return;
+    
+    const { courtId, coach, position, timeSlot } = pendingCoachAssignment;
+    completeAssignment(courtId, coach, position, timeSlot);
+    
+    // Reset state
+    setShowCoachOverlapDialog(false);
+    setPendingCoachAssignment(null);
+    
+    // Show warning about the overlap
+    toast({
+      title: "Sovrapposizione Confermata",
+      description: `${coach.name} è stato assegnato a più campi contemporaneamente`,
+      variant: "destructive",
+    });
+  };
+
+  const handleCancelCoachOverlap = () => {
+    setShowCoachOverlapDialog(false);
+    setPendingCoachAssignment(null);
+  };
+
+  return { 
+    processAssignment,
+    showCoachOverlapDialog,
+    setShowCoachOverlapDialog,
+    pendingCoachAssignment,
+    handleConfirmCoachOverlap,
+    handleCancelCoachOverlap
+  };
 };
