@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
@@ -56,6 +55,11 @@ export function CourtScheduleView({
     }
   };
 
+  const getUniqueHours = (slots: string[]) => {
+    const uniqueHours = new Set(slots.map(slot => slot.split(':')[0]));
+    return Array.from(uniqueHours);
+  };
+
   return (
     <div className="flex-1 flex flex-col mt-12 mb-1 h-full overflow-hidden relative">
       <div className="sticky top-0 z-10 bg-white shadow-sm">
@@ -95,13 +99,13 @@ export function CourtScheduleView({
         {/* Court-specific Time Selection Bar */}
         <div className="w-10 absolute right-0 top-0 bottom-0 bg-white/95 border-l border-gray-200 shadow-sm z-10 flex flex-col overflow-auto">
           <div className="py-1 flex flex-col items-center w-full">
-            {timeSlots.map((time, index) => (
+            {getUniqueHours(timeSlots).map((hour, index) => (
               <button
-                key={`nav-${time}`}
-                onClick={() => scrollToTimeSlot(index)}
+                key={`nav-${hour}`}
+                onClick={() => scrollToTimeSlot(timeSlots.findIndex(slot => slot.startsWith(hour)))}
                 className="w-full text-xs py-0.5 hover:bg-gray-100 text-gray-700 font-medium"
               >
-                {time.split(':')[0]}
+                {hour}
               </button>
             ))}
           </div>
