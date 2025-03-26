@@ -7,6 +7,7 @@ import { DashboardSummary } from "@/components/dashboard/DashboardSummary";
 import { useToast } from "@/hooks/use-toast";
 import { useCourtVision } from "@/components/court-vision/context/CourtVisionContext";
 import { format } from "date-fns";
+import { PlayerProvider } from "@/contexts/PlayerContext";
 
 export default function Dashboard() {
   const [isVisible, setIsVisible] = useState(false);
@@ -98,8 +99,10 @@ export default function Dashboard() {
         </p>
       </div>
       
-      {/* Dashboard Summary */}
-      <DashboardSummary />
+      {/* Dashboard Summary wrapped in PlayerProvider */}
+      <PlayerProvider>
+        <DashboardSummary />
+      </PlayerProvider>
       
       {/* Court Assignments Dashboard */}
       <div className={cn(

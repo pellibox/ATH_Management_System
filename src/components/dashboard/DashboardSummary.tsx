@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Calendar, Users, MapPin, ChartBar, Clock, UserCog, Grid, CircleUser, AlertCircle, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,7 +6,7 @@ import { format, addDays } from "date-fns";
 import { it } from "date-fns/locale";
 import { useCourtVision } from "@/components/court-vision/context/CourtVisionContext";
 import { PersonData } from "@/components/court-vision/types";
-import { usePlayerContext } from "@/contexts/player/PlayerContext";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
 // Statistic Card Component
 interface StatCardProps {
@@ -403,3 +402,4 @@ export function DashboardSummary() {
     </div>
   );
 }
+
