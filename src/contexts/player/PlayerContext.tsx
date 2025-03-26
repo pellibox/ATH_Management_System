@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from "react";
 import { PlayerContextType } from "./types";
 import { Player, mockPlayers } from "@/types/player";
@@ -22,9 +21,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [objectives, setObjectives] = useState(defaultObjectives);
   const [extraActivities, setExtraActivities] = useState(mockExtraActivities);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
-  const [newPlayer, setNewPlayer] = useState(defaultNewPlayer);
+  
+  // Fix the initial state of newPlayer by ensuring it has an id
+  const [newPlayer, setNewPlayer] = useState({
+    ...defaultNewPlayer,
+    id: "new-temp-id" // Add a temporary ID for type safety
+  });
 
-  // Get unique coaches for filter dropdown
   const coaches: string[] = Array.from(
     new Set(players.filter(player => player.coach).map(player => player.coach as string))
   );
@@ -102,8 +105,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setMessageContent,
     setScheduleType,
     setObjectives,
-    // Fix the type issue here - we need to correctly type the setNewPlayer function
-    setNewPlayer: (player: Omit<Player, "id">) => setNewPlayer({ ...player, id: "new-temp-id" } as Player),
+    // Fixed setNewPlayer function with proper typing
+    setNewPlayer: (player: Omit<Player, "id">) => setNewPlayer({ 
+      ...player, 
+      id: "new-temp-id" // Always set a temporary ID
+    }),
     setSelectedActivities,
     resetFilters,
     
