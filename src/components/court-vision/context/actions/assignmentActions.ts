@@ -1,6 +1,18 @@
+
 import { useState } from "react";
 import { PersonData, ActivityData, CourtProps, Program } from "../../types";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { PERSON_TYPES } from "../../constants";
 
 export const useAssignmentActions = (
   courts: CourtProps[],
@@ -12,12 +24,49 @@ export const useAssignmentActions = (
   timeSlots: string[]
 ) => {
   const { toast } = useToast();
+  const [showExtraHoursDialog, setShowExtraHoursDialog] = useState(false);
+  const [pendingAssignment, setPendingAssignment] = useState<{
+    courtId: string;
+    person: PersonData;
+    position?: { x: number, y: number };
+    timeSlot?: string;
+  } | null>(null);
+
+  // Helper function to check if a player already has assignments for the day
+  const getPlayerDailyHours = (playerId: string) => {
+    let totalHours = 0;
+    courts.forEach(court => {
+      court.occupants
+        .filter(p => p.id === playerId && p.type === PERSON_TYPES.PLAYER)
+        .forEach(p => {
+          totalHours += p.durationHours || 1;
+        });
+    });
+    return totalHours;
+  };
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
     console.log("handleDrop called:", { courtId, person, position, timeSlot });
     
+    // Check if this is a player with existing assignments
+    if (person.type === PERSON_TYPES.PLAYER) {
+      const currentHours = getPlayerDailyHours(person.id);
+      // If player already has assignments and this would add more hours
+      if (currentHours > 0) {
+        // Store the pending assignment and show dialog
+        setPendingAssignment({ courtId, person, position, timeSlot });
+        setShowExtraHoursDialog(true);
+        return;
+      }
+    }
+    
+    // Proceed with assignment
+    processAssignment(courtId, person, position, timeSlot);
+  };
+
+  const processAssignment = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
     const isMovingFromExistingAssignment = courts.some(court => 
-      court.occupants.some(p => p.id === person.id)
+      court.occupants.some(p => p.id === person.id && p.timeSlot === person.sourceTimeSlot)
     );
 
     const personDuration = person.durationHours || 1;
@@ -53,22 +102,41 @@ export const useAssignmentActions = (
     // Create a new courts array and properly handle occupant updates
     let updatedCourts = JSON.parse(JSON.stringify(courts));
 
-    // If moving within the same court but to a different time slot
-    if (person.sourceTimeSlot && person.courtId === courtId && person.sourceTimeSlot !== timeSlot) {
-      console.log(`Moving from time slot ${person.sourceTimeSlot} to ${timeSlot} on same court`);
-      updatedCourts = updatedCourts.map((court: CourtProps) => {
-        if (court.id === courtId) {
-          return {
-            ...court,
-            occupants: court.occupants.filter((p: PersonData) => 
-              !(p.id === person.id && p.timeSlot === person.sourceTimeSlot)
-            )
-          };
-        }
-        return court;
-      });
+    // For coaches, we allow multiple assignments across different time slots
+    // For players, we want to move them from any existing assignment
+    if (person.type === PERSON_TYPES.COACH) {
+      // If moving a coach within the same court but to a different time slot
+      if (person.sourceTimeSlot && person.courtId === courtId && person.sourceTimeSlot !== timeSlot) {
+        console.log(`Moving coach from time slot ${person.sourceTimeSlot} to ${timeSlot} on same court`);
+        updatedCourts = updatedCourts.map((court: CourtProps) => {
+          if (court.id === courtId) {
+            return {
+              ...court,
+              occupants: court.occupants.filter((p: PersonData) => 
+                !(p.id === person.id && p.timeSlot === person.sourceTimeSlot)
+              )
+            };
+          }
+          return court;
+        });
+      } 
+      // If we're moving the coach from another time slot assignment, just remove that specific assignment
+      else if (person.sourceTimeSlot && person.courtId) {
+        updatedCourts = updatedCourts.map((court: CourtProps) => {
+          if (court.id === person.courtId) {
+            return {
+              ...court,
+              occupants: court.occupants.filter((p: PersonData) => 
+                !(p.id === person.id && p.timeSlot === person.sourceTimeSlot)
+              )
+            };
+          }
+          return court;
+        });
+      }
+      // Note: For coaches, we don't remove other time slot assignments
     } else {
-      // Otherwise, remove person from any existing courts
+      // For players, remove from any existing courts (only one assignment allowed)
       updatedCourts = updatedCourts.map((court: CourtProps) => {
         return {
           ...court,
@@ -174,11 +242,50 @@ export const useAssignmentActions = (
     });
   };
 
+  // Component for the extra hours confirmation dialog
+  const ExtraHoursConfirmationDialog = () => {
+    if (!pendingAssignment) return null;
+    
+    const currentHours = getPlayerDailyHours(pendingAssignment.person.id);
+    const newHours = currentHours + (pendingAssignment.person.durationHours || 1);
+    
+    return (
+      <Dialog open={showExtraHoursDialog} onOpenChange={setShowExtraHoursDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Conferma Ore Extra</DialogTitle>
+            <DialogDescription>
+              {pendingAssignment.person.name} ha già {currentHours} ore assegnate oggi.
+              Questa assegnazione porterà il totale a {newHours} ore.
+              Vuoi procedere con l'assegnazione?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex items-center justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowExtraHoursDialog(false)}>
+              Annulla
+            </Button>
+            <Button onClick={() => {
+              setShowExtraHoursDialog(false);
+              if (pendingAssignment) {
+                const { courtId, person, position, timeSlot } = pendingAssignment;
+                processAssignment(courtId, person, position, timeSlot);
+              }
+              setPendingAssignment(null);
+            }}>
+              Conferma
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return {
     handleDrop,
     handleActivityDrop,
     handleRemovePerson,
     handleRemoveActivity,
-    handleAddToDragArea
+    handleAddToDragArea,
+    ExtraHoursConfirmationDialog
   };
 };

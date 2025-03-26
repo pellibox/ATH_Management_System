@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -290,26 +291,35 @@ export function Court({
           )}
 
           {viewMode === "schedule" && (
-            <div className="flex-1 overflow-y-auto mt-12 mb-1">
-              {timeSlots.map((time) => (
-                <TimeSlot
-                  key={`${court.id}-${time}`}
-                  courtId={court.id}
-                  time={time}
-                  occupants={getOccupantsForTimeSlot(time)}
-                  activities={getActivitiesForTimeSlot(time)}
-                  onDrop={(courtId, person, position, timeSlot) => {
-                    console.log("Dropping at time:", timeSlot, person);
-                    onDrop(courtId, person, position, timeSlot);
-                  }}
-                  onActivityDrop={(courtId, activity, timeSlot) => {
-                    console.log("Dropping activity at time:", timeSlot, activity);
-                    onActivityDrop(courtId, activity, timeSlot);
-                  }}
-                  onRemovePerson={(personId, time) => onRemovePerson && onRemovePerson(personId, time)}
-                  onRemoveActivity={(activityId, time) => onRemoveActivity && onRemoveActivity(activityId, time)}
-                />
-              ))}
+            <div className="flex-1 flex flex-col mt-12 mb-1">
+              <div className="sticky top-0 z-10 bg-white shadow-sm">
+                {/* Sticky header for time slots */}
+                <div className="h-8 border-b border-gray-200 flex items-center px-2">
+                  <span className="text-xs font-medium">Orari - {court.name} #{court.number}</span>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto">
+                {timeSlots.map((time) => (
+                  <TimeSlot
+                    key={`${court.id}-${time}`}
+                    courtId={court.id}
+                    time={time}
+                    occupants={getOccupantsForTimeSlot(time)}
+                    activities={getActivitiesForTimeSlot(time)}
+                    onDrop={(courtId, person, position, timeSlot) => {
+                      console.log("Dropping at time:", timeSlot, person);
+                      onDrop(courtId, person, position, timeSlot);
+                    }}
+                    onActivityDrop={(courtId, activity, timeSlot) => {
+                      console.log("Dropping activity at time:", timeSlot, activity);
+                      onActivityDrop(courtId, activity, timeSlot);
+                    }}
+                    onRemovePerson={(personId, time) => onRemovePerson && onRemovePerson(personId, time)}
+                    onRemoveActivity={(activityId, time) => onRemoveActivity && onRemoveActivity(activityId, time)}
+                  />
+                ))}
+              </div>
             </div>
           )}
 

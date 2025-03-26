@@ -154,6 +154,9 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
   return (
     <CourtVisionContext.Provider value={contextValue}>
       {children}
+      {actions.handleDrop && actions.ExtraHoursConfirmationDialog && (
+        <actions.ExtraHoursConfirmationDialog />
+      )}
     </CourtVisionContext.Provider>
   );
 };
