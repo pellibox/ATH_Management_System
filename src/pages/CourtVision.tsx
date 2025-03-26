@@ -116,19 +116,19 @@ export default function CourtVision() {
             <ViewModeToggle />
           </div>
           
-          {/* Fixed header section with CourtVisionHeader and PeopleList */}
-          <div className="sticky top-0 z-30 bg-white pb-4">
-            <CourtVisionHeader />
-            
-            {/* People management panel */}
-            <div className="mt-4 mb-4">
+          <CourtVisionHeader />
+          
+          {/* Main content area with sidebar layout */}
+          <div className="flex flex-1 gap-4 overflow-hidden">
+            {/* Left sidebar for players and coaches */}
+            <div className="w-80 flex-shrink-0 overflow-y-auto pb-4">
               <PeopleList />
             </div>
-          </div>
-          
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto pb-20">
-            <CourtVisionContent />
+            
+            {/* Main content area */}
+            <div className="flex-1 overflow-y-auto pb-20">
+              <CourtVisionContent />
+            </div>
           </div>
         </div>
       </CourtVisionProvider>
