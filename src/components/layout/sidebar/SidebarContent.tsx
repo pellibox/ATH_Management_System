@@ -1,11 +1,13 @@
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
-  LayoutGrid,  // Replace Layout with LayoutGrid for Dashboard
-  DumbbellIcon,  // Keep existing Dumbbell for Court Vision
-  PulseIcon,  // Replace Activity with PulseIcon for Programmi e Attività
-  CalendarDays,  // Replace Calendar with CalendarDays
-  Settings 
+  LayoutGrid,
+  DumbbellIcon,
+  CalendarDays,
+  Settings,
+  Activity,
+  BookOpen
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
@@ -46,14 +48,14 @@ export default function SidebarContent({
         <ul className="space-y-1 px-2">
           <SidebarLink 
             to="/dashboard" 
-            icon={LayoutGrid}  // Updated from Layout 
+            icon={LayoutGrid}
             label="Dashboard" 
             isActive={isLinkActive('/dashboard')} 
             collapsed={collapsed} 
           />
 
           <SidebarSubmenu
-            icon={DumbbellIcon}  // Kept the same
+            icon={DumbbellIcon}
             label="Court Vision"
             isActive={isLinkActive('/court-vision')}
             collapsed={collapsed}
@@ -71,7 +73,7 @@ export default function SidebarContent({
           />
 
           <SidebarSubmenu
-            icon={PulseIcon}  // Updated from Activity
+            icon={Activity}
             label="Programmi e Attività"
             isActive={isLinkActive('/activities') || isLinkActive('/programs')}
             collapsed={collapsed}
@@ -94,7 +96,7 @@ export default function SidebarContent({
 
           <SidebarLink 
             to="/calendar" 
-            icon={CalendarDays}  // Updated from Calendar
+            icon={CalendarDays}
             label="Calendar" 
             isActive={isLinkActive('/calendar')} 
             collapsed={collapsed} 

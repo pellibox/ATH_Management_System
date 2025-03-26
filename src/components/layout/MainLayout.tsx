@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { Circle } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -62,18 +61,26 @@ export default function MainLayout() {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
         <div className="text-center">
-          <Circle 
-            className="mx-auto animate-spin text-ath-clay" 
-            size={48} 
-            strokeWidth={2} 
-            fill="none"
-            style={{
-              animation: 'spin 1.5s linear infinite',
-              stroke: 'var(--ath-clay)',
-              strokeDasharray: '50 50', // Creates a dashed line effect
-              strokeLinecap: 'round'
-            }}
-          />
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="48" 
+            height="48" 
+            viewBox="0 0 24 24" 
+            className="mx-auto"
+            style={{animation: 'spin 1.5s linear infinite'}}
+          >
+            {/* Tennis ball with dashed lines */}
+            <circle cx="12" cy="12" r="10" fill="none" stroke="#FFC107" strokeWidth="2" />
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" 
+                  fill="none" 
+                  stroke="#FFC107" 
+                  strokeWidth="1.5" 
+                  strokeDasharray="5,5" />
+            <path d="M2 12h20M12 2v20" 
+                  stroke="#FFC107" 
+                  strokeWidth="1.5" 
+                  strokeDasharray="2,3" />
+          </svg>
           <p className="mt-4 text-gray-600">Caricamento layout...</p>
         </div>
       </div>
