@@ -5,17 +5,17 @@ import { CourtProps } from "./types";
 
 export interface AssignmentsDashboardProps {
   courts: CourtProps[];
-  selectedDate: Date; // Add this prop
+  selectedDate: Date;
 }
 
 export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashboardProps) {
   return (
     <div className="space-y-8">
-      <h2 className="text-xl font-semibold">Assignments Dashboard - {format(selectedDate, 'MMMM d, yyyy')}</h2>
+      <h2 className="text-xl font-semibold">Riepilogo Assegnazioni - {format(selectedDate, 'MMMM d, yyyy')}</h2>
       
       {courts.length === 0 ? (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No courts configured for this view</p>
+          <p className="text-gray-500">Nessun campo configurato per questa vista</p>
         </div>
       ) : (
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -31,7 +31,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
               </div>
               
               <div>
-                <h4 className="text-sm font-medium mb-1">People</h4>
+                <h4 className="text-sm font-medium mb-1">Persone</h4>
                 {court.occupants.length > 0 ? (
                   <div className="flex flex-wrap gap-1 mb-3">
                     {court.occupants.map(person => (
@@ -43,10 +43,10 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500 mb-3">No people assigned</p>
+                  <p className="text-xs text-gray-500 mb-3">Nessuna persona assegnata</p>
                 )}
                 
-                <h4 className="text-sm font-medium mb-1">Activities</h4>
+                <h4 className="text-sm font-medium mb-1">Attività</h4>
                 {court.activities.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
                     {court.activities.map(activity => (
@@ -58,7 +58,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500">No activities assigned</p>
+                  <p className="text-xs text-gray-500">Nessuna attività assegnata</p>
                 )}
               </div>
             </div>

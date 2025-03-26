@@ -1,7 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Calendar, Users, MapPin, ChartBar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CourtProps } from "@/components/court-vision/types";
+import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashboard";
 
 // Statistic Card Component
 interface StatCardProps {
@@ -68,12 +69,57 @@ const upcomingSessions: CourtSession[] = [
 
 export default function Dashboard() {
   const [isVisible, setIsVisible] = useState(false);
+  const [courts, setCourts] = useState<CourtProps[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   // Trigger animations after mount
   useEffect(() => {
     setTimeout(() => {
       setIsVisible(true);
     }, 100);
+    
+    const defaultCourts: CourtProps[] = [
+      { 
+        id: "court1", 
+        type: "Tennis Clay", 
+        name: "Center Court", 
+        number: 1, 
+        occupants: [
+          { id: "player1", name: "Alex Smith", type: "player" },
+          { id: "coach1", name: "Coach Anderson", type: "coach" }
+        ], 
+        activities: [
+          { id: "activity1", name: "Singles Match", type: "match" }
+        ] 
+      },
+      { 
+        id: "court2", 
+        type: "Tennis Hard", 
+        name: "Tennis", 
+        number: 2, 
+        occupants: [
+          { id: "player2", name: "Emma Johnson", type: "player" }
+        ], 
+        activities: [
+          { id: "activity2", name: "Group Training", type: "training" }
+        ] 
+      },
+      { 
+        id: "court3", 
+        type: "Padel", 
+        name: "Padel", 
+        number: 1, 
+        occupants: [
+          { id: "player3", name: "Michael Brown", type: "player" },
+          { id: "player4", name: "Sophia Davis", type: "player" }
+        ], 
+        activities: [
+          { id: "activity3", name: "Padel Match", type: "match" }
+        ] 
+      },
+    ];
+    
+    setCourts(defaultCourts);
   }, []);
   
   return (
@@ -222,6 +268,13 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Court Assignments Dashboard */}
+      <div className="mt-8 animate-on-scroll">
+        <div className="bg-white rounded-xl shadow-soft p-6">
+          <AssignmentsDashboard courts={courts} selectedDate={selectedDate} />
         </div>
       </div>
     </div>
