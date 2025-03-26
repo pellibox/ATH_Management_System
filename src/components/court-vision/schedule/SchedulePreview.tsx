@@ -25,9 +25,17 @@ interface SchedulePreviewProps {
 
 export function SchedulePreview({ selectedPerson, courts, date, timeSlots }: SchedulePreviewProps) {
   const [open, setOpen] = useState(false);
-  const [contactMethod, setContactMethod] = useState<"WhatsApp" | "Email" | "Phone">(
-    selectedPerson.preferredContactMethod || "WhatsApp"
-  );
+  
+  // Fix the type issue by ensuring the value is one of the allowed contact methods
+  const defaultContactMethod = (): "WhatsApp" | "Email" | "Phone" => {
+    const preferredMethod = selectedPerson.preferredContactMethod;
+    if (preferredMethod === "WhatsApp" || preferredMethod === "Email" || preferredMethod === "Phone") {
+      return preferredMethod;
+    }
+    return "WhatsApp"; // Default fallback
+  };
+  
+  const [contactMethod, setContactMethod] = useState<"WhatsApp" | "Email" | "Phone">(defaultContactMethod());
 
   const handleClose = () => {
     setOpen(false);
