@@ -66,9 +66,7 @@ export function CourtPerson({
               minWidth: '85px',
               maxWidth: '100%',
               backgroundColor: isCoach ? (person.programColor || "#b00c20") : (person.programColor ? `${person.programColor}20` : "#e6f0ff"),
-              left: position ? `${position.x * 100}%` : 'auto',
-              top: position ? `${position.y * 100}%` : 'auto',
-              position: position ? 'absolute' : 'relative'
+              position: 'relative'
             }}
           >
             <div className="flex justify-between items-center w-full truncate">

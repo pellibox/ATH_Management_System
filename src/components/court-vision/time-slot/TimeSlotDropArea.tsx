@@ -40,8 +40,8 @@ export function TimeSlotDropArea({
   return (
     <div
       ref={drop}
-      className={`min-h-20 border-b border-gray-200 p-2 relative ${
-        isOver ? "bg-gray-100" : ""
+      className={`absolute inset-0 z-10 ${
+        isOver ? "bg-gray-100/50" : ""
       }`}
     >
       {children}

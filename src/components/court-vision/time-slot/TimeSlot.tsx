@@ -31,10 +31,10 @@ export function TimeSlot({
   return (
     <div className="relative flex border-b border-gray-200 py-0.5 h-[90px]">
       <div className="flex-1 px-1 relative">
-        <div className="relative">
+        <div className="relative h-full">
           <div 
             ref={scrollContainerRef} 
-            className="max-h-[80px] overflow-auto relative"
+            className="h-full overflow-auto relative flex items-center"
           >
             <TimeSlotOccupants 
               occupants={occupants} 

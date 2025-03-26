@@ -74,7 +74,7 @@ export function CourtScheduleView({
         <div className="w-16 z-20 flex flex-col">
           {timeSlots.map((time, index) => (
             <div key={`time-label-${time}`} className="h-[90px] flex items-center">
-              <div className="bg-white px-1 py-0.5 text-xs font-medium rounded shadow-sm">
+              <div className="bg-white px-1.5 py-1 text-xs font-semibold rounded shadow-sm">
                 {time}
               </div>
             </div>

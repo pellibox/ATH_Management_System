@@ -19,7 +19,7 @@ export function TimeSlotActivities({
   }
   
   return (
-    <div className="mt-5 flex flex-wrap gap-2">
+    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-2 flex flex-wrap gap-2">
       {activities.map((activity) => (
         <CourtActivity
           key={`${activity.id}-${time}`}
