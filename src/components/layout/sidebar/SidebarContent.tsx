@@ -1,9 +1,11 @@
-
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
-  Calendar, Settings, Users, Activity, Layout, 
-  Dumbbell, User, Award, BookOpen
+  LayoutGrid,  // Replace Layout with LayoutGrid for Dashboard
+  DumbbellIcon,  // Keep existing Dumbbell for Court Vision
+  PulseIcon,  // Replace Activity with PulseIcon for Programmi e Attività
+  CalendarDays,  // Replace Calendar with CalendarDays
+  Settings 
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
@@ -44,14 +46,14 @@ export default function SidebarContent({
         <ul className="space-y-1 px-2">
           <SidebarLink 
             to="/dashboard" 
-            icon={Layout} 
+            icon={LayoutGrid}  // Updated from Layout 
             label="Dashboard" 
             isActive={isLinkActive('/dashboard')} 
             collapsed={collapsed} 
           />
 
           <SidebarSubmenu
-            icon={Dumbbell}
+            icon={DumbbellIcon}  // Kept the same
             label="Court Vision"
             isActive={isLinkActive('/court-vision')}
             collapsed={collapsed}
@@ -69,29 +71,7 @@ export default function SidebarContent({
           />
 
           <SidebarSubmenu
-            icon={Users}
-            label="People"
-            isActive={isLinkActive('/players') || isLinkActive('/coaches')}
-            collapsed={collapsed}
-            open={peopleOpen}
-            onOpenChange={setPeopleOpen}
-            currentPath={location.pathname}
-            items={[
-              { 
-                label: 'Players', 
-                path: '/players',
-                icon: User 
-              },
-              { 
-                label: 'Coaches', 
-                path: '/coaches',
-                icon: Award 
-              },
-            ]}
-          />
-
-          <SidebarSubmenu
-            icon={Activity}
+            icon={PulseIcon}  // Updated from Activity
             label="Programmi e Attività"
             isActive={isLinkActive('/activities') || isLinkActive('/programs')}
             collapsed={collapsed}
@@ -114,7 +94,7 @@ export default function SidebarContent({
 
           <SidebarLink 
             to="/calendar" 
-            icon={Calendar} 
+            icon={CalendarDays}  // Updated from Calendar
             label="Calendar" 
             isActive={isLinkActive('/calendar')} 
             collapsed={collapsed} 
