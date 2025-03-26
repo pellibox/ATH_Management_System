@@ -21,8 +21,13 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   
+  // Ensure we have a valid Date object
+  const displayDate = selectedDate instanceof Date && !isNaN(selectedDate.getTime()) 
+    ? selectedDate 
+    : new Date();
+  
   const handleCourtClick = (courtId: string) => {
-    navigate(`/court-vision?courtId=${courtId}&date=${selectedDate.toISOString()}`);
+    navigate(`/court-vision?courtId=${courtId}&date=${displayDate.toISOString()}`);
   };
   
   const handlePersonClick = (personId: string) => {
@@ -38,7 +43,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold truncate">
-          Riepilogo Assegnazioni - {format(selectedDate, 'MMMM d, yyyy')}
+          Riepilogo Assegnazioni - {format(displayDate, 'MMMM d, yyyy')}
         </h2>
         <button 
           onClick={() => navigate('/court-vision')}

@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [selectedDate] = useState(new Date()); // Explicit date initialization
   const { toast } = useToast();
   const { sharedPlayers } = useSharedPlayers();
   
@@ -79,6 +80,9 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  // Create empty courts array as a fallback
+  const emptyCourts: CourtProps[] = [];
   
   return (
     <CourtVisionProvider initialPlayers={sharedPlayers}>
@@ -89,7 +93,7 @@ export default function Dashboard() {
         )}>
           <h1 className="text-3xl font-bold">Benvenuto in ATH Management System</h1>
           <p className="text-gray-600 mt-1">
-            Ecco cosa sta succedendo nella tua accademia oggi ({format(new Date(), 'dd/MM/yyyy')})
+            Ecco cosa sta succedendo nella tua accademia oggi ({format(selectedDate, 'dd/MM/yyyy')})
           </p>
         </div>
         
@@ -105,7 +109,10 @@ export default function Dashboard() {
         )}>
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold mb-4">Assignazione Campi</h2>
-            <AssignmentsDashboard />
+            <AssignmentsDashboard 
+              courts={emptyCourts} 
+              selectedDate={selectedDate} 
+            />
           </div>
         </div>
       </div>
