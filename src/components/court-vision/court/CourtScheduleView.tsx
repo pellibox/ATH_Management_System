@@ -1,8 +1,9 @@
+
 import React, { useRef, useState } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { TimeNavigation } from "./TimeNavigation";
 
 interface CourtScheduleViewProps {
   courtId: string;
@@ -57,11 +58,6 @@ export function CourtScheduleView({
     }
   };
 
-  const getUniqueHours = (slots: string[]) => {
-    const uniqueHours = new Set(slots.map(slot => slot.split(':')[0]));
-    return Array.from(uniqueHours);
-  };
-
   const handleHourNavigation = (hour: string) => {
     const targetIndex = timeSlots.findIndex(slot => slot.startsWith(hour));
     if (targetIndex !== -1) {
@@ -105,21 +101,12 @@ export function CourtScheduleView({
           </div>
         </div>
         
-        {/* Court-specific Time Navigation */}
-        <div className="absolute right-2 top-1/4 bottom-1/4 w-10 z-30">
-          <div className="sticky top-1/2 transform -translate-y-1/2 bg-white/95 border border-gray-200 rounded-lg shadow-md flex flex-col overflow-visible">
-            {getUniqueHours(timeSlots).map((hour) => (
-              <button
-                key={`nav-${hour}`}
-                onClick={() => handleHourNavigation(hour)}
-                className={`w-full text-xs py-1 hover:bg-gray-100 text-gray-700 font-medium 
-                  ${activeHour === hour ? 'bg-gray-200' : ''}`}
-              >
-                {hour}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Use the new TimeNavigation component */}
+        <TimeNavigation 
+          timeSlots={timeSlots}
+          activeHour={activeHour}
+          onHourSelect={handleHourNavigation}
+        />
       </div>
     </div>
   );
