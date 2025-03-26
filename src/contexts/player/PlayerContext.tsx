@@ -77,12 +77,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setObjectives
   });
 
-  // Create a wrapper for handleDeletePlayer that matches the interface
+  // Fix types for handleSetObjectives and handleDeletePlayer
   const handleDeletePlayer = (id: string) => {
     const player = players.find(p => p.id === id);
     if (player) {
       playerActions.handleDeletePlayer(id, player.name);
     }
+  };
+
+  // Adapted to match expected signature
+  const handleSetObjectives = (playerId: string, updatedObjectives: any) => {
+    // We're ignoring playerId here because current implementation only sets global objectives
+    playerActions.handleSetObjectives(updatedObjectives);
   };
 
   // Context value
@@ -125,9 +131,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     resetFilters,
     handleDeletePlayer,
     handleEditPlayer: (player: Player) => setEditingPlayer(player),
-    handleSetObjectives: (playerId: string, updatedObjectives: any) => {
-      playerActions.handleSetObjectives(updatedObjectives);
-    },
+    handleSetObjectives,
+    // Using the actions from usePlayerActions
     handleRegisterActivity: playerActions.handleRegisterActivity,
     handleRegisterForActivities: playerActions.handleRegisterForActivities,
     ...playerActions
