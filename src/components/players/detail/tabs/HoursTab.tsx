@@ -17,7 +17,7 @@ import {
   SelectLabel
 } from "@/components/ui/select";
 import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
-import { calculateCustomProgramHours } from "@/types/player/programs";
+import { calculatePerformanceHours } from "@/types/player/programs";
 import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 
@@ -209,10 +209,9 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
         const foundProgram = availablePrograms.find(p => p.name === programName);
         
         if (foundProgram) {
-          const hours = calculateCustomProgramHours(
+          const hours = calculatePerformanceHours(
             foundProgram.totalWeeks,
-            foundProgram.weeklyHours / foundProgram.totalWeeks,
-            1
+            foundProgram.weeklyHours
           );
           totalProgramHours += hours;
         }
@@ -238,11 +237,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       return {
         weeklyHours: program.weeklyHours,
         totalWeeks: program.totalWeeks,
-        totalHours: calculateCustomProgramHours(
-          program.totalWeeks,
-          program.weeklyHours / program.totalWeeks,
-          1
-        )
+        totalHours: calculatePerformanceHours(program.totalWeeks, program.weeklyHours)
       };
     }
     return null;
@@ -429,7 +424,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                           </span>
                           {details && (
                             <span className="ml-2 text-gray-600">
-                              ({details.totalWeeks} settimane, {details.weeklyHours} ore totali, {details.totalHours.toFixed(1)} ore)
+                              ({details.totalWeeks} settimane, {details.weeklyHours} ore settimanali, {details.totalHours.toFixed(1)} ore totali)
                             </span>
                           )}
                         </div>
@@ -552,4 +547,3 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     </CardContent>
   );
 }
-

@@ -25,3 +25,15 @@ export const calculateCustomProgramHours = (
 ): number => {
   return weeks * sessionsPerWeek * hoursPerSession;
 };
+
+// Helper function to calculate total hours for performance programs
+// format: weeks * sessions-per-week * hours-per-session = total hours
+export const calculatePerformanceHours = (
+  totalWeeks: number,
+  weeklyHours: number
+): number => {
+  // weeklyHours is the total hours per week, we need to calculate
+  // the number of sessions per week (assuming 1 hour per session)
+  const sessionsPerWeek = weeklyHours / totalWeeks;
+  return totalWeeks * weeklyHours;
+};
