@@ -23,12 +23,12 @@ export function TimeSlotOccupants({
                      "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"];
   
   if (!occupants || occupants.length === 0) {
-    return <div className="relative h-full w-full min-h-[60px] mt-5"></div>;
+    return <div className="relative h-full w-full min-h-[40px]"></div>;
   }
 
   return (
-    <div className="relative h-full w-full min-h-[60px] mt-5">
-      <div className="flex flex-wrap gap-2">
+    <div className="relative h-full w-full min-h-[40px] mt-2">
+      <div className="flex flex-wrap gap-1">
         {occupants.map((person, index) => {
           // Check if this is a continuation slot or the starting slot
           const isContinuationSlot = person.timeSlot !== time && isTimeSlotOccupied(person, time, timeSlots);

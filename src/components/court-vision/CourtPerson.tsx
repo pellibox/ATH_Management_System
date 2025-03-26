@@ -22,15 +22,31 @@ export function CourtPerson({
   isSpanning = false
 }: CourtPersonProps) {
   const isCoach = person.type === "coach";
-  const textColor = isCoach ? "text-white" : "text-gray-800";
-  const bgColor = isCoach 
-    ? person.programColor || "bg-red-500" 
-    : person.programColor || "bg-blue-200";
+  
+  // Enhanced color-coding based on person type
+  let bgColor, textColor, borderColor;
+  
+  if (isCoach) {
+    // Coaches get a more distinct coloring
+    bgColor = person.programColor || "bg-ath-red-clay";
+    textColor = "text-white";
+    borderColor = "border-white/30";
+  } else {
+    // Players get a lighter background with darker text
+    bgColor = person.programColor ? `${person.programColor}20` : "bg-blue-100";
+    textColor = person.programColor || "text-blue-700";
+    borderColor = person.programColor ? `border-${person.programColor}` : "border-blue-300";
+  }
   
   // Add indication for spanning time slots
   const durationInfo = person.durationHours && person.durationHours > 1
     ? `(${person.durationHours}h)`
     : "";
+  
+  // Special styling for time slots that span multiple periods
+  const spanningStyles = isSpanning 
+    ? 'border-t border-dashed opacity-90' 
+    : '';
   
   return (
     <TooltipProvider>
@@ -39,31 +55,39 @@ export function CourtPerson({
           <div 
             className={`
               relative px-2 py-1 rounded-md text-xs font-medium
-              ${bgColor} ${textColor} ${className}
-              ${isSpanning ? 'border-t border-dashed' : ''}
+              ${isCoach ? bgColor : bgColor} ${textColor}
+              ${className} ${spanningStyles} border border-${borderColor}
+              flex-shrink-0 flex items-center justify-between
+              shadow-sm hover:shadow-md transition-shadow
             `}
-            style={{ minWidth: '80px' }}
+            style={{ 
+              minWidth: '85px',
+              maxWidth: '100%',
+              backgroundColor: isCoach ? (person.programColor || "#b00c20") : (person.programColor ? `${person.programColor}20` : "#e6f0ff")
+            }}
           >
-            <div className="flex justify-between items-center">
-              <span>
+            <div className="flex justify-between items-center w-full truncate">
+              <span className="truncate mr-1">
                 {person.name} {!isSpanning && durationInfo}
               </span>
               
-              {!isSpanning && person.durationHours && person.durationHours > 1 && (
-                <Clock className="h-3 w-3 ml-1" />
-              )}
-              
-              {onRemove && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove();
-                  }}
-                  className="ml-1 hover:bg-white/20 rounded-full p-0.5"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              )}
+              <div className="flex items-center flex-shrink-0">
+                {!isSpanning && person.durationHours && person.durationHours > 1 && (
+                  <Clock className="h-3 w-3 ml-1 flex-shrink-0" />
+                )}
+                
+                {onRemove && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove();
+                    }}
+                    className="ml-1 hover:bg-white/20 rounded-full p-0.5 flex-shrink-0"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </TooltipTrigger>
