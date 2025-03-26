@@ -29,9 +29,10 @@ export const ProgramCard = ({ program, expandedProgram, toggleExpand }: ProgramC
       key={program.id} 
       className={cn(
         "bg-white rounded-xl shadow-soft overflow-hidden transition-all duration-300",
-        isExpanded ? "ring-2 ring-ath-blue/20" : "",
+        isExpanded ? `ring-2` : "",
         "card-hover"
       )}
+      style={{ borderLeft: `4px solid ${program.color}` }}
     >
       <div 
         className="p-6 cursor-pointer"
@@ -40,11 +41,11 @@ export const ProgramCard = ({ program, expandedProgram, toggleExpand }: ProgramC
         <div className="flex justify-between items-start">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-semibold">{program.name}</h3>
               <span 
-                className="w-3 h-3 rounded-full" 
+                className="w-4 h-4 rounded-full" 
                 style={{ backgroundColor: program.color }}
               ></span>
+              <h3 className="text-xl font-semibold">{program.name}</h3>
               
               {program.vicki && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
@@ -148,6 +149,16 @@ export const ProgramCard = ({ program, expandedProgram, toggleExpand }: ProgramC
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Prossimo inizio:</span>
                   <span className="text-sm">Settembre 2024</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Color code:</span>
+                  <div className="flex items-center gap-2">
+                    <span 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: program.color }}
+                    ></span>
+                    <span className="text-sm">{program.color}</span>
+                  </div>
                 </div>
               </div>
               

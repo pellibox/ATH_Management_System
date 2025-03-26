@@ -50,6 +50,12 @@ function App() {
                 <Route path="reports" element={<Reports />} />
                 <Route path="videos" element={<Videos />} />
                 <Route path="activities" element={<Activities />} />
+                <Route path="activities/fitness" element={<Activities />} />
+                <Route path="activities/mental" element={<Activities />} />
+                <Route path="activities/medical" element={<Activities />} />
+                <Route path="activities/strategy" element={<Activities />} />
+                <Route path="activities/technique" element={<Activities />} />
+                <Route path="activities/biomechanics" element={<Activities />} />
                 <Route path="extra-activities" element={<ExtraActivities />} />
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="settings" element={<Settings />} />

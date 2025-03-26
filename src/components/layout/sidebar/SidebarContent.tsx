@@ -3,7 +3,8 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
   Calendar, Settings, Users, Activity, Layout, 
-  Dumbbell, User, Award
+  Dumbbell, User, Award, BookOpen, Lightbulb,
+  Brain, HeartPulse, Target, Zap
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
@@ -16,6 +17,8 @@ interface SidebarContentProps {
   setCourtsOpen: (open: boolean) => void;
   peopleOpen: boolean;
   setPeopleOpen: (open: boolean) => void;
+  activitiesOpen: boolean;
+  setActivitiesOpen: (open: boolean) => void;
 }
 
 export default function SidebarContent({
@@ -24,7 +27,9 @@ export default function SidebarContent({
   courtsOpen,
   setCourtsOpen,
   peopleOpen,
-  setPeopleOpen
+  setPeopleOpen,
+  activitiesOpen,
+  setActivitiesOpen
 }: SidebarContentProps) {
   const location = useLocation();
 
@@ -86,12 +91,56 @@ export default function SidebarContent({
             ]}
           />
 
-          <SidebarLink 
-            to="/activities" 
-            icon={Activity} 
-            label="Activities" 
-            isActive={isLinkActive('/activities')} 
-            collapsed={collapsed} 
+          <SidebarSubmenu
+            icon={Activity}
+            label="Programmi e Attività"
+            isActive={isLinkActive('/activities') || isLinkActive('/programs')}
+            collapsed={collapsed}
+            open={activitiesOpen}
+            onOpenChange={setActivitiesOpen}
+            currentPath={location.pathname}
+            items={[
+              { 
+                label: 'Programmi', 
+                path: '/programs',
+                icon: BookOpen 
+              },
+              { 
+                label: 'Attività', 
+                path: '/activities',
+                icon: Activity 
+              },
+              { 
+                label: 'Preparazione Atletica', 
+                path: '/activities/fitness',
+                icon: Dumbbell 
+              },
+              { 
+                label: 'Mental Coaching', 
+                path: '/activities/mental',
+                icon: Brain 
+              },
+              { 
+                label: 'Medical Assessment', 
+                path: '/activities/medical',
+                icon: HeartPulse 
+              },
+              { 
+                label: 'Strategia e Tattica', 
+                path: '/activities/strategy',
+                icon: Target 
+              },
+              { 
+                label: 'Tecnica', 
+                path: '/activities/technique',
+                icon: Zap 
+              },
+              { 
+                label: 'Biomechanical Analysis', 
+                path: '/activities/biomechanics',
+                icon: Lightbulb 
+              },
+            ]}
           />
 
           <SidebarLink 

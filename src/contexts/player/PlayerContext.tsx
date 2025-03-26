@@ -14,6 +14,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [coachFilter, setCoachFilter] = useState<string>("all");
+  const [programFilter, setProgramFilter] = useState<string>("all");
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [messagePlayer, setMessagePlayer] = useState<Player | null>(null);
   const [messageContent, setMessageContent] = useState("");
@@ -41,7 +42,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Coach filter
     const matchesCoach = coachFilter === "all" || player.coach === coachFilter;
     
-    return matchesSearch && matchesLevel && matchesCoach;
+    // Program filter
+    const matchesProgram = programFilter === "all" || player.programId === programFilter;
+    
+    return matchesSearch && matchesLevel && matchesCoach && matchesProgram;
   });
 
   // Reset filters
@@ -49,6 +53,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSearchQuery("");
     setLevelFilter("all");
     setCoachFilter("all");
+    setProgramFilter("all");
   };
 
   // Use the player actions
@@ -75,6 +80,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     searchQuery,
     levelFilter,
     coachFilter,
+    programFilter,
     editingPlayer,
     messagePlayer,
     messageContent,
@@ -90,6 +96,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSearchQuery,
     setLevelFilter,
     setCoachFilter,
+    setProgramFilter,
     setEditingPlayer,
     setMessagePlayer,
     setMessageContent,

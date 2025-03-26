@@ -16,6 +16,7 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
   const [open, setOpen] = useState(false);
   const [courtsOpen, setCourtsOpen] = useState(false);
   const [peopleOpen, setPeopleOpen] = useState(false);
+  const [activitiesOpen, setActivitiesOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   // Close mobile sidebar when route changes
@@ -29,6 +30,7 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
   useEffect(() => {
     setCourtsOpen(false);
     setPeopleOpen(false);
+    setActivitiesOpen(false);
   }, [location.pathname, location.search]);
 
   const sidebarContent = (
@@ -39,6 +41,8 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
       setCourtsOpen={setCourtsOpen}
       peopleOpen={peopleOpen}
       setPeopleOpen={setPeopleOpen}
+      activitiesOpen={activitiesOpen}
+      setActivitiesOpen={setActivitiesOpen}
     />
   );
 

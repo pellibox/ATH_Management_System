@@ -1,4 +1,3 @@
-
 export const COURT_TYPES = {
   TENNIS_CLAY: "Tennis-Clay",
   TENNIS_HARD: "Tennis-Hard",
@@ -19,6 +18,11 @@ export const ACTIVITY_TYPES = {
   GAME: "activity-game",
   LESSON: "activity-lesson",
   FITNESS: "activity-fitness", 
+  MENTAL: "activity-mental",
+  MEDICAL: "activity-medical",
+  STRATEGY: "activity-strategy",
+  TECHNIQUE: "activity-technique",
+  BIOMECHANICS: "activity-biomechanics",
   OTHER: "activity-other"
 };
 
@@ -54,6 +58,11 @@ export const PROGRAM_COLORS = {
   BLUE: "#3b82f6",
   PURPLE: "#8b5cf6",
   PINK: "#ec4899",
+  BROWN: "#8B4513",
+  FOREST_GREEN: "#2E8B57",
+  STEEL_BLUE: "#4682B4",
+  SLATE_BLUE: "#483D8B",
+  SIENNA: "#D2691E"
 };
 
 // Add detailed tennis programs data

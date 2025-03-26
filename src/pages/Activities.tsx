@@ -1,7 +1,9 @@
+
 import { useState } from "react";
-import { Plus, Search, TagIcon, Clock, Edit, Trash } from "lucide-react";
+import { Plus, Search, TagIcon, Clock, Edit, Trash, Brain, HeartPulse, Target, Zap, Lightbulb, Dumbbell } from "lucide-react";
 import { ACTIVITY_TYPES } from "@/components/court-vision/constants";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 type Activity = {
   id: string;
@@ -11,8 +13,19 @@ type Activity = {
   description?: string;
 };
 
+// Define additional activity types
+const ACTIVITY_SUBTYPES = {
+  FITNESS: "Preparazione Atletica",
+  MENTAL: "Mental Coaching",
+  MEDICAL: "Medical Assessment",
+  STRATEGY: "Strategia e Tattica",
+  TECHNIQUE: "Tecnica",
+  BIOMECHANICS: "Biomechanical Analysis"
+};
+
 export default function Activities() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
@@ -22,8 +35,13 @@ export default function Activities() {
     { id: "activity3", name: "Basket Drill", type: ACTIVITY_TYPES.BASKET_DRILL, duration: "45m" },
     { id: "activity4", name: "Doubles Match", type: ACTIVITY_TYPES.MATCH, duration: "1.5h" },
     { id: "activity5", name: "Serve Practice", type: ACTIVITY_TYPES.TRAINING, duration: "30m" },
-    { id: "activity6", name: "Fitness Training", type: ACTIVITY_TYPES.FITNESS, duration: "1h" },
+    { id: "activity6", name: "Fitness Training", type: ACTIVITY_SUBTYPES.FITNESS, duration: "1h" },
     { id: "activity7", name: "Tournament Match", type: ACTIVITY_TYPES.MATCH, duration: "2h" },
+    { id: "activity8", name: "Mental Preparation", type: ACTIVITY_SUBTYPES.MENTAL, duration: "1h" },
+    { id: "activity9", name: "Physical Assessment", type: ACTIVITY_SUBTYPES.MEDICAL, duration: "1h" },
+    { id: "activity10", name: "Strategy Session", type: ACTIVITY_SUBTYPES.STRATEGY, duration: "1h" },
+    { id: "activity11", name: "Technical Drill", type: ACTIVITY_SUBTYPES.TECHNIQUE, duration: "1h" },
+    { id: "activity12", name: "Biomechanical Evaluation", type: ACTIVITY_SUBTYPES.BIOMECHANICS, duration: "1.5h" },
   ]);
   
   const filteredActivities = activities
@@ -48,13 +66,37 @@ export default function Activities() {
       description: "This feature is not yet implemented in this demo.",
     });
   };
+
+  const navigateToPrograms = () => {
+    navigate('/programs');
+  };
+  
+  // Function to get the icon for a specific activity type
+  const getActivityIcon = (type: string) => {
+    switch(type) {
+      case ACTIVITY_SUBTYPES.FITNESS:
+        return <Dumbbell className="w-3 h-3 mr-1" />;
+      case ACTIVITY_SUBTYPES.MENTAL:
+        return <Brain className="w-3 h-3 mr-1" />;
+      case ACTIVITY_SUBTYPES.MEDICAL:
+        return <HeartPulse className="w-3 h-3 mr-1" />;
+      case ACTIVITY_SUBTYPES.STRATEGY:
+        return <Target className="w-3 h-3 mr-1" />;
+      case ACTIVITY_SUBTYPES.TECHNIQUE:
+        return <Zap className="w-3 h-3 mr-1" />;
+      case ACTIVITY_SUBTYPES.BIOMECHANICS:
+        return <Lightbulb className="w-3 h-3 mr-1" />;
+      default:
+        return <TagIcon className="w-3 h-3 mr-1" />;
+    }
+  };
   
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Activities</h1>
-          <p className="text-gray-600 mt-1">Manage training activities and matches</p>
+          <h1 className="text-3xl font-bold">Attività</h1>
+          <p className="text-gray-600 mt-1">Gestione delle attività di allenamento</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -62,7 +104,7 @@ export default function Activities() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="search"
-              placeholder="Search activities..."
+              placeholder="Cerca attività..."
               className="h-10 w-64 rounded-lg bg-white shadow-sm pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ath-blue/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -70,11 +112,19 @@ export default function Activities() {
           </div>
           
           <button 
+            onClick={navigateToPrograms}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <TagIcon className="h-4 w-4" />
+            <span className="text-sm font-medium">Vedi Programmi</span>
+          </button>
+          
+          <button 
             onClick={handleAddActivity}
             className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors"
           >
             <Plus className="h-4 w-4" />
-            <span className="text-sm font-medium">Add Activity</span>
+            <span className="text-sm font-medium">Aggiungi Attività</span>
           </button>
         </div>
       </div>
@@ -88,7 +138,7 @@ export default function Activities() {
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          All Activities
+          Tutte le Attività
         </button>
         <button
           onClick={() => setFilter(ACTIVITY_TYPES.MATCH)}
@@ -98,7 +148,7 @@ export default function Activities() {
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          Matches
+          Partite
         </button>
         <button
           onClick={() => setFilter(ACTIVITY_TYPES.TRAINING)}
@@ -108,7 +158,7 @@ export default function Activities() {
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          Training
+          Allenamento
         </button>
         <button
           onClick={() => setFilter(ACTIVITY_TYPES.BASKET_DRILL)}
@@ -118,17 +168,27 @@ export default function Activities() {
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          Basket Drills
+          Esercizi con Cesto
         </button>
         <button
-          onClick={() => setFilter(ACTIVITY_TYPES.FITNESS)}
+          onClick={() => setFilter(ACTIVITY_SUBTYPES.FITNESS)}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
-            filter === ACTIVITY_TYPES.FITNESS
+            filter === ACTIVITY_SUBTYPES.FITNESS
               ? "bg-ath-blue-light text-ath-blue"
               : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          Fitness
+          Preparazione Atletica
+        </button>
+        <button
+          onClick={() => setFilter(ACTIVITY_SUBTYPES.MENTAL)}
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
+            filter === ACTIVITY_SUBTYPES.MENTAL
+              ? "bg-ath-blue-light text-ath-blue"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          Mental Coaching
         </button>
       </div>
       
@@ -136,10 +196,10 @@ export default function Activities() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b">
-              <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">Activity</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">Type</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">Duration</th>
-              <th className="text-right py-3 px-4 font-medium text-gray-600 text-sm">Actions</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">Attività</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">Tipo</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">Durata</th>
+              <th className="text-right py-3 px-4 font-medium text-gray-600 text-sm">Azioni</th>
             </tr>
           </thead>
           <tbody>
@@ -148,7 +208,7 @@ export default function Activities() {
                 <td className="py-3 px-4 text-sm">{activity.name}</td>
                 <td className="py-3 px-4">
                   <span className="inline-flex items-center font-medium text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
-                    <TagIcon className="w-3 h-3 mr-1" />
+                    {getActivityIcon(activity.type)}
                     {activity.type}
                   </span>
                 </td>
@@ -160,10 +220,10 @@ export default function Activities() {
                 </td>
                 <td className="py-3 px-4 text-right">
                   <div className="flex justify-end items-center space-x-2">
-                    <button className="p-1.5 rounded-full hover:bg-gray-100" title="Edit">
+                    <button className="p-1.5 rounded-full hover:bg-gray-100" title="Modifica">
                       <Edit className="w-4 h-4 text-gray-500" />
                     </button>
-                    <button className="p-1.5 rounded-full hover:bg-gray-100" title="Delete">
+                    <button className="p-1.5 rounded-full hover:bg-gray-100" title="Elimina">
                       <Trash className="w-4 h-4 text-gray-500" />
                     </button>
                   </div>
@@ -175,7 +235,7 @@ export default function Activities() {
         
         {filteredActivities.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-lg text-gray-500">No activities match your search</p>
+            <p className="text-lg text-gray-500">Nessuna attività corrisponde alla tua ricerca</p>
             <button 
               onClick={() => {
                 setFilter("all");
@@ -183,7 +243,7 @@ export default function Activities() {
               }}
               className="mt-2 text-ath-blue hover:text-ath-blue-dark"
             >
-              View all activities
+              Visualizza tutte le attività
             </button>
           </div>
         )}
