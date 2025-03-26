@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
   LayoutGrid,
-  DumbbellIcon,
   CalendarDays,
   Settings,
   Activity,
@@ -14,6 +12,14 @@ import {
 import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
 import SidebarSubmenu from './SidebarSubmenu';
+
+const TennisBallIcon = () => (
+  <img 
+    src="/lovable-uploads/c5b8ef71-836a-4093-9cc3-8aa9a53b59f3.png" 
+    alt="Tennis Ball" 
+    className="w-5 h-5 flex-shrink-0"
+  />
+);
 
 interface SidebarContentProps {
   collapsed: boolean;
@@ -50,14 +56,14 @@ export default function SidebarContent({
         <ul className="space-y-1 px-2">
           <SidebarLink 
             to="/dashboard" 
-            icon={LayoutGrid}
+            icon={TennisBallIcon}
             label="Dashboard" 
             isActive={isLinkActive('/dashboard')} 
             collapsed={collapsed} 
           />
 
           <SidebarSubmenu
-            icon={DumbbellIcon}
+            icon={TennisBallIcon}
             label="Court Vision"
             isActive={isLinkActive('/court-vision')}
             collapsed={collapsed}
@@ -75,7 +81,7 @@ export default function SidebarContent({
           />
 
           <SidebarSubmenu
-            icon={Users}
+            icon={TennisBallIcon}
             label="Persone"
             isActive={isLinkActive('/players') || isLinkActive('/coaches')}
             collapsed={collapsed}
@@ -86,18 +92,18 @@ export default function SidebarContent({
               { 
                 label: 'Giocatori', 
                 path: '/players',
-                icon: Users 
+                icon: TennisBallIcon 
               },
               { 
                 label: 'Allenatori', 
                 path: '/coaches',
-                icon: UserCog 
+                icon: TennisBallIcon 
               }
             ]}
           />
 
           <SidebarSubmenu
-            icon={Activity}
+            icon={TennisBallIcon}
             label="Programmi e Attività"
             isActive={isLinkActive('/activities') || isLinkActive('/programs')}
             collapsed={collapsed}
@@ -108,19 +114,19 @@ export default function SidebarContent({
               { 
                 label: 'Programmi', 
                 path: '/programs',
-                icon: BookOpen 
+                icon: TennisBallIcon 
               },
               { 
                 label: 'Attività', 
                 path: '/activities',
-                icon: Activity 
+                icon: TennisBallIcon 
               }
             ]}
           />
 
           <SidebarLink 
             to="/calendar" 
-            icon={CalendarDays}
+            icon={TennisBallIcon}
             label="Calendar" 
             isActive={isLinkActive('/calendar')} 
             collapsed={collapsed} 
@@ -128,7 +134,7 @@ export default function SidebarContent({
 
           <SidebarLink 
             to="/settings" 
-            icon={Settings} 
+            icon={TennisBallIcon} 
             label="Settings" 
             isActive={isLinkActive('/settings')} 
             collapsed={collapsed} 
