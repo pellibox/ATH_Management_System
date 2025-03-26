@@ -9,6 +9,7 @@ import { getCourtStyles } from "./court/CourtStyleUtils";
 import { CourtScheduleView } from "./court/CourtScheduleView";
 import { CourtFooter } from "./court/CourtFooter";
 import { CourtHeader as NewCourtHeader } from "./court/CourtHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CourtComponentProps {
   court: CourtProps;
@@ -47,6 +48,7 @@ export function Court({
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [courtName, setCourtName] = useState(court.name);
+  const isMobile = useIsMobile();
 
   const handleChangePersonTimeSlot = (personId: string, timeSlot: string) => {
     const person = court.occupants.find(p => p.id === personId);
@@ -69,9 +71,10 @@ export function Court({
     }
   };
 
-  // Adjust court height based on sidebar state
-  const courtHeight = isSidebarCollapsed ? "h-[675px]" : "h-96 sm:h-[600px]";
-  const courtWidth = isSidebarCollapsed ? "w-[600px]" : "w-full";
+  // Adjust court height based on device type and sidebar state
+  const courtHeight = isMobile 
+    ? "h-[500px]" 
+    : (isSidebarCollapsed ? "h-[675px]" : "h-[600px]");
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -79,7 +82,7 @@ export function Court({
         <div
           id={`court-${court.id}`}
           className={`relative rounded-lg border-2 ${getCourtStyles(court.type)} 
-            transition-all ${courtHeight} ${courtWidth} flex flex-col cursor-pointer animate-fade-in mx-auto overflow-hidden`}
+            transition-all ${courtHeight} w-full flex flex-col cursor-pointer animate-fade-in overflow-hidden`}
         >
           <CourtDrop
             courtId={court.id}
@@ -114,7 +117,7 @@ export function Court({
         </div>
       </PopoverTrigger>
       
-      <PopoverContent className="w-80 p-0 bg-white shadow-lg rounded-lg border border-gray-200" sideOffset={5}>
+      <PopoverContent className="w-full max-w-[320px] p-0 bg-white shadow-lg rounded-lg border border-gray-200" sideOffset={5}>
         <OriginalCourtHeader 
           courtName={courtName}
           courtNumber={court.number}

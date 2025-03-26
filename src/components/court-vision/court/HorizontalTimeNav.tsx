@@ -8,6 +8,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HorizontalTimeNavProps {
   timeSlots: string[];
@@ -20,6 +21,8 @@ export function HorizontalTimeNav({
   activeHour,
   onHourSelect
 }: HorizontalTimeNavProps) {
+  const isMobile = useIsMobile();
+  
   const getUniqueHours = (slots: string[]) => {
     const uniqueHours = new Set(slots.map(slot => slot.split(':')[0]));
     return Array.from(uniqueHours);
@@ -43,15 +46,15 @@ export function HorizontalTimeNav({
                 onClick={() => onHourSelect(hour)}
                 variant={activeHour === hour ? "default" : "outline"}
                 size="sm"
-                className="h-7 min-w-10 text-xs font-medium px-2"
+                className={`${isMobile ? 'h-6 min-w-8 text-xs px-1.5' : 'h-7 min-w-10 text-xs px-2'} font-medium`}
               >
                 {hour}
               </Button>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="h-6 w-6 -left-2" />
-        <CarouselNext className="h-6 w-6 -right-2" />
+        <CarouselPrevious className={`${isMobile ? 'h-5 w-5 -left-1' : 'h-6 w-6 -left-2'}`} />
+        <CarouselNext className={`${isMobile ? 'h-5 w-5 -right-1' : 'h-6 w-6 -right-2'}`} />
       </Carousel>
     </div>
   );

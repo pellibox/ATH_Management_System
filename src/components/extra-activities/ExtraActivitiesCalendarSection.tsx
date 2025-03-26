@@ -4,6 +4,7 @@ import { ExtraActivity } from "@/types/extra-activities";
 import { ExtraActivitiesCalendar } from "./ExtraActivitiesCalendar";
 import { DailyActivitiesList } from "./DailyActivitiesList";
 import { ExtraActivityForm } from "./ExtraActivityForm";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ExtraActivitiesCalendarSectionProps {
   selectedDate: Date;
@@ -38,8 +39,10 @@ export function ExtraActivitiesCalendarSection({
   coachesList,
   onAddActivity
 }: ExtraActivitiesCalendarSectionProps) {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="lg:col-span-8">
+    <div className={`${isMobile ? 'w-full' : 'lg:col-span-8'}`}>
       <ExtraActivitiesCalendar
         currentView={currentView}
         setCurrentView={setCurrentView}
@@ -47,7 +50,7 @@ export function ExtraActivitiesCalendarSection({
         setSelectedDate={setSelectedDate}
       />
       
-      <div className="mt-6">
+      <div className="mt-4 md:mt-6">
         <DailyActivitiesList
           activities={activitiesForSelectedDate}
           selectedDate={selectedDate}
@@ -62,8 +65,10 @@ export function ExtraActivitiesCalendarSection({
         />
         
         {activitiesForSelectedDate.length === 0 && (
-          <div className="bg-gray-50 rounded-lg p-8 text-center">
-            <p className="text-gray-500 mb-4">Nessuna attività programmata per questa data</p>
+          <div className="bg-gray-50 rounded-lg p-4 md:p-8 text-center">
+            <p className="text-gray-500 mb-2 md:mb-4 text-sm md:text-base">
+              Nessuna attività programmata per questa data
+            </p>
             <ExtraActivityForm 
               onAddActivity={onAddActivity} 
               coachesList={coachesList}

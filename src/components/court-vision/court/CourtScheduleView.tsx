@@ -4,6 +4,7 @@ import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
 import { HorizontalTimeNav } from "./HorizontalTimeNav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CourtScheduleViewProps {
   courtId: string;
@@ -32,6 +33,7 @@ export function CourtScheduleView({
 }: CourtScheduleViewProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeHour, setActiveHour] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   const getOccupantsForTimeSlot = (time: string) => {
     return occupants.filter(person => 
@@ -76,11 +78,11 @@ export function CourtScheduleView({
       />
       
       <div className="flex flex-1 relative">
-        {/* Time labels column - always visible */}
-        <div className="w-16 z-20 flex flex-col">
+        {/* Time labels column - always visible but smaller on mobile */}
+        <div className={`${isMobile ? 'w-12' : 'w-16'} z-20 flex flex-col`}>
           {timeSlots.map((time) => (
-            <div key={`time-label-${time}`} className="h-[90px] flex items-center">
-              <div className="bg-white px-1.5 py-1 text-xs font-semibold rounded shadow-sm">
+            <div key={`time-label-${time}`} className={`${isMobile ? 'h-[75px]' : 'h-[90px]'} flex items-center`}>
+              <div className={`bg-white ${isMobile ? 'px-1 py-0.5 text-[10px]' : 'px-1.5 py-1 text-xs'} font-semibold rounded shadow-sm`}>
                 {time}
               </div>
             </div>
@@ -89,7 +91,7 @@ export function CourtScheduleView({
 
         <div 
           ref={scrollContainerRef} 
-          className="flex-1 overflow-auto h-full relative ml-2 position-relative"
+          className="flex-1 overflow-auto h-full relative ml-1 md:ml-2 position-relative"
         >
           <div className="min-h-full pb-16">
             {timeSlots.map((time) => (

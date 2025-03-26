@@ -1,12 +1,12 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Users, CalendarIcon } from "lucide-react";
 import { PersonData, ActivityData, CourtProps } from "../types";
 import { TabSelector } from "./TabSelector";
 import { TimeSlotSelector } from "./TimeSlotSelector";
 import { PeopleTabContent } from "./PeopleTabContent";
 import { ActivitiesTabContent } from "./ActivitiesTabContent";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AssignmentDialogContentProps {
   courts: CourtProps[];
@@ -35,9 +35,10 @@ export function AssignmentDialogContent({
   const [selectedCourt, setSelectedCourt] = useState<CourtProps | null>(null);
   const [showAssigned, setShowAssigned] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>(undefined);
+  const isMobile = useIsMobile();
 
   return (
-    <div className="p-2">
+    <div className={`${isMobile ? 'p-2' : 'p-4'}`}>
       <TabSelector 
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
