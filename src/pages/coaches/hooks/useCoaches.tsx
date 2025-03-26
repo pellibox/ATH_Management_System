@@ -40,8 +40,9 @@ export function useCoaches(
       (coach.sportTypes && coach.sportTypes.includes(sportTypeFilter));
     
     // Program filter - now checks if any of the coach's programs match
+    const coachProgramIds = coach.programIds || (coach.programId ? [coach.programId] : []);
     const matchesProgram = programFilter === "all" || 
-      (coach.programIds && coach.programIds.includes(programFilter));
+      coachProgramIds.includes(programFilter);
     
     return matchesSearch && matchesSportType && matchesProgram;
   });
@@ -52,7 +53,7 @@ export function useCoaches(
       prevCoaches.map(coach => {
         if (coach.id === coachId) {
           // Initialize programIds array if it doesn't exist
-          const currentProgramIds = coach.programIds || [];
+          const currentProgramIds = coach.programIds || (coach.programId ? [coach.programId] : []);
           
           // Add the program if not already assigned, otherwise remove it (toggle behavior)
           const newProgramIds = currentProgramIds.includes(programId)

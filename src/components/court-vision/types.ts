@@ -1,25 +1,15 @@
-
 export interface PersonData {
   id: string;
   name: string;
   type: string;
-  courtId?: string;
-  position?: { x: number; y: number };
-  timeSlot?: string;
-  date?: string; // ISO date string
-  durationHours?: number; // Duration in hours
-  endTimeSlot?: string; // End time slot for spanning multiple slots
-  programId?: string; // Program assignment
-  programColor?: string; // Color for visual representation
-  sourceTimeSlot?: string; // Source time slot for drag and drop operations
-  hoursAssigned?: number; // Total hours assigned in current week
-  sportTypes?: string[]; // Multiple sport types the person can participate in
-  email?: string; // Contact information
-  phone?: string; // Contact information
-  address?: string; // Address information
-  birthDate?: string; // Birth date
-  notes?: string; // Additional notes
-  preferredContactMethod?: "WhatsApp" | "Email" | "Phone"; // Preferred contact method for sending schedules
+  assigned?: boolean;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+  programId?: string; // For single program assignment
+  programIds?: string[]; // For multiple program assignments
+  sportTypes?: string[];
 }
 
 export interface ActivityData {

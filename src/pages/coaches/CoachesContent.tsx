@@ -131,7 +131,7 @@ export function CoachesContent() {
         </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="mb-6">
+      <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as "list" | "calendar")} className="mb-6">
         <TabsList>
           <TabsTrigger value="list" className="flex items-center gap-1">
             <Filter className="h-4 w-4" />
@@ -142,74 +142,74 @@ export function CoachesContent() {
             Calendario Disponibilità
           </TabsTrigger>
         </TabsList>
-      </Tabs>
-      
-      <TabsContent value="list" className="mt-0">
-        <CoachFilters 
-          sportTypeFilter={sportTypeFilter}
-          setSportTypeFilter={setSportTypeFilter}
-          programFilter={programFilter}
-          setProgramFilter={setProgramFilter}
-          setSearchQuery={setSearchQuery}
-          allSportTypes={allSportTypes}
-          programs={programs}
-        />
         
-        <CoachesList 
-          filteredCoaches={filteredCoaches}
-          programs={programs}
-          handleAssignProgram={handleAssignProgram}
-          handleSendSchedule={handleSendSchedule}
-          onSelectCoach={(coach) => {
-            setSelectedCoach(coach);
-            setActiveTab("calendar");
-          }}
-        />
-      </TabsContent>
-      
-      <TabsContent value="calendar" className="mt-0">
-        {selectedCoach ? (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-ath-blue" />
-                Disponibilità: {selectedCoach.name}
-              </h2>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setSelectedCoach(null)}
-              >
-                Cambia Allenatore
+        <TabsContent value="list">
+          <CoachFilters 
+            sportTypeFilter={sportTypeFilter}
+            setSportTypeFilter={setSportTypeFilter}
+            programFilter={programFilter}
+            setProgramFilter={setProgramFilter}
+            setSearchQuery={setSearchQuery}
+            allSportTypes={allSportTypes}
+            programs={programs}
+          />
+          
+          <CoachesList 
+            filteredCoaches={filteredCoaches}
+            programs={programs}
+            handleAssignProgram={handleAssignProgram}
+            handleSendSchedule={handleSendSchedule}
+            onSelectCoach={(coach) => {
+              setSelectedCoach(coach);
+              setActiveTab("calendar");
+            }}
+          />
+        </TabsContent>
+        
+        <TabsContent value="calendar">
+          {selectedCoach ? (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-ath-blue" />
+                  Disponibilità: {selectedCoach.name}
+                </h2>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSelectedCoach(null)}
+                >
+                  Cambia Allenatore
+                </Button>
+              </div>
+              
+              <CoachAvailabilityCalendar
+                coachId={selectedCoach.id}
+                coachName={selectedCoach.name}
+                availabilityEvents={availabilityEvents}
+                onAddEvent={handleAddAvailabilityEvent}
+                onRemoveEvent={handleRemoveAvailabilityEvent}
+                onUpdateEvent={handleUpdateAvailabilityEvent}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+              />
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-xl p-8 text-center">
+              <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Seleziona un Allenatore</h3>
+              <p className="text-gray-500 mb-6">
+                Seleziona un allenatore dalla lista per visualizzare e modificare la sua disponibilità
+              </p>
+              <Button onClick={() => setActiveTab("list")}>
+                Vai alla Lista Allenatori
               </Button>
             </div>
-            
-            <CoachAvailabilityCalendar
-              coachId={selectedCoach.id}
-              coachName={selectedCoach.name}
-              availabilityEvents={availabilityEvents}
-              onAddEvent={handleAddAvailabilityEvent}
-              onRemoveEvent={handleRemoveAvailabilityEvent}
-              onUpdateEvent={handleUpdateAvailabilityEvent}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              currentView={currentView}
-              setCurrentView={setCurrentView}
-            />
-          </div>
-        ) : (
-          <div className="bg-gray-50 rounded-xl p-8 text-center">
-            <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium mb-2">Seleziona un Allenatore</h3>
-            <p className="text-gray-500 mb-6">
-              Seleziona un allenatore dalla lista per visualizzare e modificare la sua disponibilità
-            </p>
-            <Button onClick={() => setActiveTab("list")}>
-              Vai alla Lista Allenatori
-            </Button>
-          </div>
-        )}
-      </TabsContent>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
