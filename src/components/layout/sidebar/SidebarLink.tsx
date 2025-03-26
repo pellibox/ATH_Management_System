@@ -23,18 +23,18 @@ export default function SidebarLink({ to, icon: Icon, label, isActive, collapsed
         className={cn(
           "flex items-center py-2 px-3 rounded-md text-sm transition-colors relative group",
           isActive 
-            ? "bg-ath-blue text-white font-medium" 
+            ? "bg-ath-clay text-white font-medium" 
             : "text-gray-600 hover:bg-gray-100"
         )}
       >
         <Icon className={cn(
           "h-5 w-5 flex-shrink-0",
-          isActive ? "text-white" : isCurrent ? "text-ath-blue" : "text-gray-500 group-hover:text-gray-700",
+          isActive ? "text-white" : isCurrent ? "text-ath-clay" : "text-gray-500 group-hover:text-gray-700",
           collapsed ? "mx-auto" : "mr-2"
         )} />
         
         {!collapsed && (
-          <span className={cn("truncate", isCurrent && !isActive && "text-ath-blue font-medium")}>{label}</span>
+          <span className={cn("truncate", isCurrent && !isActive && "text-ath-clay font-medium")}>{label}</span>
         )}
         
         {collapsed && (

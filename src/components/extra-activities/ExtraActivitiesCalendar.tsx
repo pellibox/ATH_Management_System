@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarView from "@/components/ui/CalendarView";
 import { DateSelector } from "@/components/court-vision/DateSelector";
+import { CourtVisionProvider } from "@/components/court-vision/context/CourtVisionContext";
 
 interface ExtraActivitiesCalendarProps {
   currentView: "week" | "day" | "month";
@@ -39,7 +40,9 @@ export function ExtraActivitiesCalendar({
         <div className="mb-4">
           <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
         </div>
-        <CalendarView currentView={currentView} />
+        <CourtVisionProvider>
+          <CalendarView currentView={currentView} />
+        </CourtVisionProvider>
       </CardContent>
     </Card>
   );

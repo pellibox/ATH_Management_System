@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -86,7 +85,20 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
   const [visibleDays, setVisibleDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { courts, timeSlots: courtTimeSlots } = useCourtVision();
+  
+  // Safely use CourtVision context - provide defaults if not available
+  let courtVisionContext;
+  try {
+    courtVisionContext = useCourtVision();
+  } catch (error) {
+    console.warn("CourtVision context not available, using defaults");
+    courtVisionContext = {
+      courts: [],
+      timeSlots: timeSlots
+    };
+  }
+  
+  const { courts, timeSlots: courtTimeSlots = timeSlots } = courtVisionContext;
 
   // Get the dates for the current week
   const getWeekDates = () => {
@@ -244,7 +256,7 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium",
                     visibleDays.includes(index) 
-                      ? "bg-ath-blue text-white" 
+                      ? "bg-ath-clay text-white" 
                       : "bg-white text-gray-600 hover:bg-gray-100"
                   )}
                   onClick={() => setVisibleDays([index])}
@@ -366,7 +378,7 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
               </div>
               
               <div className="grid grid-cols-1 gap-4">
-                {courts.map((court) => (
+                {(courts || []).map((court) => (
                   <div key={court.id} className="border rounded-lg overflow-hidden">
                     <div 
                       className={cn(
