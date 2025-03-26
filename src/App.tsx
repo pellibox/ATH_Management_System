@@ -21,6 +21,7 @@ import Integrations from "./pages/Integrations";
 import Activities from "./pages/Activities";
 import ExtraActivities from "./pages/ExtraActivities";
 import Coaches from "./pages/Coaches";
+import Index from "./pages/Index";
 import { CourtVisionProvider } from "./components/court-vision/context/CourtVisionContext";
 import "./App.css";
 import "./index.css";
@@ -37,8 +38,8 @@ function App() {
           <CourtVisionProvider>
             <div className="flex flex-col min-h-screen">
               <Routes>
+                <Route path="/" element={<Index />} />
                 <Route element={<MainLayout />}>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="calendar" element={<Calendar />} />
                   <Route path="courts" element={<Courts />} />
