@@ -10,9 +10,26 @@ import { ScheduleMessage } from "@/components/players/ScheduleMessage";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 import { DialogTrigger } from "@/components/ui/dialog";
+import { useEffect } from "react";
 
 function PlayersContent() {
-  const { editingPlayer, messagePlayer, handleAddPlayer, handleUpdatePlayer } = usePlayerContext();
+  const { 
+    editingPlayer, 
+    messagePlayer, 
+    handleAddPlayer, 
+    handleUpdatePlayer,
+    setEditingPlayer,
+    setMessagePlayer 
+  } = usePlayerContext();
+  
+  // Clean up any open dialogs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Reset any open states to prevent memory leaks
+      setEditingPlayer(null);
+      setMessagePlayer(null);
+    };
+  }, [setEditingPlayer, setMessagePlayer]);
   
   return (
     <div className="max-w-7xl mx-auto">
@@ -47,7 +64,10 @@ function PlayersContent() {
       <PlayerList />
       
       {editingPlayer && (
-        <Dialog open={!!editingPlayer} onOpenChange={(open) => !open && null}>
+        <Dialog 
+          open={!!editingPlayer} 
+          onOpenChange={(open) => !open && setEditingPlayer(null)}
+        >
           <DialogContent className="sm:max-w-[600px]">
             <PlayerForm buttonText="Aggiorna Giocatore" handleSave={handleUpdatePlayer} />
           </DialogContent>
@@ -55,7 +75,10 @@ function PlayersContent() {
       )}
       
       {messagePlayer && (
-        <Dialog open={!!messagePlayer} onOpenChange={(open) => !open && null}>
+        <Dialog 
+          open={!!messagePlayer} 
+          onOpenChange={(open) => !open && setMessagePlayer(null)}
+        >
           <DialogContent className="sm:max-w-[600px]">
             <ScheduleMessage />
           </DialogContent>

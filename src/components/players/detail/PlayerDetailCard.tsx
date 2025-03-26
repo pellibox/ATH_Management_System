@@ -41,8 +41,15 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
   useEffect(() => {
     setEditedPlayer({ ...player });
   }, [player]);
+
+  // Clean up state when component unmounts
+  useEffect(() => {
+    return () => {
+      setIsEditing(false);
+    };
+  }, []);
   
-  // Get player's activities
+  // Get player's activities 
   const playerActivities = extraActivities.filter(activity => 
     activity.participants?.includes(editedPlayer.id)
   );

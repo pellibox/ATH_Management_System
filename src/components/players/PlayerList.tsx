@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Player } from "@/types/player";
 import {
   Table,
@@ -25,6 +25,11 @@ export function PlayerList() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [sortColumn, setSortColumn] = useState<"name" | "program" | "email" | "phone">("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  // Clean up selected player when component unmounts or when player list changes
+  useEffect(() => {
+    return () => setSelectedPlayer(null);
+  }, []);
 
   const handleSort = (column: "name" | "program" | "email" | "phone") => {
     if (sortColumn === column) {
@@ -82,7 +87,10 @@ export function PlayerList() {
       </Table>
 
       {selectedPlayer && (
-        <Dialog open={!!selectedPlayer} onOpenChange={(open) => !open && setSelectedPlayer(null)}>
+        <Dialog 
+          open={!!selectedPlayer} 
+          onOpenChange={(open) => !open && setSelectedPlayer(null)}
+        >
           <DialogContent className="sm:max-w-[800px] bg-white">
             <PlayerDetailCard 
               player={selectedPlayer} 
