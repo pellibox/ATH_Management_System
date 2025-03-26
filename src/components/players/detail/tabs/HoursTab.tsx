@@ -20,6 +20,7 @@ import {
 import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
 import { calculateCustomProgramHours } from "@/types/player/programs";
 import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
+import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 
 interface HoursTabProps {
   player: Player;
@@ -45,7 +46,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
   
   const sports = ["Tennis", "Padel"];
   
-  // Carica tutti i programmi disponibili da PROGRAM_CATEGORIES
+  // Carica tutti i programmi disponibili da TENNIS_PROGRAMS e PROGRAM_CATEGORIES
   useEffect(() => {
     const programs: { 
       name: string; 
@@ -56,42 +57,85 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       totalWeeks: number 
     }[] = [];
     
-    Object.entries(PROGRAM_CATEGORIES).forEach(([categoryKey, category]) => {
-      if (category && category.programs && Array.isArray(category.programs)) {
-        category.programs.forEach(program => {
+    // Add programs from TENNIS_PROGRAMS which has the actual data shown on Programs page
+    const allPerformancePrograms = TENNIS_PROGRAMS.PERFORMANCE || [];
+    const allJuniorPrograms = TENNIS_PROGRAMS.JUNIOR || [];
+    const allPersonalPrograms = TENNIS_PROGRAMS.PERSONAL || [];
+    const allAdultPrograms = TENNIS_PROGRAMS.ADULT || [];
+    const allCoachPrograms = TENNIS_PROGRAMS.COACH || [];
+    const allPadelPrograms = TENNIS_PROGRAMS.PADEL || [];
+    
+    // Process the actual program data from the Tennis category
+    [
+      { data: allPerformancePrograms, category: "PERFORMANCE", label: "Performance", sport: "Tennis" },
+      { data: allJuniorPrograms, category: "JUNIOR", label: "Junior Program", sport: "Tennis" },
+      { data: allPersonalPrograms, category: "PERSONAL", label: "Personal Coaching", sport: "Tennis" },
+      { data: allAdultPrograms, category: "ADULT", label: "Adulti", sport: "Tennis" },
+      { data: allCoachPrograms, category: "COACH", label: "Coach Program", sport: "Tennis" },
+      { data: allPadelPrograms, category: "PADEL", label: "Padel Program", sport: "Padel" }
+    ].forEach(({data, category, label, sport}) => {
+      if (data && Array.isArray(data)) {
+        data.forEach(program => {
           if (!EXCLUDED_PROGRAM_NAMES.includes(program.name)) {
+            const weeklyHours = program.weeklyHours || 0;
+            const totalWeeks = program.totalWeeks || 30;
+            
             programs.push({
               name: program.name,
-              category: categoryKey.toLowerCase(),
-              categoryLabel: category.title,
-              sport: program.sport || "Tennis",
-              weeklyHours: program.weeklyHours || 0,
-              totalWeeks: program.totalWeeks || 0
+              category: category.toLowerCase(),
+              categoryLabel: label,
+              sport: sport,
+              weeklyHours: weeklyHours,
+              totalWeeks: totalWeeks
             });
           }
         });
       }
     });
     
-    // Aggiungi alcuni programmi di fallback se non ci sono programmi disponibili
+    // Add fallback programs if nothing was found
     if (programs.length === 0) {
-      // Aggiungi programmi di fallback per Tennis
+      // Programmi Tennis
       programs.push(
+        {
+          name: "Performance 2",
+          category: "performance",
+          categoryLabel: "Agonisti Performance",
+          sport: "Tennis",
+          weeklyHours: 6,
+          totalWeeks: 40
+        },
+        {
+          name: "Performance 3",
+          category: "performance",
+          categoryLabel: "Agonisti Performance",
+          sport: "Tennis",
+          weeklyHours: 9,
+          totalWeeks: 40
+        },
+        {
+          name: "Performance 4",
+          category: "performance",
+          categoryLabel: "Agonisti Performance",
+          sport: "Tennis",
+          weeklyHours: 12,
+          totalWeeks: 40
+        },
+        {
+          name: "Elite Performance",
+          category: "performance",
+          categoryLabel: "Agonisti Performance",
+          sport: "Tennis",
+          weeklyHours: 30,
+          totalWeeks: 40
+        },
         {
           name: "Tennis Junior",
           category: "junior",
           categoryLabel: "Junior Program",
           sport: "Tennis",
-          weeklyHours: 6,
+          weeklyHours: 3,
           totalWeeks: 30
-        },
-        {
-          name: "Tennis Performance",
-          category: "performance",
-          categoryLabel: "Performance",
-          sport: "Tennis",
-          weeklyHours: 10,
-          totalWeeks: 40
         },
         {
           name: "Tennis Adult",
@@ -103,7 +147,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
         }
       );
       
-      // Aggiungi programmi di fallback per Padel
+      // Programmi Padel
       programs.push(
         {
           name: "Padel Base",
@@ -134,7 +178,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       const filtered = availablePrograms.filter(program => 
         selectedSports.includes(program.sport)
       );
-      console.log("Programmi filtrati:", filtered);
+      console.log("Programmi filtrati per sport:", filtered);
       setFilteredPrograms(filtered);
     } else {
       setFilteredPrograms(availablePrograms);
@@ -472,4 +516,3 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     </CardContent>
   );
 }
-
