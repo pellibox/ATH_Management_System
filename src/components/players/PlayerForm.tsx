@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/select";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { Player } from "@/types/player";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
+import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 
 interface PlayerFormProps {
   buttonText: string;
@@ -21,16 +24,53 @@ interface PlayerFormProps {
 export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
   const { editingPlayer, newPlayer, setNewPlayer, players } = usePlayerContext();
   const [formData, setFormData] = useState(editingPlayer || newPlayer);
+  const [selectedSport, setSelectedSport] = useState<string | null>(null);
+  const [availablePrograms, setAvailablePrograms] = useState<{name: string, category: string}[]>([]);
 
-  // Get all unique programs
-  const programs = Array.from(
-    new Set(players.filter(p => p.program).map(p => p.program))
-  );
+  // Sports options
+  const sports = ["Tennis", "Padel"];
 
   // Update form data when editing player changes
   useEffect(() => {
     setFormData(editingPlayer || newPlayer);
+    
+    // Set selected sport based on player's sports
+    if ((editingPlayer || newPlayer).sports && (editingPlayer || newPlayer).sports.length > 0) {
+      setSelectedSport((editingPlayer || newPlayer).sports[0]);
+    }
   }, [editingPlayer, newPlayer]);
+
+  // Get programs based on selected sport
+  useEffect(() => {
+    if (selectedSport) {
+      const sportPrograms: {name: string, category: string}[] = [];
+      
+      // Combine all program categories into a structured array for the selected sport
+      Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
+        const category = PROGRAM_CATEGORIES[categoryKey];
+        
+        // Check if category.programs exists before iterating
+        if (category && category.programs && Array.isArray(category.programs)) {
+          category.programs.forEach(program => {
+            // Only include programs for the selected sport that aren't excluded
+            if (
+              (!program.sport || program.sport === selectedSport) && 
+              !EXCLUDED_PROGRAM_NAMES.includes(program.name)
+            ) {
+              sportPrograms.push({
+                name: program.name,
+                category: categoryKey
+              });
+            }
+          });
+        }
+      });
+      
+      setAvailablePrograms(sportPrograms);
+    } else {
+      setAvailablePrograms([]);
+    }
+  }, [selectedSport]);
 
   const handleSubmit = () => {
     if (editingPlayer) {
@@ -40,6 +80,27 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
       // For adding new player
       handleSave(formData);
     }
+  };
+
+  const handleSportChange = (sport: string, checked: boolean) => {
+    let newSports;
+    const currentSports = formData.sports || [];
+    
+    if (checked) {
+      newSports = [...currentSports, sport];
+      // Set as selected sport if first sport or no sport is selected
+      if (!selectedSport) {
+        setSelectedSport(sport);
+      }
+    } else {
+      newSports = currentSports.filter(s => s !== sport);
+      // If removing the selected sport, clear or update selectedSport
+      if (selectedSport === sport) {
+        setSelectedSport(newSports.length > 0 ? newSports[0] : null);
+      }
+    }
+    
+    setFormData({...formData, sports: newSports});
   };
 
   return (
@@ -70,7 +131,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
           <SelectTrigger>
             <SelectValue placeholder="Seleziona genere" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white">
             <SelectItem value="Male">Maschio</SelectItem>
             <SelectItem value="Female">Femmina</SelectItem>
             <SelectItem value="Other">Altro</SelectItem>
@@ -78,22 +139,51 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
         </Select>
       </div>
       
-      <div className="space-y-2">
+      <div className="space-y-2 col-span-2">
+        <label className="text-sm font-medium">Sport</label>
+        <div className="grid grid-cols-2 gap-2">
+          {sports.map(sport => (
+            <div key={sport} className="flex items-center space-x-2">
+              <Checkbox 
+                id={`sport-${sport}`}
+                checked={formData.sports?.includes(sport)}
+                onCheckedChange={(checked) => handleSportChange(sport, !!checked)}
+              />
+              <label 
+                htmlFor={`sport-${sport}`}
+                className="text-sm cursor-pointer"
+              >
+                {sport}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="space-y-2 col-span-2">
         <label className="text-sm font-medium">Programma</label>
-        <Select 
-          value={formData.program || "none"} 
-          onValueChange={(value) => setFormData({...formData, program: value === "none" ? undefined : value})}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Seleziona programma" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Nessun programma</SelectItem>
-            {programs.map(program => (
-              <SelectItem key={program} value={program}>{program}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {selectedSport ? (
+          <Select 
+            value={formData.program || ""} 
+            onValueChange={(value) => setFormData({...formData, program: value})}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleziona programma" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              <SelectItem value="">Nessun programma</SelectItem>
+              {availablePrograms.map(program => (
+                <SelectItem key={program.name} value={program.name}>
+                  {program.name} ({program.category})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="text-sm text-gray-500 p-3 border rounded-md">
+            Nessun programma disponibile. Seleziona uno sport prima.
+          </div>
+        )}
       </div>
       
       <div className="space-y-2">
@@ -136,7 +226,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
           <SelectTrigger>
             <SelectValue placeholder="Metodo di contatto" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white">
             <SelectItem value="WhatsApp">WhatsApp</SelectItem>
             <SelectItem value="Email">Email</SelectItem>
             <SelectItem value="Phone">Telefono</SelectItem>

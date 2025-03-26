@@ -54,7 +54,7 @@ export function DraggablePerson({
             <span className="sr-only">Altre opzioni</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-60 p-3">
+        <PopoverContent className="w-60 p-3 bg-white">
           <div className="space-y-3">
             <div>
               <p className="text-xs font-medium mb-1 flex items-center">
@@ -89,7 +89,7 @@ export function DraggablePerson({
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Assegna programma" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {programs.map((program) => (
                     <SelectItem key={program.id} value={program.id}>
                       <div className="flex items-center">

@@ -7,8 +7,10 @@ import { Player } from "@/types/player";
 import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
 import { calculateCustomProgramHours } from "@/types/player/programs";
+import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 
 interface HoursTabProps {
   player: Player;
@@ -23,6 +25,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
   const [availablePrograms, setAvailablePrograms] = useState<{ name: string; category: string; sport: string; weeklyHours: number; totalWeeks: number }[]>([]);
   const [filteredPrograms, setFilteredPrograms] = useState<{ name: string; category: string; sport: string; weeklyHours: number; totalWeeks: number }[]>([]);
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>(player.programs || []);
+  const [selectedSports, setSelectedSports] = useState<string[]>(player.sports || []);
   
   const sports = ["Tennis", "Padel"];
   
@@ -36,14 +39,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       totalWeeks: number 
     }[] = [];
     
-    // Lista dei programmi da escludere
-    const EXCLUDED_PROGRAMS = [
-      "Tennis Academy", 
-      "Padel Club", 
-      "Junior Development", 
-      "High Performance"
-    ];
-    
     // Combine all program categories into a structured array
     Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
       const category = PROGRAM_CATEGORIES[categoryKey];
@@ -52,7 +47,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       if (category && category.programs && Array.isArray(category.programs)) {
         category.programs.forEach(program => {
           // Escludiamo i programmi nella lista di esclusione
-          if (!EXCLUDED_PROGRAMS.includes(program.name)) {
+          if (!EXCLUDED_PROGRAM_NAMES.includes(program.name)) {
             programs.push({
               name: program.name,
               category: categoryKey,
@@ -65,27 +60,27 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       }
     });
     
-    console.log("Available programs:", programs);
     setAvailablePrograms(programs);
     setFilteredPrograms(programs);
   }, []);
   
   // Update filtered programs when player sports change
   useEffect(() => {
-    if (player.sports && player.sports.length > 0) {
+    if (selectedSports.length > 0) {
       const filtered = availablePrograms.filter(program => 
-        player.sports?.includes(program.sport)
+        selectedSports.includes(program.sport)
       );
       setFilteredPrograms(filtered);
     } else {
       setFilteredPrograms(availablePrograms);
     }
-  }, [player.sports, availablePrograms]);
+  }, [selectedSports, availablePrograms]);
   
   // Update selected programs when player.programs changes
   useEffect(() => {
     setSelectedPrograms(player.programs || []);
-  }, [player.programs]);
+    setSelectedSports(player.sports || []);
+  }, [player.programs, player.sports]);
   
   // Calculate total program hours
   useEffect(() => {
@@ -132,6 +127,22 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     return null;
   };
   
+  // Handle sport selection changes
+  const handleSportSelect = (sport: string, isSelected: boolean) => {
+    let updatedSports: string[] = [...selectedSports];
+    
+    if (isSelected) {
+      if (!updatedSports.includes(sport)) {
+        updatedSports.push(sport);
+      }
+    } else {
+      updatedSports = updatedSports.filter(name => name !== sport);
+    }
+    
+    setSelectedSports(updatedSports);
+    handleInputChange('sports', updatedSports);
+  };
+  
   // Handle program selection changes
   const handleProgramSelect = (programName: string, isSelected: boolean) => {
     let updatedPrograms: string[] = [...selectedPrograms];
@@ -173,19 +184,8 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                     <div key={sport} className="flex items-center space-x-2">
                       <Checkbox 
                         id={`sport-${sport}`}
-                        checked={player.sports?.includes(sport)}
-                        onCheckedChange={(checked) => {
-                          const currentSports = player.sports || [];
-                          let newSports;
-                          
-                          if (checked) {
-                            newSports = [...currentSports, sport];
-                          } else {
-                            newSports = currentSports.filter(s => s !== sport);
-                          }
-                          
-                          handleInputChange('sports', newSports);
-                        }}
+                        checked={selectedSports.includes(sport)}
+                        onCheckedChange={(checked) => handleSportSelect(sport, !!checked)}
                       />
                       <label 
                         htmlFor={`sport-${sport}`}
@@ -197,41 +197,71 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                   ))}
                 </div>
                 
-                <div className="space-y-4">
-                  {Object.keys(programsByCategory).length > 0 ? (
-                    Object.entries(programsByCategory).map(([category, programs]) => (
-                      <div key={category} className="border rounded-md p-3">
-                        <div className="font-medium text-sm mb-2 pb-1 border-b">
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </div>
-                        <div className="grid grid-cols-1 gap-2">
-                          {programs.map(program => (
-                            <div key={program.name} className="flex items-center space-x-2">
-                              <Checkbox 
-                                id={`program-${program.name}`}
-                                checked={selectedPrograms.includes(program.name)}
-                                onCheckedChange={(checked) => handleProgramSelect(program.name, !!checked)}
-                              />
-                              <label 
-                                htmlFor={`program-${program.name}`}
-                                className="text-sm cursor-pointer"
-                              >
-                                {program.name} 
-                                <span className="text-xs text-gray-500 ml-1">
-                                  ({program.totalWeeks} settimane, {program.weeklyHours} ore totali)
-                                </span>
-                              </label>
-                            </div>
+                {selectedSports.length > 0 ? (
+                  <div className="space-y-3 border rounded-lg p-3">
+                    <label className="text-sm font-medium">Programmi disponibili</label>
+                    {Object.keys(programsByCategory).length > 0 ? (
+                      <Select
+                        value=""
+                        onValueChange={(value) => handleProgramSelect(value, true)}
+                      >
+                        <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="Seleziona un programma" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          {Object.entries(programsByCategory).map(([category, programs]) => (
+                            <SelectItem key={category} value="" disabled className="font-bold">
+                              {category.charAt(0).toUpperCase() + category.slice(1)}
+                            </SelectItem>
                           ))}
+                          {Object.entries(programsByCategory).flatMap(([category, programs]) =>
+                            programs.map(program => (
+                              <SelectItem key={program.name} value={program.name} className="pl-6">
+                                {program.name} ({program.sport})
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="text-sm text-gray-500 p-3 border rounded-md">
+                        Nessun programma disponibile per gli sport selezionati.
+                      </div>
+                    )}
+                    
+                    {selectedPrograms.length > 0 && (
+                      <div className="mt-3">
+                        <label className="text-sm font-medium block mb-2">Programmi selezionati</label>
+                        <div className="space-y-2">
+                          {selectedPrograms.map(programName => {
+                            const programDetails = getProgramDetails(programName);
+                            const program = availablePrograms.find(p => p.name === programName);
+                            return (
+                              <div key={programName} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                                <div className="flex items-center">
+                                  <span className="text-sm font-medium">{programName}</span>
+                                  {program && <span className="ml-2 text-xs text-gray-500">({program.sport})</span>}
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-7 w-7 p-0" 
+                                  onClick={() => handleProgramSelect(programName, false)}
+                                >
+                                  ×
+                                </Button>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-sm text-gray-500 p-3 border rounded-md">
-                      Nessun programma disponibile. Seleziona uno sport o contatta l'amministratore.
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 p-3 border rounded-md">
+                    Seleziona almeno uno sport per visualizzare i programmi disponibili.
+                  </div>
+                )}
                 
                 {selectedPrograms.length > 0 && (
                   <Button 

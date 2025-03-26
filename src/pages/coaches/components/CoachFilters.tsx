@@ -61,7 +61,7 @@ export function CoachFilters({
             <SelectTrigger className="w-[180px] text-sm h-9">
               <SelectValue placeholder="Seleziona Sport" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="all">Tutti gli Sport</SelectItem>
               {allSportTypes.map(sport => (
                 <SelectItem key={sport} value={sport} className="capitalize">{sport}</SelectItem>
@@ -73,7 +73,7 @@ export function CoachFilters({
             <SelectTrigger className="w-[180px] text-sm h-9">
               <SelectValue placeholder="Seleziona Programma" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="all">Tutti i Programmi</SelectItem>
               {filteredPrograms.map(program => (
                 <SelectItem key={program.id} value={program.id}>
