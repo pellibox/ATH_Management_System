@@ -1,3 +1,4 @@
+
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -36,9 +37,13 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       totalWeeks: number 
     }[] = [];
     
+    console.log("PROGRAM_CATEGORIES:", PROGRAM_CATEGORIES);
+    
     // Combine all program categories into a structured array
     Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
+      console.log("Category key:", categoryKey);
       const category = PROGRAM_CATEGORIES[categoryKey];
+      console.log("Category:", category);
       
       // Check if category.programs exists before iterating
       if (category && category.programs && Array.isArray(category.programs)) {
@@ -51,9 +56,15 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
             totalWeeks: program.totalWeeks || 0
           });
         });
+      } else if (categoryKey && typeof categoryKey === 'string') {
+        // If programs don't exist in the format expected, try to handle
+        // category as a string pointing to programs in TENNIS_PROGRAMS
+        // This is a fallback for a potential structure mismatch
+        console.log("Trying alternative structure for:", categoryKey);
       }
     });
     
+    console.log("Available programs:", programs);
     setAvailablePrograms(programs);
     setFilteredPrograms(programs);
   }, []);
@@ -186,33 +197,39 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                 </div>
                 
                 <div className="space-y-4">
-                  {Object.entries(programsByCategory).map(([category, programs]) => (
-                    <div key={category} className="border rounded-md p-3">
-                      <div className="font-medium text-sm mb-2 pb-1 border-b">
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                  {Object.keys(programsByCategory).length > 0 ? (
+                    Object.entries(programsByCategory).map(([category, programs]) => (
+                      <div key={category} className="border rounded-md p-3">
+                        <div className="font-medium text-sm mb-2 pb-1 border-b">
+                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </div>
+                        <div className="grid grid-cols-1 gap-2">
+                          {programs.map(program => (
+                            <div key={program.name} className="flex items-center space-x-2">
+                              <Checkbox 
+                                id={`program-${program.name}`}
+                                checked={selectedPrograms.includes(program.name)}
+                                onCheckedChange={(checked) => handleProgramSelect(program.name, !!checked)}
+                              />
+                              <label 
+                                htmlFor={`program-${program.name}`}
+                                className="text-sm cursor-pointer"
+                              >
+                                {program.name} 
+                                <span className="text-xs text-gray-500 ml-1">
+                                  ({program.totalWeeks} settimane, {program.weeklyHours} ore totali)
+                                </span>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="grid grid-cols-1 gap-2">
-                        {programs.map(program => (
-                          <div key={program.name} className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`program-${program.name}`}
-                              checked={selectedPrograms.includes(program.name)}
-                              onCheckedChange={(checked) => handleProgramSelect(program.name, !!checked)}
-                            />
-                            <label 
-                              htmlFor={`program-${program.name}`}
-                              className="text-sm cursor-pointer"
-                            >
-                              {program.name} 
-                              <span className="text-xs text-gray-500 ml-1">
-                                ({program.totalWeeks} settimane, {program.weeklyHours} ore totali)
-                              </span>
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-500 p-3 border rounded-md">
+                      Nessun programma disponibile. Seleziona uno sport o contatta l'amministratore.
                     </div>
-                  ))}
+                  )}
                 </div>
                 
                 {selectedPrograms.length > 0 && (

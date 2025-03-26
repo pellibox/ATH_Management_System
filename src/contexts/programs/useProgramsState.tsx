@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from "react";
 import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
-import { ProgramDetail } from "@/components/programs/ProgramCard";
+import { ProgramDetail } from "@/components/programs/types";
 import { getCategoryFromId } from "./utils";
+import { PROGRAM_CATEGORIES } from "./constants";
 
 export function useProgramsState() {
   const [filter, setFilter] = useState<string>("all");
@@ -29,6 +30,14 @@ export function useProgramsState() {
       enrollmentOpen: program.enrollmentOpen !== false ? true : false,
       nextStart: program.nextStart || "Settembre 2024"
     }));
+    
+    // Populate PROGRAM_CATEGORIES.X.programs with actual programs
+    PROGRAM_CATEGORIES.PERFORMANCE.programs = [...TENNIS_PROGRAMS.PERFORMANCE];
+    PROGRAM_CATEGORIES.JUNIOR.programs = [...TENNIS_PROGRAMS.JUNIOR];
+    PROGRAM_CATEGORIES.PERSONAL.programs = [...TENNIS_PROGRAMS.PERSONAL];
+    PROGRAM_CATEGORIES.ADULT.programs = [...TENNIS_PROGRAMS.ADULT];
+    PROGRAM_CATEGORIES.COACH.programs = [...TENNIS_PROGRAMS.COACH];
+    PROGRAM_CATEGORIES.PADEL.programs = [...TENNIS_PROGRAMS.PADEL];
     
     setAllPrograms(programsWithDefaults);
     setFilteredPrograms(programsWithDefaults);
@@ -95,6 +104,17 @@ export function useProgramsState() {
       
       if (programIndex !== -1) {
         categoryPrograms[programIndex] = updatedProgram;
+        
+        // Also update in PROGRAM_CATEGORIES
+        if (PROGRAM_CATEGORIES[category.toUpperCase()] && 
+            PROGRAM_CATEGORIES[category.toUpperCase()].programs) {
+          const catProgIndex = PROGRAM_CATEGORIES[category.toUpperCase()].programs.findIndex(
+            p => p.id === updatedProgram.id
+          );
+          if (catProgIndex !== -1) {
+            PROGRAM_CATEGORIES[category.toUpperCase()].programs[catProgIndex] = updatedProgram;
+          }
+        }
       }
     }
   };
