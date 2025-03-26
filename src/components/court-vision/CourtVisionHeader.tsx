@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Calendar, Users, Layers, Clock, FileText, Filter } from 'lucide-react';
+import { Calendar, Users, Layers, Clock, FileText, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateSelector } from './DateSelector';
 import { SendScheduleDialog } from './SendScheduleDialog';
@@ -9,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AvailablePeople } from './AvailablePeople';
 import { AvailableActivities } from './AvailableActivities';
 import { ScheduleTemplates } from './ScheduleTemplates';
+import { Button } from '@/components/ui/button';
+import { DialogClose } from '@/components/ui/dialog';
 
 interface CourtVisionHeaderProps {
   selectedDate: Date;

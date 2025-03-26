@@ -14,9 +14,10 @@ interface HoursTabProps {
 }
 
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
-  // Calculate program hours
+  // Calculate program hours based on player's program
   const programHours = player.program ? 40 : 0; // Default to 40 hours if in a program
   const completedHours = player.completedHours || 0;
+  const remainingHours = Math.max(0, programHours - completedHours);
   const hoursProgress = programHours > 0 ? (completedHours / programHours) * 100 : 0;
 
   return (
@@ -42,6 +43,10 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
             )}
           </div>
           <Progress value={hoursProgress} className="h-2" />
+          <div className="flex justify-between text-sm">
+            <span>Ore rimanenti: <span className="font-medium">{remainingHours}</span></span>
+            <span>Completamento: <span className="font-medium">{Math.round(hoursProgress)}%</span></span>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

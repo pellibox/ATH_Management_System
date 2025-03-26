@@ -5,14 +5,16 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogClose,
+  DialogTrigger 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourtProps, PersonData } from "../types";
 import { PlayerScheduleTemplate } from "./PlayerScheduleTemplate";
 import { CoachScheduleTemplate } from "./CoachScheduleTemplate";
-import { Calendar, Send, Eye } from "lucide-react";
+import { Calendar, Send, Eye, X } from "lucide-react";
 
 interface SchedulePreviewProps {
   selectedPerson: PersonData;
@@ -42,11 +44,16 @@ export function SchedulePreview({ selectedPerson, courts, date, timeSlots }: Sch
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+          <DialogHeader className="relative">
             <DialogTitle className="flex items-center">
               <Calendar className="w-5 h-5 mr-2" />
               Anteprima Programmazione - {format(date, "dd/MM/yyyy")}
             </DialogTitle>
+            <DialogClose className="absolute right-0 top-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
           </DialogHeader>
 
           <div className="space-y-6">

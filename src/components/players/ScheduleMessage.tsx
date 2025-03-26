@@ -1,8 +1,8 @@
 
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Send } from "lucide-react";
+import { Calendar, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 
@@ -20,8 +20,13 @@ export function ScheduleMessage() {
 
   return (
     <>
-      <DialogHeader>
+      <DialogHeader className="relative">
         <DialogTitle>Send Schedule to {messagePlayer.name}</DialogTitle>
+        <DialogClose className="absolute right-0 top-0">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <X className="h-4 w-4" />
+          </Button>
+        </DialogClose>
       </DialogHeader>
       <div className="grid gap-4 py-4">
         <div className="space-y-2">

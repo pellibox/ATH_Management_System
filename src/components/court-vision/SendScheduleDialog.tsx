@@ -8,7 +8,7 @@ import {
   AlertDialogAction, 
   AlertDialogCancel 
 } from "@/components/ui/alert-dialog";
-import { Send, Calendar, AlertTriangle } from "lucide-react";
+import { Send, Calendar, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -16,7 +16,8 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
+  DialogTrigger,
+  DialogClose
 } from "@/components/ui/dialog";
 import { 
   Select, 
@@ -100,8 +101,13 @@ export function SendScheduleDialog({
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
+          <DialogHeader className="relative">
             <DialogTitle>Invia Programmazione</DialogTitle>
+            <DialogClose className="absolute right-0 top-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
@@ -201,8 +207,13 @@ export function SendScheduleDialog({
 
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+          <DialogHeader className="relative">
             <DialogTitle>Anteprima Programmazione</DialogTitle>
+            <DialogClose className="absolute right-0 top-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
           </DialogHeader>
           
           {previewPerson && (
