@@ -31,6 +31,9 @@ export function Person({ person, onRemove, onAddToDragArea }: PersonProps) {
     }
   };
 
+  // Determine if person has assigned programs
+  const hasProgram = person.programId || (person.programIds && person.programIds.length > 0);
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -43,8 +46,13 @@ export function Person({ person, onRemove, onAddToDragArea }: PersonProps) {
           <div className="flex items-center space-x-2">
             <div 
               className={`w-6 h-6 rounded-full flex items-center justify-center text-white ${
-                person.type === PERSON_TYPES.PLAYER ? "bg-ath-blue" : "bg-ath-red-clay"
+                person.type === PERSON_TYPES.PLAYER 
+                  ? hasProgram 
+                    ? "bg-gradient-to-r from-ath-blue to-ath-blue-light" 
+                    : "bg-ath-blue" 
+                  : "bg-ath-red-clay"
               }`}
+              style={person.programColor ? { backgroundColor: person.programColor } : {}}
             >
               {person.type === PERSON_TYPES.PLAYER ? (
                 <User className="w-3 h-3" />
@@ -52,7 +60,16 @@ export function Person({ person, onRemove, onAddToDragArea }: PersonProps) {
                 <UserCog className="w-3 h-3" />
               )}
             </div>
-            <span className="text-sm font-medium truncate max-w-[150px]">{person.name}</span>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium truncate max-w-[150px]">{person.name}</span>
+              {hasProgram && (
+                <span className="text-xs text-gray-500 truncate max-w-[150px]">
+                  {person.programIds && person.programIds.length > 0 ? 
+                    `${person.programIds.length} programmi` : 
+                    "Assegnato a programma"}
+                </span>
+              )}
+            </div>
           </div>
           
           {onRemove && (

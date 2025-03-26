@@ -1,9 +1,11 @@
+
 import { useState, useCallback, memo } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { PersonData, ActivityData } from "./types";
-import { Clock, Users, Move } from "lucide-react";
+import { Clock, Users, Move, AlertCircle } from "lucide-react";
 import { DEFAULT_TIME_SLOTS } from "./context/CourtVisionDefaults";
+import { useToast } from "@/hooks/use-toast";
 
 interface TimeSlotProps {
   courtId: string;
@@ -15,6 +17,9 @@ interface TimeSlotProps {
   onRemovePerson: (personId: string, timeSlot?: string) => void;
   onRemoveActivity: (activityId: string, timeSlot?: string) => void;
 }
+
+// Maximum number of people allowed per time slot
+const MAX_OCCUPANTS_PER_SLOT = 4;
 
 // Draggable person component for time slot
 function DraggablePerson({ person, time, onRemove }: { person: PersonData, time: string, onRemove: () => void }) {
@@ -31,13 +36,20 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
     }),
   }));
 
+  // Determine background color based on program or default type
+  const getBgColor = () => {
+    if (person.programColor) {
+      return person.programColor;
+    }
+    return person.type === PERSON_TYPES.PLAYER ? "#8B5CF6" : "#1A1F2C";
+  };
+
   return (
     <div 
       ref={drag}
       className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${isDragging ? "opacity-50" : ""} cursor-move relative`}
       style={{
-        backgroundColor: person.programColor || 
-          (person.type === PERSON_TYPES.PLAYER ? "#8B5CF6" : "#1A1F2C"),
+        backgroundColor: getBgColor(),
         color: "white"
       }}
     >
@@ -106,6 +118,7 @@ export const TimeSlot = memo(function TimeSlot({
 }: TimeSlotProps) {
   // Define timeSlots array from the defaults
   const timeSlots = DEFAULT_TIME_SLOTS;
+  const { toast } = useToast();
   
   // Use callbacks for better performance
   const handleRemovePerson = useCallback((personId: string) => {
@@ -148,6 +161,11 @@ export const TimeSlot = memo(function TimeSlot({
     return currentIndex >= startIndex && currentIndex <= endIndex;
   };
 
+  // Count people assigned to this exact time slot (not counting overlaps)
+  const countExactTimeSlotOccupants = () => {
+    return occupants.filter(person => person.timeSlot === time).length;
+  };
+
   // Enhanced drop target handling
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
@@ -157,6 +175,16 @@ export const TimeSlot = memo(function TimeSlot({
       if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
         // Handle person drop
         const personItem = item as PersonData;
+        
+        // Check if we're exceeding the maximum number of occupants for this time slot
+        if (countExactTimeSlotOccupants() >= MAX_OCCUPANTS_PER_SLOT) {
+          toast({
+            title: "Limite Raggiunto",
+            description: `Non puoi assegnare più di ${MAX_OCCUPANTS_PER_SLOT} persone allo stesso orario.`,
+            variant: "destructive"
+          });
+          return;
+        }
         
         // If person is moved from another time slot on the same court, handle that case
         if (personItem.sourceTimeSlot && personItem.courtId === courtId && personItem.sourceTimeSlot !== time) {
@@ -183,13 +211,16 @@ export const TimeSlot = memo(function TimeSlot({
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
-  }), [courtId, time, onDrop, onActivityDrop, onRemovePerson, onRemoveActivity]);
+  }), [courtId, time, onDrop, onActivityDrop, onRemovePerson, onRemoveActivity, countExactTimeSlotOccupants]);
+
+  // Check if this time slot has reached maximum capacity
+  const isAtCapacity = countExactTimeSlotOccupants() >= MAX_OCCUPANTS_PER_SLOT;
 
   return (
     <div 
       ref={drop}
       className={`border-t border-gray-200 p-2 min-h-[60px] relative ${
-        isOver ? "bg-ath-red-clay-dark/40" : ""
+        isOver ? isAtCapacity ? "bg-red-100" : "bg-ath-red-clay-dark/40" : ""
       }`}
       data-time={time}
     >
@@ -201,6 +232,7 @@ export const TimeSlot = memo(function TimeSlot({
               <span className="flex items-center">
                 <Users className="h-3 w-3 mr-1" />
                 {occupants.length}
+                {isAtCapacity && <AlertCircle className="h-3 w-3 ml-1 text-red-300" />}
               </span>
             )}
           </span>
@@ -230,6 +262,16 @@ export const TimeSlot = memo(function TimeSlot({
               onRemove={() => handleRemovePerson(person.id)}
             />
           ))}
+        </div>
+      )}
+      
+      {isAtCapacity && (
+        <div className="absolute inset-0 bg-red-50/30 pointer-events-none flex items-center justify-center">
+          {isOver && (
+            <div className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
+              Limite massimo raggiunto
+            </div>
+          )}
         </div>
       )}
     </div>

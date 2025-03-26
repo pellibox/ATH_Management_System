@@ -22,6 +22,7 @@ import {
 import { useCourtVisionActions } from "./CourtVisionActions";
 import { useCourtVisionFilters } from "./CourtVisionFilters";
 import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export const CourtVisionContext = createContext<CourtVisionContextType | undefined>(undefined);
 
@@ -42,6 +43,7 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
   const params = new URLSearchParams(location.search);
   const currentSport = params.get('sport') || '';
   const isLayoutView = location.pathname.includes('/layout');
+  const { toast } = useToast();
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
@@ -90,6 +92,35 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     setSelectedDate,
     timeSlots
   });
+
+  // Program management functions
+  const handleAddProgram = (program: Program) => {
+    setPrograms([...programs, program]);
+  };
+
+  const handleRemoveProgram = (programId: string) => {
+    // Check if the program is assigned to any player or coach
+    const isAssigned = [...playersList, ...coachesList].some(person => 
+      (person.programId === programId) || 
+      (person.programIds && person.programIds.includes(programId))
+    );
+    
+    if (isAssigned) {
+      toast({
+        title: "Impossibile Rimuovere",
+        description: "Questo programma è assegnato ad almeno una persona. Rimuovi l'assegnazione prima di eliminare il programma.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setPrograms(programs.filter(p => p.id !== programId));
+    
+    toast({
+      title: "Programma Rimosso",
+      description: "Il programma è stato rimosso con successo.",
+    });
+  };
 
   // Load courts for selected date
   useEffect(() => {
@@ -148,6 +179,8 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
 
     // Actions
     setSelectedDate,
+    handleAddProgram,
+    handleRemoveProgram,
     ...actions
   };
 

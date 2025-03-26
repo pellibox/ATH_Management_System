@@ -10,6 +10,7 @@ import CourtGrid from "@/components/court-vision/CourtGrid";
 import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashboard";
 import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
 import { ProgramFilters } from "@/components/programs/ProgramFilters";
+import { ProgramManagement } from "@/components/court-vision/ProgramManagement";
 
 // Main content component that renders based on view type
 function CourtVisionContent() {
@@ -24,7 +25,10 @@ function CourtVisionContent() {
     handleRemoveActivity,
     handleRenameCourt,
     handleChangeCourtType,
-    handleChangeCourtNumber
+    handleChangeCourtNumber,
+    programs,
+    handleAddProgram,
+    handleRemoveProgram
   } = useCourtVision();
 
   return (
@@ -35,17 +39,26 @@ function CourtVisionContent() {
           selectedDate={selectedDate}
         />
       ) : (
-        <CourtGrid
-          courts={filteredCourts}
-          timeSlots={timeSlots}
-          onDrop={handleDrop}
-          onActivityDrop={handleActivityDrop}
-          onRemovePerson={handleRemovePerson}
-          onRemoveActivity={handleRemoveActivity}
-          onRenameCourt={handleRenameCourt}
-          onChangeCourtType={handleChangeCourtType}
-          onChangeCourtNumber={handleChangeCourtNumber}
-        />
+        <>
+          <div className="mb-6">
+            <ProgramManagement 
+              programs={programs}
+              onAddProgram={handleAddProgram}
+              onRemoveProgram={handleRemoveProgram}
+            />
+          </div>
+          <CourtGrid
+            courts={filteredCourts}
+            timeSlots={timeSlots}
+            onDrop={handleDrop}
+            onActivityDrop={handleActivityDrop}
+            onRemovePerson={handleRemovePerson}
+            onRemoveActivity={handleRemoveActivity}
+            onRenameCourt={handleRenameCourt}
+            onChangeCourtType={handleChangeCourtType}
+            onChangeCourtNumber={handleChangeCourtNumber}
+          />
+        </>
       )}
     </div>
   );
