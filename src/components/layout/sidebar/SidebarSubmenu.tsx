@@ -43,9 +43,6 @@ export default function SidebarSubmenu({
     return currentPath === path;
   };
 
-  // Check if any submenu item is active
-  const hasActiveChild = items.some(item => isItemActive(item.path));
-
   // Not using Collapsible when collapsed
   if (collapsed) {
     return (
@@ -54,14 +51,14 @@ export default function SidebarSubmenu({
           onClick={() => onOpenChange(!open)}
           className={cn(
             "flex items-center py-2 px-3 rounded-md text-sm w-full transition-colors",
-            hasActiveChild 
-              ? "bg-gray-100 text-gray-800 font-medium" 
+            isActive 
+              ? "bg-ath-red-clay text-white font-medium" 
               : "text-gray-600 hover:bg-gray-100"
           )}
         >
           <Icon className={cn(
             "h-5 w-5 flex-shrink-0 mx-auto",
-            hasActiveChild ? "text-gray-800" : "text-gray-500 group-hover:text-gray-700"
+            isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700"
           )} />
         </button>
         
@@ -75,10 +72,10 @@ export default function SidebarSubmenu({
               to={item.path}
               className={cn(
                 "flex items-center px-3 py-2 text-sm hover:bg-gray-100 transition-colors",
-                isItemActive(item.path) ? "bg-ath-red-clay text-white font-medium" : ""
+                isItemActive(item.path) ? "bg-gray-100 text-ath-red-clay font-medium" : ""
               )}
             >
-              {item.icon && <item.icon className={cn("h-4 w-4 mr-2", isItemActive(item.path) ? "text-white" : "text-gray-500")} />}
+              {item.icon && <item.icon className={cn("h-4 w-4 mr-2", isItemActive(item.path) ? "text-ath-red-clay" : "text-gray-500")} />}
               <span>{item.label}</span>
             </Link>
           ))}
@@ -95,22 +92,22 @@ export default function SidebarSubmenu({
           <div
             className={cn(
               "flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors",
-              hasActiveChild 
-                ? "bg-gray-100 text-gray-800 font-medium" 
+              isActive 
+                ? "bg-ath-red-clay text-white font-medium" 
                 : "text-gray-600 hover:bg-gray-100"
             )}
           >
             <div className="flex items-center">
               <Icon className={cn(
                 "h-5 w-5 flex-shrink-0 mr-2",
-                hasActiveChild ? "text-gray-800" : "text-gray-500"
+                isActive ? "text-white" : "text-gray-500"
               )} />
               <span className="truncate">{label}</span>
             </div>
             
             {open ? 
-              <ChevronDown className={cn("h-4 w-4", hasActiveChild ? "text-gray-800" : "text-gray-500")} /> : 
-              <ChevronRight className={cn("h-4 w-4", hasActiveChild ? "text-gray-800" : "text-gray-500")} />
+              <ChevronDown className={cn("h-4 w-4", isActive ? "text-white" : "text-gray-500")} /> : 
+              <ChevronRight className={cn("h-4 w-4", isActive ? "text-white" : "text-gray-500")} />
             }
           </div>
         </CollapsibleTrigger>
@@ -124,7 +121,7 @@ export default function SidebarSubmenu({
                   className={cn(
                     "flex items-center py-1.5 px-2 rounded-md text-sm transition-colors",
                     isItemActive(item.path)
-                      ? "bg-ath-red-clay text-white font-medium"
+                      ? "bg-gray-100 text-ath-red-clay font-medium"
                       : "text-gray-600 hover:bg-gray-100"
                   )}
                 >
@@ -132,7 +129,7 @@ export default function SidebarSubmenu({
                     <item.icon 
                       className={cn(
                         "h-4 w-4 mr-2", 
-                        isItemActive(item.path) ? "text-white" : "text-gray-500"
+                        isItemActive(item.path) ? "text-ath-red-clay" : "text-gray-500"
                       )} 
                     />
                   )}
