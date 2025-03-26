@@ -1,38 +1,27 @@
 
-import { 
-  PersonData, 
-  ActivityData, 
-  CourtProps, 
-  ScheduleTemplate, 
-  DateSchedule,
-  Program 
-} from "../types";
+import { ReactNode } from "react";
+import { PersonData } from "../types";
 
 export interface CourtVisionProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export type CourtVisionState = {
+export interface CourtVisionState {
   selectedDate: Date;
-  templates: ScheduleTemplate[];
-  dateSchedules: DateSchedule[];
+  templates: any[];
+  dateSchedules: any[];
   timeSlots: string[];
-  courts: CourtProps[];
-  filteredCourts: CourtProps[];
+  courts: any[];
+  filteredCourts: any[];
   people: PersonData[];
-  activities: ActivityData[];
+  activities: any[];
   playersList: PersonData[];
   coachesList: PersonData[];
-  programs: Program[];
+  programs: any[];
   filteredPlayers: PersonData[];
   filteredCoaches: PersonData[];
   currentSport: string;
   isLayoutView: boolean;
   showExtraHoursDialog: boolean;
-  pendingAssignment: {
-    courtId: string;
-    person: PersonData;
-    position?: { x: number, y: number };
-    timeSlot?: string;
-  } | null;
-};
+  pendingAssignment: any;
+}

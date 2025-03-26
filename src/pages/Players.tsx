@@ -11,6 +11,7 @@ import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { useEffect } from "react";
+import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
 function PlayersContent() {
   const { 
@@ -19,8 +20,37 @@ function PlayersContent() {
     handleAddPlayer, 
     handleUpdatePlayer,
     setEditingPlayer,
-    setMessagePlayer 
+    setMessagePlayer,
+    players
   } = usePlayerContext();
+  
+  // Get shared player context
+  const { addPlayer, updatePlayer, removePlayer } = useSharedPlayers();
+  
+  // Sync players with shared context when they change
+  useEffect(() => {
+    const syncPlayersWithSharedContext = () => {
+      players.forEach(player => {
+        // This is a simple approach - in a real app, you'd need more sophisticated syncing
+        updatePlayer(player);
+      });
+    };
+    
+    syncPlayersWithSharedContext();
+  }, [players, updatePlayer]);
+  
+  // Wrap the add/update functions to also update shared context
+  const handleAddPlayerWithSync = (player) => {
+    const result = handleAddPlayer(player);
+    addPlayer(player);
+    return result;
+  };
+  
+  const handleUpdatePlayerWithSync = (player) => {
+    const result = handleUpdatePlayer(player);
+    updatePlayer(player);
+    return result;
+  };
   
   // Clean up any open dialogs when component unmounts
   useEffect(() => {
@@ -54,7 +84,7 @@ function PlayersContent() {
           <DialogContent className="sm:max-w-[600px]">
             <PlayerForm
               buttonText="Aggiungi Giocatore"
-              handleSave={handleAddPlayer}
+              handleSave={handleAddPlayerWithSync}
             />
           </DialogContent>
         </Dialog>
@@ -69,7 +99,7 @@ function PlayersContent() {
           onOpenChange={(open) => !open && setEditingPlayer(null)}
         >
           <DialogContent className="sm:max-w-[600px]">
-            <PlayerForm buttonText="Aggiorna Giocatore" handleSave={handleUpdatePlayer} />
+            <PlayerForm buttonText="Aggiorna Giocatore" handleSave={handleUpdatePlayerWithSync} />
           </DialogContent>
         </Dialog>
       )}

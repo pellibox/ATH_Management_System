@@ -7,12 +7,16 @@ import CourtVisionHeader from "@/components/court-vision/CourtVisionHeader";
 import { CourtVisionSidebar } from "@/components/court-vision/sidebar/CourtVisionSidebar";
 import { CourtVisionContent } from "@/components/court-vision/content/CourtVisionContent";
 import { CourtVisionProvider } from "@/components/court-vision/context/CourtVisionContext";
+import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
 // Main Court Vision component
 export default function CourtVision() {
+  // Get shared players data
+  const { sharedPlayers } = useSharedPlayers();
+  
   return (
     <DndProvider backend={HTML5Backend}>
-      <CourtVisionProvider>
+      <CourtVisionProvider initialPlayers={sharedPlayers}>
         <div className="mx-auto py-4 relative flex flex-col h-[calc(100vh-theme(spacing.16))]">
           <div className="mb-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold">Visione Campo</h1>

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { CourtVisionContextType } from "./CourtVisionTypes";
 import { useCourtVisionState } from "./useCourtVisionState";
 import { useCourtVisionActions } from "./CourtVisionActions";
@@ -19,7 +19,14 @@ export const useCourtVision = () => {
   return context;
 };
 
-export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ children }) => {
+export interface ExtendedCourtVisionProviderProps extends CourtVisionProviderProps {
+  initialPlayers?: PersonData[];
+}
+
+export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = ({ 
+  children, 
+  initialPlayers = [] 
+}) => {
   // Get state from hook
   const initialState = useCourtVisionState();
   
@@ -27,7 +34,7 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
   const [courts, setCourts] = useState(initialState.courts);
   const [people, setPeople] = useState(initialState.people);
   const [activities, setActivities] = useState(initialState.activities);
-  const [playersList, setPlayersList] = useState(initialState.playersList);
+  const [playersList, setPlayersList] = useState(initialPlayers.length > 0 ? initialPlayers : initialState.playersList);
   const [coachesList, setCoachesList] = useState(initialState.coachesList);
   const [programs, setPrograms] = useState(initialState.programs);
   const [templates, setTemplates] = useState(initialState.templates);
@@ -40,6 +47,13 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
   const [filteredCourts, setFilteredCourts] = useState(initialState.filteredCourts);
   const [filteredPlayers, setFilteredPlayers] = useState(initialState.filteredPlayers);
   const [filteredCoaches, setFilteredCoaches] = useState(initialState.filteredCoaches);
+
+  // Update playersList when initialPlayers changes
+  useEffect(() => {
+    if (initialPlayers && initialPlayers.length > 0) {
+      setPlayersList(initialPlayers);
+    }
+  }, [initialPlayers]);
 
   // Apply filters
   useCourtVisionFilters({
