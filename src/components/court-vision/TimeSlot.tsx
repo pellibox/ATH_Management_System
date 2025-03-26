@@ -1,10 +1,12 @@
+
 import { useState, useCallback, memo } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { PersonData, ActivityData } from "./types";
-import { Clock, Users, Move, AlertCircle } from "lucide-react";
+import { Clock, Users, Move, AlertCircle, UserCheck } from "lucide-react";
 import { DEFAULT_TIME_SLOTS } from "./context/CourtVisionDefaults";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TimeSlotProps {
   courtId: string;
@@ -74,30 +76,50 @@ function DraggableActivity({ activity, time, onRemove }: { activity: ActivityDat
     }),
   }));
 
+  const hasParticipants = activity.participants && activity.participants.length > 0;
+
   return (
-    <div 
-      ref={drag}
-      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
-        activity.type === ACTIVITY_TYPES.MATCH 
-          ? "bg-ath-black-light text-white" 
-          : activity.type === ACTIVITY_TYPES.TRAINING
-          ? "bg-ath-red-clay-dark text-white"
-          : activity.type === ACTIVITY_TYPES.BASKET_DRILL
-          ? "bg-ath-red-clay-dark text-white"
-          : activity.type === ACTIVITY_TYPES.GAME
-          ? "bg-ath-black text-white"
-          : "bg-ath-gray-medium text-white"
-      } ${isDragging ? "opacity-50" : ""} cursor-grab relative`}
-    >
-      <Move className="h-3 w-3 mr-1 absolute right-1 opacity-50" />
-      {activity.name}
-      <button
-        onClick={onRemove}
-        className="ml-1 text-gray-300 hover:text-white"
-      >
-        ×
-      </button>
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div 
+            ref={drag}
+            className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${
+              activity.type === ACTIVITY_TYPES.MATCH 
+                ? "bg-ath-black-light text-white" 
+                : activity.type === ACTIVITY_TYPES.TRAINING
+                ? "bg-ath-red-clay-dark text-white"
+                : activity.type === ACTIVITY_TYPES.BASKET_DRILL
+                ? "bg-ath-red-clay-dark text-white"
+                : activity.type === ACTIVITY_TYPES.GAME
+                ? "bg-ath-black text-white"
+                : "bg-ath-gray-medium text-white"
+            } ${isDragging ? "opacity-50" : ""} cursor-grab relative`}
+          >
+            <Move className="h-3 w-3 mr-1 absolute right-1 opacity-50" />
+            {activity.name}
+            {hasParticipants && (
+              <UserCheck className="h-3 w-3 ml-1" title={`${activity.participants?.length} partecipanti`} />
+            )}
+            <button
+              onClick={onRemove}
+              className="ml-1 text-gray-300 hover:text-white"
+            >
+              ×
+            </button>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <div className="text-xs">
+            <p className="font-bold">{activity.name}</p>
+            <p>{activity.type} - {activity.duration || '1h'}</p>
+            {hasParticipants && (
+              <p className="mt-1">{activity.participants?.length} partecipanti assegnati</p>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -207,7 +229,14 @@ export const TimeSlot = memo(function TimeSlot({
           onRemoveActivity(activityItem.id, activityItem.sourceTimeSlot);
         }
         
-        onActivityDrop(courtId, {...activityItem, startTime: time}, time);
+        // Pass the durationHours if they exist
+        const durationHours = activityItem.durationHours || getDurationFromString(activityItem.duration);
+        
+        onActivityDrop(courtId, {
+          ...activityItem, 
+          startTime: time,
+          durationHours
+        }, time);
       }
     },
     collect: (monitor) => ({
@@ -216,6 +245,17 @@ export const TimeSlot = memo(function TimeSlot({
   }), [courtId, time, onDrop, onActivityDrop, onRemovePerson, onRemoveActivity, countExactTimeSlotOccupants]);
 
   const isAtCapacity = countExactTimeSlotOccupants() >= MAX_OCCUPANTS_PER_SLOT;
+  
+  // Helper function to convert duration string to hours
+  const getDurationFromString = (durationStr?: string): number => {
+    if (!durationStr) return 1;
+    if (durationStr === "30m") return 0.5;
+    if (durationStr === "45m") return 0.75;
+    if (durationStr === "1h") return 1;
+    if (durationStr === "1.5h") return 1.5;
+    if (durationStr === "2h") return 2;
+    return 1; // Default to 1 hour
+  };
 
   return (
     <div 

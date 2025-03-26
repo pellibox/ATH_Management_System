@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Activity, PlaySquare } from "lucide-react";
+import { Activity, PlaySquare, Clock, Move } from "lucide-react";
 import { ActivityData } from "./types";
 import { ACTIVITY_TYPES } from "./constants";
 
@@ -42,6 +42,16 @@ export function AvailableActivities({
       default:
         return "bg-ath-gray-medium text-white";
     }
+  };
+
+  // Function to convert duration string to hours
+  const getDurationHours = (duration: string): number => {
+    if (duration === "30m") return 0.5;
+    if (duration === "45m") return 0.75;
+    if (duration === "1h") return 1;
+    if (duration === "1.5h") return 1.5;
+    if (duration === "2h") return 2;
+    return 1; // Default
   };
 
   return (
@@ -101,7 +111,16 @@ export function AvailableActivities({
                 className="flex items-center justify-between p-2.5 border rounded-md hover:bg-gray-50 transition-colors cursor-grab"
                 draggable
                 onDragStart={(e) => {
-                  e.dataTransfer.setData("application/json", JSON.stringify(activity));
+                  // Calculate duration hours from string
+                  const durationHours = getDurationHours(activity.duration);
+                  
+                  // Add durationHours to the activity data
+                  const dragData = {
+                    ...activity,
+                    durationHours
+                  };
+                  
+                  e.dataTransfer.setData("application/json", JSON.stringify(dragData));
                 }}
               >
                 <div className="flex items-center">
@@ -109,7 +128,11 @@ export function AvailableActivities({
                     {activity.type}
                   </div>
                   <span className="text-sm font-medium">{activity.name}</span>
-                  <span className="text-xs ml-2 text-gray-500">{activity.duration}</span>
+                  <span className="text-xs ml-2 text-gray-500 flex items-center">
+                    <Clock className="h-3 w-3 mr-1" />
+                    {activity.duration}
+                  </span>
+                  <Move className="h-3 w-3 ml-2 opacity-50" />
                 </div>
                 <button
                   onClick={() => onRemoveActivity && onRemoveActivity(activity.id)}

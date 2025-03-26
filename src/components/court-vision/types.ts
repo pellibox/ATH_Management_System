@@ -1,3 +1,4 @@
+
 export interface PersonData {
   id: string;
   name: string;
@@ -20,6 +21,19 @@ export interface PersonData {
   isPresent?: boolean; // Whether coach is present
   absenceReason?: string; // Reason for coach absence
   preferredContactMethod?: string; // Contact preference
+  activityHistory?: ActivityHistoryEntry[]; // Track activities player has participated in
+  endTimeSlot?: string; // End time slot for spanning multiple slots
+}
+
+export interface ActivityHistoryEntry {
+  activityId: string;
+  activityName: string;
+  activityType: string;
+  date: string; // ISO date string
+  courtId?: string;
+  courtName?: string;
+  duration: number; // Duration in hours
+  timeSlot?: string;
 }
 
 export interface ActivityData {
@@ -35,6 +49,7 @@ export interface ActivityData {
   endTimeSlot?: string; // End time slot for spanning multiple slots
   sourceTimeSlot?: string; // Source time slot for drag and drop operations
   sportType?: string; // Type of sport (tennis, padel, pickleball, touchtennis)
+  participants?: string[]; // Array of player IDs who are part of this activity
 }
 
 export interface CourtProps {

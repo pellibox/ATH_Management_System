@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PersonData, ActivityData, CourtProps, Program } from "../../types";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,17 @@ export const useAssignmentActions = (
           totalHours += p.durationHours || 1;
         });
     });
+    
+    // Also add hours from activities
+    courts.forEach(court => {
+      court.activities.forEach(activity => {
+        // Check if this activity has assigned participants that include this player
+        if (activity.participants && activity.participants.includes(playerId)) {
+          totalHours += activity.durationHours || 1;
+        }
+      });
+    });
+    
     return totalHours;
   };
 
@@ -171,11 +183,50 @@ export const useAssignmentActions = (
   };
 
   const handleActivityDrop = (courtId: string, activity: ActivityData, timeSlot?: string) => {
+    // Calculate duration hours if not already present
+    const durationHours = activity.durationHours || getActivityDurationHours(activity.duration);
+    
+    // Prepare activity with additional information
+    const activityWithDetails = {
+      ...activity,
+      timeSlot,
+      startTime: timeSlot, // Set both for compatibility
+      date: selectedDate.toISOString().split('T')[0],
+      durationHours
+    };
+    
+    // Calculate end time slot if applicable
+    if (timeSlot && durationHours !== 1) {
+      const timeSlotIndex = timeSlots.indexOf(timeSlot);
+      if (timeSlotIndex >= 0) {
+        const slotsNeeded = calculateSlotsDuration(durationHours);
+        const endSlotIndex = Math.min(timeSlotIndex + slotsNeeded - 1, timeSlots.length - 1);
+        activityWithDetails.endTimeSlot = timeSlots[endSlotIndex];
+      }
+    }
+    
+    // Update courts array with the new activity
     const updatedCourts = courts.map(court => {
       if (court.id === courtId) {
+        // If already exists with this timeSlot, don't add it again
+        const activityExists = court.activities.some(a => 
+          a.id === activity.id && a.timeSlot === timeSlot
+        );
+        
+        if (activityExists) {
+          return court;
+        }
+        
+        // For activities with participants, track hours for each participant
+        if (activity.participants && activity.participants.length > 0) {
+          // We would need a way to update the player's hours here
+          // This would be tracked in a separate system
+          console.log(`Activity ${activity.name} has ${activity.participants.length} participants`);
+        }
+        
         return {
           ...court,
-          activities: [...court.activities, { ...activity, timeSlot }],
+          activities: [...court.activities, activityWithDetails],
         };
       }
       return court;
@@ -187,6 +238,17 @@ export const useAssignmentActions = (
       title: "Attività Assegnata",
       description: `${activity.name} è stata assegnata al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}`,
     });
+  };
+
+  // Helper to get duration hours from string
+  const getActivityDurationHours = (duration?: string): number => {
+    if (!duration) return 1;
+    if (duration === "30m") return 0.5;
+    if (duration === "45m") return 0.75;
+    if (duration === "1h") return 1;
+    if (duration === "1.5h") return 1.5;
+    if (duration === "2h") return 2;
+    return 1; // Default
   };
 
   const handleRemovePerson = (personId: string, timeSlot?: string) => {
@@ -240,6 +302,53 @@ export const useAssignmentActions = (
     });
   };
 
+  // Function to assign a player to an activity
+  const handleAssignPlayerToActivity = (activityId: string, playerId: string) => {
+    let updatedCourts = JSON.parse(JSON.stringify(courts));
+    
+    updatedCourts = updatedCourts.map((court: CourtProps) => {
+      const activityIndex = court.activities.findIndex(a => a.id === activityId);
+      
+      if (activityIndex >= 0) {
+        const activities = [...court.activities];
+        const activity = activities[activityIndex];
+        
+        // Initialize participants array if it doesn't exist
+        if (!activity.participants) {
+          activity.participants = [];
+        }
+        
+        // Add player if not already in participants
+        if (!activity.participants.includes(playerId)) {
+          activity.participants.push(playerId);
+          
+          // Update the activity in the array
+          activities[activityIndex] = activity;
+          
+          // Log for tracking
+          console.log(`Player ${playerId} assigned to activity ${activity.name}`);
+          
+          // Update player's activity history if needed
+          // This would connect to a player history tracking system
+        }
+        
+        return {
+          ...court,
+          activities
+        };
+      }
+      
+      return court;
+    });
+    
+    setCourts(updatedCourts);
+    
+    toast({
+      title: "Giocatore Assegnato",
+      description: "Il giocatore è stato assegnato all'attività",
+    });
+  };
+
   const handleConfirmExtraHours = () => {
     if (pendingAssignment) {
       const { courtId, person, position, timeSlot } = pendingAssignment;
@@ -271,6 +380,7 @@ export const useAssignmentActions = (
     handleRemovePerson,
     handleRemoveActivity,
     handleAddToDragArea,
+    handleAssignPlayerToActivity,
     showExtraHoursDialog,
     setShowExtraHoursDialog,
     pendingAssignment,
