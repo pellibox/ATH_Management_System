@@ -3,7 +3,6 @@ import React, { useRef, useState } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
-import { TimeNavigation } from "./TimeNavigation";
 import { HorizontalTimeNav } from "./HorizontalTimeNav";
 
 interface CourtScheduleViewProps {
@@ -108,13 +107,6 @@ export function CourtScheduleView({
             ))}
           </div>
         </div>
-        
-        {/* Use the new TimeNavigation component */}
-        <TimeNavigation 
-          timeSlots={timeSlots}
-          activeHour={activeHour}
-          onHourSelect={handleHourNavigation}
-        />
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ export function HorizontalTimeNav({
   const hours = getUniqueHours(timeSlots);
 
   return (
-    <div className="w-full mb-2 mt-1">
+    <div className="w-full mb-1">
       <Carousel
         opts={{
           align: "start",
@@ -36,22 +36,22 @@ export function HorizontalTimeNav({
         }}
         className="w-full"
       >
-        <CarouselContent className="-ml-1">
+        <CarouselContent className="-ml-0.5">
           {hours.map((hour) => (
-            <CarouselItem key={`horizontal-nav-${hour}`} className="pl-1 basis-auto">
+            <CarouselItem key={`horizontal-nav-${hour}`} className="pl-0.5 basis-auto">
               <Button
                 onClick={() => onHourSelect(hour)}
                 variant={activeHour === hour ? "default" : "outline"}
                 size="sm"
-                className="h-8 min-w-12 text-xs font-medium"
+                className="h-7 min-w-10 text-xs font-medium px-2"
               >
                 {hour}
               </Button>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="h-7 w-7 -left-3" />
-        <CarouselNext className="h-7 w-7 -right-3" />
+        <CarouselPrevious className="h-6 w-6 -left-2" />
+        <CarouselNext className="h-6 w-6 -right-2" />
       </Carousel>
     </div>
   );
