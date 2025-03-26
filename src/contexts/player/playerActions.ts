@@ -87,6 +87,7 @@ export const usePlayerActions = ({
   const handleSendMessage = () => {
     if (!messagePlayer) return;
     
+    // Use optional chaining for preferredContactMethod
     const method = messagePlayer.preferredContactMethod || "WhatsApp";
     
     toast({

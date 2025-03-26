@@ -1,4 +1,3 @@
-
 import { Player, mockPlayers } from "@/types/player";
 import { ExtraActivity } from "@/types/extra-activities";
 
@@ -14,13 +13,16 @@ export const defaultObjectives = {
 export const defaultNewPlayer: Omit<Player, "id"> = {
   name: "",
   age: 0,
-  gender: "Male",
   level: "Beginner",
-  coach: "",
   phone: "",
   email: "",
-  joinDate: new Date().toISOString().split("T")[0],
   notes: "",
+  status: "active",
+  
+  // Add properties that were causing errors
+  gender: "Male",
+  coach: "",
+  joinDate: new Date().toISOString().split("T")[0],
   preferredContactMethod: "WhatsApp",
   objectives: {
     daily: "",

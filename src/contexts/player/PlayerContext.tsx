@@ -24,7 +24,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [newPlayer, setNewPlayer] = useState(defaultNewPlayer);
 
   // Get unique coaches for filter dropdown
-  const coaches = Array.from(new Set(players.map(player => player.coach)));
+  const coaches: string[] = Array.from(
+    new Set(players.filter(player => player.coach).map(player => player.coach as string))
+  );
 
   // Filter players based on search and filters
   const filteredPlayers = players.filter(player => {

@@ -42,6 +42,8 @@ export interface PlayerContextType {
   setNewPlayer: (player: Omit<Player, "id">) => void;
   setSelectedActivities: (activityIds: string[]) => void;
   resetFilters: () => void;
+  
+  // Add the missing action methods referenced in Pages.tsx
   handleAddPlayer: (playerData: Omit<Player, "id">) => void;
   handleUpdatePlayer: () => void;
   handleDeletePlayer: (id: string, name: string) => void;
