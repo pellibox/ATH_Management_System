@@ -9,6 +9,7 @@ import { PlayerList } from "@/components/players/PlayerList";
 import { ScheduleMessage } from "@/components/players/ScheduleMessage";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerObjectives } from "@/components/players/PlayerObjectives";
+import { DialogTrigger } from "@/components/ui/dialog";
 
 function PlayersContent() {
   const { editingPlayer, messagePlayer, handleAddPlayer, handleUpdatePlayer } = usePlayerContext();
@@ -28,10 +29,10 @@ function PlayersContent() {
         
         <Dialog>
           <Button className="flex items-center" asChild>
-            <Dialog.Trigger>
+            <DialogTrigger>
               <Plus className="h-4 w-4 mr-2" />
               Nuovo Giocatore
-            </Dialog.Trigger>
+            </DialogTrigger>
           </Button>
           <DialogContent className="sm:max-w-[600px]">
             <PlayerForm
