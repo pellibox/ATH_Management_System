@@ -4,7 +4,8 @@ import { useDrag } from "react-dnd";
 import { PERSON_TYPES } from "./constants";
 import { PersonData } from "./types";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { Trash2 } from "lucide-react";
+import { Trash2, User } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface CourtPersonProps {
   person: PersonData;
@@ -23,39 +24,6 @@ export function CourtPerson({ person, index, total, position, onRemove }: CourtP
     }),
   }));
 
-  const getPersonSize = () => {
-    if (total <= 2) return "w-10 h-10 text-sm";
-    if (total <= 4) return "w-8 h-8 text-xs";
-    if (total <= 8) return "w-7 h-7 text-xs";
-    return "w-6 h-6 text-[10px]";
-  };
-
-  const getPersonPosition = (index: number, total: number, position?: {x: number, y: number}) => {
-    if (position) return position;
-    
-    if (total <= 4) {
-      const positions = [
-        {x: 0.25, y: 0.25},
-        {x: 0.75, y: 0.25},
-        {x: 0.25, y: 0.75},
-        {x: 0.75, y: 0.75},
-      ];
-      return positions[index % positions.length];
-    } else {
-      const angle = (Math.PI * 2 * index) / total;
-      const radius = 0.35;
-      const centerX = 0.5;
-      const centerY = 0.5;
-      return {
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle)
-      };
-    }
-  };
-
-  const calculatedPosition = getPersonPosition(index, total, position);
-  const personSize = getPersonSize();
-  
   const getBackgroundColor = () => {
     // First check if we have a direct program color
     if (person.programColor && typeof person.programColor === 'string') {
@@ -70,24 +38,28 @@ export function CourtPerson({ person, index, total, position, onRemove }: CourtP
     return "#ffffff"; // White text for better contrast
   };
 
+  const bgColor = getBackgroundColor();
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
         <div
           ref={drag}
-          className={`absolute z-10 ${personSize} rounded-full flex items-center justify-center font-medium shadow-md transform -translate-x-1/2 -translate-y-1/2 border ${
+          className={`flex items-center rounded-md px-2 py-1 shadow-sm border transition-opacity ${
             isDragging ? "opacity-50" : ""
           } cursor-grab`}
           style={{
-            left: `${calculatedPosition.x * 100}%`,
-            top: `${calculatedPosition.y * 100}%`,
-            backgroundColor: getBackgroundColor(),
+            backgroundColor: bgColor,
             color: getTextColor(),
             borderColor: "rgba(255,255,255,0.3)"
           }}
-          title={person.name}
         >
-          {person.name.substring(0, 2)}
+          <Avatar className="h-6 w-6 mr-2 flex-shrink-0">
+            <AvatarFallback style={{ backgroundColor: bgColor }}>
+              {person.name.substring(0, 2)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-xs font-medium truncate max-w-[120px]">{person.name}</span>
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="bg-white shadow-md border border-gray-200">

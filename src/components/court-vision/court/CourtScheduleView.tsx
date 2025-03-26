@@ -46,15 +46,15 @@ export function CourtScheduleView({
   };
 
   return (
-    <div className="flex-1 flex flex-col mt-12 mb-1 overflow-hidden">
+    <div className="flex-1 flex flex-col mt-12 mb-1 h-full overflow-hidden">
       <div className="sticky top-0 z-10 bg-white shadow-sm">
         <div className="h-8 border-b border-gray-200 flex items-center px-2">
           <span className="text-xs font-medium">Orari - {courtName} #{courtNumber}</span>
         </div>
       </div>
       
-      <ScrollArea className="flex-1 overflow-auto h-full">
-        <div className="min-h-full pb-4">
+      <ScrollArea className="flex-1 h-[calc(100%-2rem)]">
+        <div className="min-h-full pb-16">
           {timeSlots.map((time) => (
             <TimeSlot
               key={`${courtId}-${time}`}
