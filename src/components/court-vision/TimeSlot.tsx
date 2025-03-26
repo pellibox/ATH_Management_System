@@ -1,9 +1,9 @@
-
 import { useState, useCallback, memo } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
 import { PersonData, ActivityData } from "./types";
 import { Clock, Users, Move } from "lucide-react";
+import { DEFAULT_TIME_SLOTS } from "./context/CourtVisionDefaults";
 
 interface TimeSlotProps {
   courtId: string;
@@ -104,6 +104,9 @@ export const TimeSlot = memo(function TimeSlot({
   onRemovePerson, 
   onRemoveActivity 
 }: TimeSlotProps) {
+  // Define timeSlots array from the defaults
+  const timeSlots = DEFAULT_TIME_SLOTS;
+  
   // Use callbacks for better performance
   const handleRemovePerson = useCallback((personId: string) => {
     onRemovePerson(personId, time);
