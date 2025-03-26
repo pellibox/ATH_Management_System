@@ -16,3 +16,12 @@ export const calculateProgramHours = (programName: string): number => {
   const details = programDetailsMap[programName];
   return details.weeks * details.sessionsPerWeek * details.hoursPerSession;
 };
+
+// Calculate total hours for a program with specific parameters
+export const calculateCustomProgramHours = (
+  weeks: number,
+  sessionsPerWeek: number,
+  hoursPerSession: number
+): number => {
+  return weeks * sessionsPerWeek * hoursPerSession;
+};

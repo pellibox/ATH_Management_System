@@ -6,12 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Clock, RotateCcw } from "lucide-react";
 import { Player } from "@/types/player";
 import { useEffect, useState } from "react";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
-import { calculateProgramHours } from "@/types/player/programs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
+import { calculateCustomProgramHours } from "@/types/player/programs";
 
 interface HoursTabProps {
   player: Player;
@@ -23,26 +21,33 @@ interface HoursTabProps {
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
   const [programHours, setProgramHours] = useState(0);
   const [remainingHours, setRemainingHours] = useState(0);
-  const [availablePrograms, setAvailablePrograms] = useState<{ name: string; category: string; sport: string }[]>([]);
-  const [filteredPrograms, setFilteredPrograms] = useState<{ name: string; category: string; sport: string }[]>([]);
+  const [availablePrograms, setAvailablePrograms] = useState<{ name: string; category: string; sport: string; weeklyHours: number; totalWeeks: number }[]>([]);
+  const [filteredPrograms, setFilteredPrograms] = useState<{ name: string; category: string; sport: string; weeklyHours: number; totalWeeks: number }[]>([]);
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>(player.programs || []);
   
   const sports = ["Tennis", "Padel"];
   
-  // Load all available programs from TENNIS_PROGRAMS
+  // Load all available programs
   useEffect(() => {
-    const programs: { name: string; category: string; sport: string }[] = [];
+    const programs: { 
+      name: string; 
+      category: string; 
+      sport: string; 
+      weeklyHours: number; 
+      totalWeeks: number 
+    }[] = [];
     
     // Combine all program categories into a structured array
-    Object.keys(TENNIS_PROGRAMS).forEach(categoryKey => {
-      const category = categoryKey.toLowerCase();
-      const sport = category === "padel" ? "Padel" : "Tennis";
+    Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
+      const category = PROGRAM_CATEGORIES[categoryKey];
       
-      TENNIS_PROGRAMS[categoryKey].forEach(program => {
+      category.programs.forEach(program => {
         programs.push({
           name: program.name,
-          category: category,
-          sport: sport
+          category: categoryKey,
+          sport: program.sport || "Tennis",
+          weeklyHours: program.weeklyHours || 0,
+          totalWeeks: program.totalWeeks || 0
         });
       });
     });
@@ -68,21 +73,22 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     setSelectedPrograms(player.programs || []);
   }, [player.programs]);
   
+  // Calculate total program hours
   useEffect(() => {
-    // Calculate total hours for all selected programs
     let totalProgramHours = 0;
     
     if (selectedPrograms && selectedPrograms.length > 0) {
       selectedPrograms.forEach(programName => {
-        // Find the program in all categories
-        for (const category in TENNIS_PROGRAMS) {
-          const foundProgram = TENNIS_PROGRAMS[category].find(
-            p => p.name === programName
+        // Find the program in available programs
+        const foundProgram = availablePrograms.find(p => p.name === programName);
+        
+        if (foundProgram) {
+          const hours = calculateCustomProgramHours(
+            foundProgram.totalWeeks,
+            foundProgram.weeklyHours / foundProgram.totalWeeks,
+            1
           );
-          
-          if (foundProgram && foundProgram.weeklyHours && foundProgram.totalWeeks) {
-            totalProgramHours += foundProgram.weeklyHours * foundProgram.totalWeeks;
-          }
+          totalProgramHours += hours;
         }
       });
     }
@@ -91,20 +97,23 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     const completedHours = player.completedHours || 0;
     setProgramHours(totalProgramHours);
     setRemainingHours(totalProgramHours - completedHours);
-  }, [selectedPrograms, player.completedHours]);
+  }, [selectedPrograms, player.completedHours, availablePrograms]);
 
   const hoursProgress = programHours > 0 ? ((programHours - remainingHours) / programHours) * 100 : 0;
 
   // Get program details for the selected program
   const getProgramDetails = (programName: string) => {
-    for (const category in TENNIS_PROGRAMS) {
-      const program = TENNIS_PROGRAMS[category].find(p => p.name === programName);
-      if (program) {
-        return {
-          weeklyHours: program.weeklyHours,
-          totalWeeks: program.totalWeeks
-        };
-      }
+    const program = availablePrograms.find(p => p.name === programName);
+    if (program) {
+      return {
+        weeklyHours: program.weeklyHours,
+        totalWeeks: program.totalWeeks,
+        totalHours: calculateCustomProgramHours(
+          program.totalWeeks,
+          program.weeklyHours / program.totalWeeks,
+          1
+        )
+      };
     }
     return null;
   };
@@ -192,7 +201,10 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                               htmlFor={`program-${program.name}`}
                               className="text-sm cursor-pointer"
                             >
-                              {program.name}
+                              {program.name} 
+                              <span className="text-xs text-gray-500 ml-1">
+                                ({program.totalWeeks} settimane, {program.weeklyHours} ore totali)
+                              </span>
                             </label>
                           </div>
                         ))}
@@ -220,19 +232,21 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
               <div className="text-sm">
                 {player.programs && player.programs.length > 0 ? (
                   <div className="space-y-1">
-                    {player.programs.map(programName => (
-                      <div key={programName} className="flex items-center">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                          {programName}
-                        </span>
-                        {programName && getProgramDetails(programName) && (
-                          <span className="ml-2 text-gray-600">
-                            ({getProgramDetails(programName)?.totalWeeks} settimane, 
-                            {getProgramDetails(programName)?.weeklyHours} ore/settimana)
+                    {player.programs.map(programName => {
+                      const details = getProgramDetails(programName);
+                      return (
+                        <div key={programName} className="flex items-center">
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                            {programName}
                           </span>
-                        )}
-                      </div>
-                    ))}
+                          {details && (
+                            <span className="ml-2 text-gray-600">
+                              ({details.totalWeeks} settimane, {details.weeklyHours} ore totali, {details.totalHours.toFixed(1)} ore)
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <span className="text-gray-500">Nessun programma assegnato</span>
