@@ -90,31 +90,43 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     timeSlots
   });
 
-  // Load courts for selected date
+  // Load courts for selected date - FIX: Adding console log to debug
   useEffect(() => {
     const dateString = selectedDate.toISOString().split('T')[0];
     const existingSchedule = dateSchedules.find(schedule => schedule.date === dateString);
     
+    console.log("Loading schedule for date:", dateString);
+    console.log("Existing schedule found:", existingSchedule ? "Yes" : "No");
+    
     if (existingSchedule) {
+      console.log("Setting courts from schedule:", existingSchedule.courts);
       setCourts(existingSchedule.courts);
     } else {
+      console.log("No schedule found, using default courts");
       setCourts(DEFAULT_COURTS);
     }
   }, [selectedDate, dateSchedules]);
 
-  // Save courts for selected date
+  // Save courts for selected date - FIX: Improved saving logic
   useEffect(() => {
     const dateString = selectedDate.toISOString().split('T')[0];
     const existingScheduleIndex = dateSchedules.findIndex(schedule => schedule.date === dateString);
     
+    console.log("Saving schedule for date:", dateString);
+    console.log("Current courts state:", courts);
+    
     if (existingScheduleIndex >= 0) {
-      const updatedSchedules = [...dateSchedules];
-      updatedSchedules[existingScheduleIndex] = { date: dateString, courts };
-      setDateSchedules(updatedSchedules);
+      console.log("Updating existing schedule at index:", existingScheduleIndex);
+      setDateSchedules(prevSchedules => {
+        const updatedSchedules = [...prevSchedules];
+        updatedSchedules[existingScheduleIndex] = { date: dateString, courts };
+        return updatedSchedules;
+      });
     } else {
-      setDateSchedules([...dateSchedules, { date: dateString, courts }]);
+      console.log("Creating new schedule entry");
+      setDateSchedules(prevSchedules => [...prevSchedules, { date: dateString, courts }]);
     }
-  }, [courts]);
+  }, [courts, selectedDate]);
 
   const contextValue: CourtVisionContextType = {
     // State

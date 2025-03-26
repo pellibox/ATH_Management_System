@@ -50,6 +50,8 @@ export const useCourtVisionActions = ({
   const { toast } = useToast();
 
   const handleDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
+    console.log("handleDrop called:", { courtId, person, position, timeSlot });
+    
     const isMovingFromExistingAssignment = courts.some(court => 
       court.occupants.some(p => p.id === person.id)
     );
@@ -58,8 +60,9 @@ export const useCourtVisionActions = ({
     
     const program = programs.find(p => p.id === person.programId);
     
+    // Fix: Make a deep copy of the person object to avoid reference issues
     const personWithCourtInfo = { 
-      ...person, 
+      ...JSON.parse(JSON.stringify(person)), 
       courtId,
       position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
       timeSlot,
@@ -76,16 +79,19 @@ export const useCourtVisionActions = ({
       }
     }
 
-    let updatedCourts = [...courts];
+    // Fix: Create a new courts array and properly handle occupant updates
+    let updatedCourts = JSON.parse(JSON.stringify(courts));
 
-    updatedCourts = updatedCourts.map((court) => {
+    // Remove person from any existing courts
+    updatedCourts = updatedCourts.map((court: CourtProps) => {
       return {
         ...court,
-        occupants: court.occupants.filter((p) => p.id !== person.id)
+        occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
       };
     });
 
-    updatedCourts = updatedCourts.map(court => {
+    // Add person to the target court
+    updatedCourts = updatedCourts.map((court: CourtProps) => {
       if (court.id === courtId) {
         return {
           ...court,
@@ -95,6 +101,7 @@ export const useCourtVisionActions = ({
       return court;
     });
 
+    console.log("Updated courts:", updatedCourts);
     setCourts(updatedCourts);
 
     const isFromAvailableList = people.some(p => p.id === person.id);
