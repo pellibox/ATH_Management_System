@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Calendar, Settings, Users, Activity, Layout, ChevronRight, ChevronDown,
-  Menu, X, Dumbbell, User
+  Menu, X, Dumbbell, User, Award
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -20,6 +20,7 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
   const isMobile = useIsMobile();
   const [open, setOpen] = React.useState(false);
   const [courtsOpen, setCourtsOpen] = React.useState(false);
+  const [peopleOpen, setPeopleOpen] = React.useState(false);
 
   const isLinkActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -149,27 +150,61 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
           </li>
 
           <li>
-            <Link
-              to="/players"
-              className={`flex items-center py-2 px-4 rounded-md ${
-                isLinkActive('/players') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
-              } ${collapsed ? 'justify-center' : ''}`}
+            <Collapsible
+              open={peopleOpen}
+              onOpenChange={setPeopleOpen}
+              className="w-full"
             >
-              <User className="h-5 w-5" />
-              {!collapsed && <span className="ml-3">Players</span>}
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              to="/staff"
-              className={`flex items-center py-2 px-4 rounded-md ${
-                isLinkActive('/staff') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
-              } ${collapsed ? 'justify-center' : ''}`}
-            >
-              <Users className="h-5 w-5" />
-              {!collapsed && <span className="ml-3">Staff</span>}
-            </Link>
+              <CollapsibleTrigger asChild>
+                <button
+                  className={`w-full flex items-center py-2 px-4 rounded-md ${
+                    isLinkActive('/players') || isLinkActive('/coaches') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+                  } ${collapsed ? 'justify-center' : 'justify-between'}`}
+                >
+                  <div className="flex items-center">
+                    <Users className="h-5 w-5" />
+                    {!collapsed && <span className="ml-3">People</span>}
+                  </div>
+                  {!collapsed && <ChevronDown className="h-4 w-4" />}
+                </button>
+              </CollapsibleTrigger>
+              {!collapsed && (
+                <CollapsibleContent>
+                  <ul className="mt-1 space-y-1 pl-9">
+                    <li>
+                      <Link
+                        to="/players"
+                        className={`block py-2 px-4 rounded-md ${
+                          isLinkActive('/players')
+                            ? 'bg-ath-blue-light text-ath-blue'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 mr-2" />
+                          <span>Players</span>
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/coaches"
+                        className={`block py-2 px-4 rounded-md ${
+                          isLinkActive('/coaches')
+                            ? 'bg-ath-blue-light text-ath-blue'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <Award className="h-4 w-4 mr-2" />
+                          <span>Coaches</span>
+                        </div>
+                      </Link>
+                    </li>
+                  </ul>
+                </CollapsibleContent>
+              )}
+            </Collapsible>
           </li>
 
           <li>

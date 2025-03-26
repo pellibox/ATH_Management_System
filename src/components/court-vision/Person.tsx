@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 
 interface PersonProps {
   person: PersonData;
-  onRemove: () => void;
+  onRemove?: () => void;
   courts?: { id: string; name: string; number: number }[];
   timeSlots?: string[];
   onChangeTimeSlot?: (personId: string, timeSlot: string) => void;
@@ -38,7 +38,8 @@ export function Person({
       programId: person.programId,
       courtId: person.courtId,
       durationHours: person.durationHours,
-      hoursAssigned: person.hoursAssigned // Include tracking hours
+      hoursAssigned: person.hoursAssigned, // Include tracking hours
+      sportTypes: person.sportTypes // Include sport types for filtering
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -51,6 +52,9 @@ export function Person({
     }
   }));
 
+  // Show sport types badges if available
+  const hasSportTypes = person.sportTypes && person.sportTypes.length > 0;
+
   return (
     <div
       ref={drag}
@@ -61,28 +65,43 @@ export function Person({
     >
       <div className="flex items-center">
         <div 
-          className="h-5 w-5 rounded-full flex items-center justify-center text-xs text-white mr-2"
+          className="h-5 w-5 rounded-full flex items-center justify-center text-xs text-white mr-2 flex-shrink-0"
           style={{ backgroundColor: person.programColor || 
             (person.type === PERSON_TYPES.PLAYER ? "#8B5CF6" : "#1A1F2C") }}
         >
           {person.name.substring(0, 1)}
         </div>
-        <span className="text-sm">{person.name}</span>
-        <Move className="h-3 w-3 ml-2 opacity-50" aria-label="Trascina per assegnare" />
-        <button
-          onClick={onRemove}
-          className="ml-auto text-gray-500 hover:text-red-500"
-          aria-label="Rimuovi persona"
-        >
-          ×
-        </button>
+        <span className="text-sm truncate">{person.name}</span>
+        <Move className="h-3 w-3 ml-2 opacity-50 flex-shrink-0" aria-label="Trascina per assegnare" />
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            className="ml-auto text-gray-500 hover:text-red-500 flex-shrink-0"
+            aria-label="Rimuovi persona"
+          >
+            ×
+          </button>
+        )}
       </div>
+
+      {hasSportTypes && (
+        <div className="flex flex-wrap gap-1 mt-1">
+          {person.sportTypes.map(sport => (
+            <span 
+              key={sport} 
+              className="text-xs px-1.5 py-0.5 bg-gray-100 rounded-full truncate"
+            >
+              {sport}
+            </span>
+          ))}
+        </div>
+      )}
 
       {showControls && (
         <div className="mt-2 space-y-2 text-sm">
           {onChangeCourt && courts.length > 0 && (
             <div className="flex items-center gap-1">
-              <Layers className="h-3 w-3 text-gray-500" />
+              <Layers className="h-3 w-3 text-gray-500 flex-shrink-0" />
               <Select 
                 value={person.courtId || ''} 
                 onValueChange={(value) => onChangeCourt(person.id, value)}
@@ -105,7 +124,7 @@ export function Person({
 
           {onChangeTimeSlot && timeSlots.length > 0 && (
             <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-gray-500" />
+              <Clock className="h-3 w-3 text-gray-500 flex-shrink-0" />
               <Select 
                 value={person.timeSlot || ''} 
                 onValueChange={(value) => onChangeTimeSlot(person.id, value)}

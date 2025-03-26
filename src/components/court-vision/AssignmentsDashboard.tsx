@@ -14,7 +14,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
   
   return (
     <div className="space-y-8">
-      <h2 className="text-xl font-semibold">Riepilogo Assegnazioni - {format(selectedDate, 'MMMM d, yyyy')}</h2>
+      <h2 className="text-xl font-semibold truncate">Riepilogo Assegnazioni - {format(selectedDate, 'MMMM d, yyyy')}</h2>
       
       {courts.length === 0 ? (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
@@ -23,12 +23,12 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
       ) : (
         <div className={`grid gap-6 ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
           {courts.map(court => (
-            <div key={court.id} className="bg-white p-4 rounded-lg shadow-sm">
+            <div key={court.id} className="bg-white p-4 rounded-lg shadow-sm overflow-hidden">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-medium truncate">
                   {court.name} #{court.number}
                 </h3>
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded truncate ml-2">
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded truncate ml-2 flex-shrink-0">
                   {court.type}
                 </span>
               </div>

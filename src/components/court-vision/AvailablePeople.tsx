@@ -28,8 +28,9 @@ export function AvailablePeople({
 }: AvailablePeopleProps) {
   return (
     <div className="bg-white rounded-xl shadow-soft p-4">
-      <h2 className="font-medium mb-3 flex items-center">
-        <Users className="h-4 w-4 mr-2" /> Available People
+      <h2 className="font-medium mb-3 flex items-center truncate">
+        <Users className="h-4 w-4 mr-2 flex-shrink-0" /> 
+        <span className="truncate">Available People</span>
       </h2>
       
       <div className="max-h-[180px] overflow-y-auto">

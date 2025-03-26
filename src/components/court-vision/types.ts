@@ -13,7 +13,12 @@ export interface PersonData {
   programColor?: string; // Color for visual representation
   sourceTimeSlot?: string; // Source time slot for drag and drop operations
   hoursAssigned?: number; // Total hours assigned in current week
-  sportType?: string; // Type of sport (tennis, padel, pickleball, touchtennis)
+  sportTypes?: string[]; // Multiple sport types the person can participate in
+  email?: string; // Contact information
+  phone?: string; // Contact information
+  address?: string; // Address information
+  birthDate?: string; // Birth date
+  notes?: string; // Additional notes
 }
 
 export interface ActivityData {
