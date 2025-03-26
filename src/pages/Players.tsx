@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import { PlayerProvider } from "@/contexts/PlayerContext";
@@ -27,12 +27,12 @@ function PlayersContent() {
         </div>
         
         <Dialog>
-          <DialogTrigger asChild>
-            <Button className="flex items-center">
+          <Button className="flex items-center" asChild>
+            <Dialog.Trigger>
               <Plus className="h-4 w-4 mr-2" />
               Nuovo Giocatore
-            </Button>
-          </DialogTrigger>
+            </Dialog.Trigger>
+          </Button>
           <DialogContent className="sm:max-w-[600px]">
             <PlayerForm
               buttonText="Aggiungi Giocatore"

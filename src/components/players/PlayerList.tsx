@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ScheduleButton } from "./ScheduleMessage";
 import { ActivityRegistration } from "./ActivityRegistration";
 import { usePlayerContext } from "@/contexts/PlayerContext";
@@ -72,12 +72,14 @@ export function PlayerList() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DialogTrigger asChild onClick={() => setEditingPlayer(player)}>
-                          <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                        </DialogTrigger>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <DropdownMenuItem onClick={() => setEditingPlayer(player)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                        </Dialog>
                         <DropdownMenuItem 
                           className="text-red-600"
                           onClick={() => handleDeletePlayer(player.id, player.name)}
