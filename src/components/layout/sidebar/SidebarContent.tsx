@@ -7,7 +7,9 @@ import {
   CalendarDays,
   Settings,
   Activity,
-  BookOpen
+  BookOpen,
+  Users,
+  UserCog
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
@@ -69,6 +71,28 @@ export default function SidebarContent({
               { label: 'Padel', path: '/court-vision?sport=padel' },
               { label: 'Pickleball', path: '/court-vision?sport=pickleball' },
               { label: 'Touch Tennis', path: '/court-vision?sport=touchtennis' },
+            ]}
+          />
+
+          <SidebarSubmenu
+            icon={Users}
+            label="Persone"
+            isActive={isLinkActive('/players') || isLinkActive('/coaches')}
+            collapsed={collapsed}
+            open={peopleOpen}
+            onOpenChange={setPeopleOpen}
+            currentPath={location.pathname}
+            items={[
+              { 
+                label: 'Giocatori', 
+                path: '/players',
+                icon: Users 
+              },
+              { 
+                label: 'Allenatori', 
+                path: '/coaches',
+                icon: UserCog 
+              }
             ]}
           />
 

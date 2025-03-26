@@ -26,12 +26,27 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
     }
   }, [location.pathname, location.search, isMobile]);
 
-  // Close sidebar dropdowns when route changes
+  // Auto-expand the proper menu when navigating to a route
   useEffect(() => {
-    setCourtsOpen(false);
-    setPeopleOpen(false);
-    setActivitiesOpen(false);
-  }, [location.pathname, location.search]);
+    // Check if current path should trigger opening a submenu
+    const path = location.pathname;
+    if (path.startsWith('/court-vision')) {
+      setCourtsOpen(true);
+    } else if (path.startsWith('/players') || path.startsWith('/coaches')) {
+      setPeopleOpen(true);
+    } else if (path.startsWith('/activities') || path.startsWith('/programs')) {
+      setActivitiesOpen(true);
+    }
+  }, [location.pathname]);
+
+  // Close sidebar dropdowns when route changes if mobile
+  useEffect(() => {
+    if (isMobile) {
+      setCourtsOpen(false);
+      setPeopleOpen(false);
+      setActivitiesOpen(false);
+    }
+  }, [location.pathname, location.search, isMobile]);
 
   const handleMouseEnter = () => {
     if (!isMobile && collapsed) {
