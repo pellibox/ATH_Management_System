@@ -4,6 +4,7 @@ import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
 import { TimeNavigation } from "./TimeNavigation";
+import { HorizontalTimeNav } from "./HorizontalTimeNav";
 
 interface CourtScheduleViewProps {
   courtId: string;
@@ -68,6 +69,13 @@ export function CourtScheduleView({
 
   return (
     <div className="flex-1 flex flex-col relative h-full overflow-hidden">
+      {/* Add horizontal time navigation at the top of the court */}
+      <HorizontalTimeNav 
+        timeSlots={timeSlots}
+        activeHour={activeHour}
+        onHourSelect={handleHourNavigation}
+      />
+      
       <div className="flex flex-1 relative">
         {/* Time labels column - always visible */}
         <div className="w-16 z-20 flex flex-col">
