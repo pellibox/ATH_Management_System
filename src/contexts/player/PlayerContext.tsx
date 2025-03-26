@@ -42,8 +42,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Coach filter
     const matchesCoach = coachFilter === "all" || player.coach === coachFilter;
     
-    // Program filter
-    const matchesProgram = programFilter === "all" || player.programId === programFilter;
+    // Program filter - fixed to use program instead of programId
+    const matchesProgram = programFilter === "all" || player.program === programFilter;
     
     return matchesSearch && matchesLevel && matchesCoach && matchesProgram;
   });

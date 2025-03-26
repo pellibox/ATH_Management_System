@@ -35,8 +35,8 @@ export interface PlayerContextType {
   resetFilters: () => void;
   
   // Actions
-  handleAddPlayer: (player: Player) => void;
-  handleUpdatePlayer: (player: Player) => void;
+  handleAddPlayer: (player: Omit<Player, "id">) => void;
+  handleUpdatePlayer: () => void;
   handleDeletePlayer: (id: string, name: string) => void;
   handleSendMessage: () => void;
   handleScheduleActivity: (
@@ -47,4 +47,9 @@ export interface PlayerContextType {
     objectiveKey: string,
     value: any
   ) => void;
+  
+  // Add the missing methods
+  handleSetObjectives: (objectives: Player["objectives"]) => void;
+  handleRegisterForActivities: (playerId: string) => void;
+  handleEditPlayerObjectives: (player: Player) => void;
 }

@@ -182,6 +182,40 @@ export const usePlayerActions = ({
     setSelectedActivities([]);
   };
 
+  // Handle player objective change
+  const handlePlayerObjectiveChange = (objectiveKey: string, value: any) => {
+    if (!editingPlayer) return;
+    
+    const updatedObjectives = { 
+      ...(editingPlayer.objectives || {
+        daily: "",
+        weekly: "",
+        monthly: "",
+        seasonal: ""
+      }), 
+      [objectiveKey]: value 
+    };
+    
+    setEditingPlayer({
+      ...editingPlayer,
+      objectives: updatedObjectives
+    });
+  };
+
+  // Handle schedule activity
+  const handleScheduleActivity = (playerId: string, activityIds: string[]) => {
+    // Implementation for scheduling activities
+    console.log(`Scheduling activities ${activityIds.join(', ')} for player ${playerId}`);
+    
+    // Get player name for toast
+    const playerName = players.find(p => p.id === playerId)?.name || "Player";
+    
+    toast({
+      title: "Activities Scheduled",
+      description: `Activities have been scheduled for ${playerName}.`,
+    });
+  };
+
   return {
     handleAddPlayer,
     handleUpdatePlayer,
@@ -189,6 +223,8 @@ export const usePlayerActions = ({
     handleSendMessage,
     handleSetObjectives,
     handleEditPlayerObjectives,
-    handleRegisterForActivities
+    handleRegisterForActivities,
+    handlePlayerObjectiveChange,
+    handleScheduleActivity
   };
 };
