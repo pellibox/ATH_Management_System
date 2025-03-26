@@ -52,7 +52,7 @@ export default function SidebarSubmenu({
           className={cn(
             "flex items-center py-2 px-3 rounded-md text-sm w-full transition-colors",
             isActive 
-              ? "bg-ath-blue text-white font-medium" 
+              ? "bg-ath-red-clay text-white font-medium" 
               : "text-gray-600 hover:bg-gray-100"
           )}
         >
@@ -72,10 +72,10 @@ export default function SidebarSubmenu({
               to={item.path}
               className={cn(
                 "flex items-center px-3 py-2 text-sm hover:bg-gray-100 transition-colors",
-                isItemActive(item.path) && "bg-gray-100 text-ath-blue font-medium"
+                isItemActive(item.path) ? "bg-gray-100 text-ath-red-clay font-medium" : ""
               )}
             >
-              {item.icon && <item.icon className="h-4 w-4 mr-2 text-gray-500" />}
+              {item.icon && <item.icon className={cn("h-4 w-4 mr-2", isItemActive(item.path) ? "text-ath-red-clay" : "text-gray-500")} />}
               <span>{item.label}</span>
             </Link>
           ))}
@@ -93,7 +93,7 @@ export default function SidebarSubmenu({
             className={cn(
               "flex items-center justify-between py-2 px-3 rounded-md text-sm transition-colors",
               isActive 
-                ? "bg-ath-blue text-white font-medium" 
+                ? "bg-ath-red-clay text-white font-medium" 
                 : "text-gray-600 hover:bg-gray-100"
             )}
           >
@@ -121,7 +121,7 @@ export default function SidebarSubmenu({
                   className={cn(
                     "flex items-center py-1.5 px-2 rounded-md text-sm transition-colors",
                     isItemActive(item.path)
-                      ? "bg-gray-100 text-ath-blue font-medium"
+                      ? "bg-gray-100 text-ath-red-clay font-medium"
                       : "text-gray-600 hover:bg-gray-100"
                   )}
                 >
@@ -129,7 +129,7 @@ export default function SidebarSubmenu({
                     <item.icon 
                       className={cn(
                         "h-4 w-4 mr-2", 
-                        isItemActive(item.path) ? "text-ath-blue" : "text-gray-500"
+                        isItemActive(item.path) ? "text-ath-red-clay" : "text-gray-500"
                       )} 
                     />
                   )}
