@@ -2,8 +2,8 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
-import { PlayerProvider } from "@/contexts/PlayerContext";
-import { usePlayerContext } from "@/contexts/PlayerContext";
+import { PlayerProvider } from "@/contexts/player/PlayerContext";
+import { usePlayerContext } from "@/contexts/player/PlayerContext";
 import { PlayerFilters } from "@/components/players/PlayerFilters";
 import { PlayerList } from "@/components/players/PlayerList";
 import { ScheduleMessage } from "@/components/players/ScheduleMessage";

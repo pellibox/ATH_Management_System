@@ -15,7 +15,7 @@ import {
   TabsTrigger 
 } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { usePlayerContext } from "@/contexts/PlayerContext";
+import { usePlayerContext } from "@/contexts/player/PlayerContext";
 import { PlayerHeader } from "./PlayerHeader";
 import { InfoTab } from "./tabs/InfoTab";
 import { MedicalTab } from "./tabs/MedicalTab";

@@ -14,7 +14,7 @@ export function TimeSlotActivities({
   onRemoveActivity,
   time
 }: TimeSlotActivitiesProps) {
-  if (activities.length === 0) {
+  if (!activities || activities.length === 0) {
     return null;
   }
   

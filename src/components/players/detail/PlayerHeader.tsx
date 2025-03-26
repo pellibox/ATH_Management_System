@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Player } from "@/types/player";
 import { Pencil, Save, Tag } from "lucide-react";
-import { usePlayerContext } from "@/contexts/PlayerContext";
+import { usePlayerContext } from "@/contexts/player/PlayerContext";
 
 interface PlayerHeaderProps {
   player: Player;

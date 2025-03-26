@@ -43,10 +43,10 @@ export default function SidebarContent({
       <nav className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-1 px-2">
           <SidebarLink 
-            to="/" 
+            to="/dashboard" 
             icon={Layout} 
             label="Dashboard" 
-            isActive={isLinkActive('/')} 
+            isActive={isLinkActive('/dashboard')} 
             collapsed={collapsed} 
           />
 

@@ -14,11 +14,15 @@ export function TimeSlotOccupants({
   onRemovePerson,
   time 
 }: TimeSlotOccupantsProps) {
+  if (!occupants || occupants.length === 0) {
+    return <div className="relative h-full w-full min-h-[60px] mt-5"></div>;
+  }
+
   return (
     <div className="relative h-full w-full min-h-[60px] mt-5">
       {occupants.map((person, index) => (
         <CourtPerson
-          key={person.id}
+          key={`${person.id}-${index}`}
           person={person}
           index={index}
           total={occupants.length}
