@@ -1,3 +1,4 @@
+
 import { ActivityData } from "../../../types";
 import { useToast } from "@/hooks/use-toast";
 import { ActivityManagementProps } from "./types";
@@ -35,7 +36,29 @@ export const useActivityManagement = ({
     });
   };
 
+  const handleUpdateActivity = (activityId: string, updatedData: Partial<ActivityData>) => {
+    setActivities(activities.map(activity => 
+      activity.id === activityId ? { ...activity, ...updatedData } : activity
+    ));
+    
+    toast({
+      title: "Attività Aggiornata",
+      description: "L'attività è stata aggiornata con successo",
+    });
+  };
+
+  const handleRemoveActivity = (activityId: string) => {
+    setActivities(activities.filter(activity => activity.id !== activityId));
+    
+    toast({
+      title: "Attività Rimossa",
+      description: "L'attività è stata rimossa dalla lista",
+    });
+  };
+
   return {
-    handleAddActivity
+    handleAddActivity,
+    handleUpdateActivity,
+    handleRemoveActivity
   };
 };

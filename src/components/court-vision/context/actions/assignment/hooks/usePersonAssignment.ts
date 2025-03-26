@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { PersonData } from "../../../types";
-import { PendingAssignment } from "./types";
-import { useProcessAssignment } from "./hooks/useProcessAssignment";
-import { usePersonRemoval } from "./hooks/usePersonRemoval";
-import { useDragArea } from "./hooks/useDragArea";
+import { PersonData } from "@/components/court-vision/types";
+import { PendingAssignment } from "../types";
+import { useProcessAssignment } from "../useProcessAssignment";
+import { usePersonRemoval } from "../usePersonRemoval";
+import { useDragArea } from "../useDragArea";
 
 /**
  * Main hook for person assignment functionality
@@ -23,7 +23,7 @@ export const usePersonAssignment = (
 
   // Use our specialized hooks
   const { 
-    processAssignment,
+    processAssignment, 
     showCoachOverlapDialog,
     setShowCoachOverlapDialog,
     pendingCoachAssignment,

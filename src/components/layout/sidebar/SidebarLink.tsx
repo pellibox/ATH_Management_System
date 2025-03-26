@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,9 @@ interface SidebarLinkProps {
 }
 
 export default function SidebarLink({ to, icon: Icon, label, isActive, collapsed }: SidebarLinkProps) {
+  const location = useLocation();
+  const isCurrent = location.pathname === to;
+  
   return (
     <li>
       <Link
@@ -26,12 +29,12 @@ export default function SidebarLink({ to, icon: Icon, label, isActive, collapsed
       >
         <Icon className={cn(
           "h-5 w-5 flex-shrink-0",
-          isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700",
+          isActive ? "text-white" : isCurrent ? "text-ath-blue" : "text-gray-500 group-hover:text-gray-700",
           collapsed ? "mx-auto" : "mr-2"
         )} />
         
         {!collapsed && (
-          <span className="truncate">{label}</span>
+          <span className={cn("truncate", isCurrent && !isActive && "text-ath-blue font-medium")}>{label}</span>
         )}
         
         {collapsed && (
