@@ -24,14 +24,19 @@ export const ProgramCategorySection = ({
 
   return (
     <div>
-      <h2 className={`text-2xl font-bold border-l-4 pl-3 mb-4`} style={{ borderColor }}>
-        {title}
-      </h2>
-      <p className="text-gray-600 mb-6">
-        {description}
-      </p>
+      {title && (
+        <h2 className={`text-xl font-bold border-l-4 pl-3 mb-3`} style={{ borderColor }}>
+          {title}
+        </h2>
+      )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      {description && (
+        <p className="text-sm text-gray-600 mb-4">
+          {description}
+        </p>
+      )}
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-6">
         {programs.map(program => (
           <ProgramCard 
             key={program.id}

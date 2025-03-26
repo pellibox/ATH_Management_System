@@ -45,9 +45,14 @@ export const usePlayerActions = ({
   const handleAddPlayer = (playerData: Omit<Player, "id">) => {
     const newId = `p${Date.now()}`;
     
+    const newPlayer: Player = {
+      id: newId,
+      ...playerData
+    };
+    
     setPlayers([
       ...players,
-      { id: newId, ...playerData }
+      newPlayer
     ]);
     
     toast({

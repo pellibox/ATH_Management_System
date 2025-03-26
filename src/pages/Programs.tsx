@@ -67,20 +67,22 @@ export default function Programs() {
     // Apply category filter
     if (filter !== "all") {
       filtered = filtered.filter(program => {
-        // Get category from ID mapping or program.category
-        const category = program.id.includes("perf") || program.id.includes("elite") 
-          ? PROGRAM_CATEGORIES.PERFORMANCE
-          : program.id.includes("junior") 
-            ? PROGRAM_CATEGORIES.JUNIOR
-            : program.id.includes("personal") || program.id.includes("lezioni")
-              ? PROGRAM_CATEGORIES.PERSONAL
-              : program.id.includes("adult") || program.id.includes("university")
-                ? PROGRAM_CATEGORIES.ADULT
-                : program.id.includes("coach")
-                  ? PROGRAM_CATEGORIES.COACH
-                  : program.id.includes("padel")
-                    ? PROGRAM_CATEGORIES.PADEL
-                    : null;
+        // Get category from ID mapping
+        let category = null;
+        
+        if (program.id.includes("perf") || program.id.includes("elite")) {
+          category = PROGRAM_CATEGORIES.PERFORMANCE;
+        } else if (program.id.includes("junior") || program.id.includes("sat") || program.id.includes("sit")) {
+          category = PROGRAM_CATEGORIES.JUNIOR;
+        } else if (program.id.includes("personal") || program.id.includes("lezioni")) {
+          category = PROGRAM_CATEGORIES.PERSONAL;
+        } else if (program.id.includes("adult") || program.id.includes("university")) {
+          category = PROGRAM_CATEGORIES.ADULT;
+        } else if (program.id.includes("coach") || program.id.includes("club")) {
+          category = PROGRAM_CATEGORIES.COACH;
+        } else if (program.id.includes("padel")) {
+          category = PROGRAM_CATEGORIES.PADEL;
+        }
         
         return category === filter;
       });
@@ -131,7 +133,7 @@ export default function Programs() {
   };
   
   return (
-    <div className="max-w-7xl mx-auto animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 animate-fade-in">
       <ProgramsHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       
       <ProgramFilters 
@@ -142,7 +144,7 @@ export default function Programs() {
       
       {/* Category Headers for "all" view */}
       {filter === "all" && (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Dynamic Category Sections */}
           {Object.entries(PROGRAM_CATEGORIES).map(([category, value]) => (
             <ProgramCategorySection
@@ -160,25 +162,22 @@ export default function Programs() {
       
       {/* Filtered Results */}
       {filter !== "all" && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">
             {getCategoryTitle(Object.keys(PROGRAM_CATEGORIES).find(key => 
               PROGRAM_CATEGORIES[key] === filter
             ) || "")}
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 mb-4">
             {CATEGORY_DESCRIPTIONS[Object.keys(PROGRAM_CATEGORIES).find(key => 
               PROGRAM_CATEGORIES[key] === filter
             ) || ""]}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {filteredPrograms.map(program => (
-              <ProgramCategorySection
+              <ProgramCard
                 key={program.id}
-                title=""
-                description=""
-                borderColor=""
-                programs={[program]}
+                program={program}
                 expandedProgram={expandedProgram}
                 toggleExpand={toggleExpand}
               />
@@ -188,14 +187,14 @@ export default function Programs() {
       )}
       
       {filteredPrograms.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-lg text-gray-500">Nessun programma corrisponde alla tua ricerca</p>
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500">Nessun programma corrisponde alla tua ricerca</p>
           <button 
             onClick={() => {
               setFilter("all");
               setSearchQuery("");
             }}
-            className="mt-2 text-ath-blue hover:text-ath-blue-dark"
+            className="mt-2 text-xs text-ath-blue hover:text-ath-blue-dark"
           >
             Visualizza tutti i programmi
           </button>
