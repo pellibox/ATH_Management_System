@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { ScheduleButton } from "./ScheduleMessage";
+import { ActivityRegistration } from "./ActivityRegistration";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 
 export function PlayerList() {
@@ -61,6 +62,7 @@ export function PlayerList() {
                 <TableCell>{player.phone}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    <ActivityRegistration playerId={player.id} playerName={player.name} />
                     <ScheduleButton onClick={() => setMessagePlayer(player)} />
 
                     <DropdownMenu>
