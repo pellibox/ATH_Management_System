@@ -8,6 +8,7 @@ import { ProgramBadge } from "./ProgramBadge";
 import { PlayerActionMenu } from "./PlayerActionMenu";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { MoreHorizontal } from "lucide-react";
+import { getProgramColor } from "../utils/programUtils";
 
 interface PlayerRowProps {
   player: Player;
@@ -58,8 +59,18 @@ export function PlayerRow({
     setSelectedActivities([]);
   });
 
+  // Get program color for the border
+  const programColor = player.program ? getProgramColor(player.program) : "#e0e0e0";
+
   return (
-    <TableRow key={player.id} className="border-b hover:bg-gray-50">
+    <TableRow 
+      key={player.id} 
+      className="border-b hover:bg-gray-50"
+      style={{ 
+        borderLeftWidth: '4px',
+        borderLeftColor: programColor
+      }}
+    >
       <TableCell className="py-3">
         <div className="flex items-center">
           <PlayerAvatar name={player.name} program={player.program} />

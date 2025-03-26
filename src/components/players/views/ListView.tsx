@@ -22,6 +22,7 @@ import { ScheduleButton } from "../ScheduleMessage";
 import { ActivityRegistration } from "../ActivityRegistration";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { useNavigate } from "react-router-dom";
+import { getProgramColor } from "../utils/programUtils";
 
 interface ListViewProps {
   players: Player[];
@@ -57,88 +58,100 @@ export function ListView({ players }: ListViewProps) {
         </TableHeader>
         <TableBody>
           {players.length > 0 ? (
-            players.map((player) => (
-              <TableRow key={player.id} className="cursor-pointer hover:bg-gray-50">
-                <TableCell 
-                  className="font-medium"
-                  onClick={() => navigate(`/players/details?id=${player.id}`)}
+            players.map((player) => {
+              // Get program color for the row border
+              const programColor = player.program ? getProgramColor(player.program) : "#e0e0e0";
+              
+              return (
+                <TableRow 
+                  key={player.id} 
+                  className="cursor-pointer hover:bg-gray-50"
+                  style={{ 
+                    borderLeftWidth: '4px',
+                    borderLeftColor: programColor
+                  }}
                 >
-                  {player.name}
-                </TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(player.level)}`}>
-                    {player.level}
-                  </span>
-                </TableCell>
-                <TableCell>{player.coach}</TableCell>
-                <TableCell>
-                  {player.program && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                      {player.program}
+                  <TableCell 
+                    className="font-medium"
+                    onClick={() => navigate(`/players/details?id=${player.id}`)}
+                  >
+                    {player.name}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(player.level)}`}>
+                      {player.level}
                     </span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {player.sports && (
-                    <div className="flex flex-wrap gap-1">
-                      {Array.isArray(player.sports) ? (
-                        player.sports.map((sport, index) => (
-                          <span key={index} className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100">
-                            {sport}
+                  </TableCell>
+                  <TableCell>{player.coach}</TableCell>
+                  <TableCell>
+                    {player.program && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                        {player.program}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {player.sports && (
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(player.sports) ? (
+                          player.sports.map((sport, index) => (
+                            <span key={index} className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100">
+                              {sport}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100">
+                            {player.sports}
                           </span>
-                        ))
-                      ) : (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100">
-                          {player.sports}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell>{player.email}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <ActivityRegistration playerId={player.id} playerName={player.name} />
-                    <ScheduleButton onClick={() => setMessagePlayer(player)} />
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0"
-                      onClick={() => navigate(`/court-vision?playerId=${player.id}`)}
-                    >
-                      <Calendar className="h-4 w-4" />
-                    </Button>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>{player.email}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <ActivityRegistration playerId={player.id} playerName={player.name} />
+                      <ScheduleButton onClick={() => setMessagePlayer(player)} />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                        onClick={() => navigate(`/court-vision?playerId=${player.id}`)}
+                      >
+                        <Calendar className="h-4 w-4" />
+                      </Button>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DialogTrigger asChild onClick={() => setEditingPlayer(player)}>
-                          <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Modifica
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DialogTrigger asChild onClick={() => setEditingPlayer(player)}>
+                            <DropdownMenuItem>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Modifica
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                          <DropdownMenuItem onClick={() => navigate(`/players/objectives?id=${player.id}`)}>
+                            <ClipboardList className="h-4 w-4 mr-2" />
+                            Obiettivi
                           </DropdownMenuItem>
-                        </DialogTrigger>
-                        <DropdownMenuItem onClick={() => navigate(`/players/objectives?id=${player.id}`)}>
-                          <ClipboardList className="h-4 w-4 mr-2" />
-                          Obiettivi
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-red-600"
-                          onClick={() => handleDeletePlayer(player.id, player.name)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Elimina
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDeletePlayer(player.id, player.name)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Elimina
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={7} className="text-center py-8 text-gray-500">
