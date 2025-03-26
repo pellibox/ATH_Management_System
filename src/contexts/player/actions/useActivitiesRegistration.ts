@@ -1,6 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { PlayerActionsProps } from "./types";
+import { Player } from "@/types/player";
 
 export const useActivitiesRegistration = ({ 
   players,

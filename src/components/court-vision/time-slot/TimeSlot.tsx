@@ -6,6 +6,7 @@ import { TimeSlotActivities } from "./TimeSlotActivities";
 import { TimeSlotOccupants } from "./TimeSlotOccupants";
 import { TimeSlotIndicators } from "./TimeSlotIndicators";
 import { TimeSlotDropArea } from "./TimeSlotDropArea";
+import { calculateProgramDuration } from "./utils";
 
 interface TimeSlotProps {
   time: string;
@@ -28,10 +29,28 @@ export function TimeSlot({
   onDrop,
   onActivityDrop
 }: TimeSlotProps) {
-  // Filter occupants for this time slot
-  const slotOccupants = occupants.filter(
-    occupant => occupant.timeSlot === time
-  );
+  // Calculate duration and end time slot based on program
+  const handlePersonDrop = (person: PersonData, timeSlot: string) => {
+    const duration = calculateProgramDuration(person);
+    console.log("Dropping person with duration:", duration, person);
+    onDrop(courtId, { ...person, durationHours: duration }, undefined, timeSlot);
+  };
+  
+  // Filter occupants for this time slot and spanning slots
+  const slotOccupants = occupants.filter(occupant => {
+    // Check if this slot is the start time
+    if (occupant.timeSlot === time) return true;
+    
+    // Check if this slot is within a span
+    if (occupant.timeSlot && occupant.endTimeSlot) {
+      const slotIndex = timeSlots.indexOf(time);
+      const startIndex = timeSlots.indexOf(occupant.timeSlot);
+      const endIndex = timeSlots.indexOf(occupant.endTimeSlot);
+      return slotIndex > startIndex && slotIndex <= endIndex;
+    }
+    
+    return false;
+  });
   
   // Filter activities for this time slot
   const slotActivities = activities.filter(
@@ -43,31 +62,26 @@ export function TimeSlot({
       courtId={courtId}
       time={time}
       onDrop={(courtId, person, position, timeSlot) => {
-        console.log("Dropping at time:", timeSlot, person);
-        onDrop(courtId, person, position, timeSlot);
+        if (timeSlot) {
+          handlePersonDrop(person, timeSlot);
+        }
       }}
-      onActivityDrop={(courtId, activity, timeSlot) => {
-        console.log("Dropping activity at time:", timeSlot, activity);
-        onActivityDrop(courtId, activity, timeSlot);
-      }}
+      onActivityDrop={onActivityDrop}
     >
       <TimeSlotHeader time={time} />
       
-      {/* Activities */}
       <TimeSlotActivities 
         activities={slotActivities} 
         onRemoveActivity={onRemoveActivity}
         time={time}
       />
       
-      {/* Court occupants (people) */}
       <TimeSlotOccupants 
         occupants={slotOccupants} 
         onRemovePerson={onRemovePerson}
         time={time}
       />
       
-      {/* Indicators for number of people and activities */}
       <TimeSlotIndicators 
         occupantsCount={slotOccupants.length} 
         activitiesCount={slotActivities.length} 

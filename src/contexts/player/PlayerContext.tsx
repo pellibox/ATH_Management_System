@@ -41,7 +41,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       player.email.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Level filter
-    const matchesLevel = levelFilter === "all" || player.level === levelFilter;
+    const matchesLevel = levelFilter === "all"  || player.level === levelFilter;
     
     // Coach filter
     const matchesCoach = coachFilter === "all" || player.coach === coachFilter;
@@ -77,9 +77,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setObjectives
   });
 
-  // Add missing functions to match the interface
-  const handleEditPlayer = (player: Player) => {
-    setEditingPlayer(player);
+  // Create a wrapper for handleDeletePlayer that matches the interface
+  const handleDeletePlayer = (id: string) => {
+    const player = players.find(p => p.id === id);
+    if (player) {
+      playerActions.handleDeletePlayer(id, player.name);
+    }
   };
 
   // Context value
@@ -112,24 +115,22 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setMessageContent,
     setScheduleType,
     setObjectives,
-    // Fixed setNewPlayer function with proper typing
     setNewPlayer: (player: Player) => setNewPlayer({ 
       ...player, 
-      id: player.id || "new-temp-id" // Keep existing ID or set temporary ID
+      id: player.id || "new-temp-id"
     }),
     setSelectedActivities,
+    
+    // Fixed actions
     resetFilters,
-    
-    // Actions from playerActions
-    ...playerActions,
-    
-    // Add any missing actions that are required by the interface
-    handleEditPlayer,
-    handleSetObjectives: (playerId: string, playerObjectives: any) => {
-      if (!editingPlayer) return;
-      
-      playerActions.handleSetObjectives(playerObjectives);
-    }
+    handleDeletePlayer,
+    handleEditPlayer: (player: Player) => setEditingPlayer(player),
+    handleSetObjectives: (playerId: string, updatedObjectives: any) => {
+      playerActions.handleSetObjectives(updatedObjectives);
+    },
+    handleRegisterActivity: playerActions.handleRegisterActivity,
+    handleRegisterForActivities: playerActions.handleRegisterForActivities,
+    ...playerActions
   };
 
   return (
