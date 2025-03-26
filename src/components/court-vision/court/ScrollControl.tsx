@@ -56,7 +56,7 @@ export function ScrollControl({ containerRef }: ScrollControlProps) {
   }, [containerRef]);
 
   return (
-    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-md border border-gray-200">
+    <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-md border border-gray-200">
       <button
         onClick={scrollUp}
         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"

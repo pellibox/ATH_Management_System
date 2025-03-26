@@ -57,7 +57,7 @@ export function CourtScheduleView({
         </div>
       </div>
       
-      <div ref={scrollContainerRef} className="flex-1 overflow-auto h-[calc(100%-2rem)]">
+      <div ref={scrollContainerRef} className="flex-1 overflow-auto h-[calc(100%-2rem)] relative">
         <div className="min-h-full pb-16">
           {timeSlots.map((time) => (
             <TimeSlot
@@ -79,9 +79,9 @@ export function CourtScheduleView({
             />
           ))}
         </div>
+        
+        <ScrollControl containerRef={scrollContainerRef} />
       </div>
-      
-      <ScrollControl containerRef={scrollContainerRef} />
     </div>
   );
 }
