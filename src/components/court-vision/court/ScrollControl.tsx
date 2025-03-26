@@ -56,16 +56,16 @@ export function ScrollControl({ containerRef }: ScrollControlProps) {
   }, [containerRef]);
 
   return (
-    <div className="absolute right-5 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center gap-2 bg-white shadow-md rounded-lg p-2 border-2 border-primary/70">
+    <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center gap-1 bg-white shadow-lg rounded-lg p-1 border border-primary/10">
       <button
         onClick={scrollUp}
-        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-primary"
+        className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 text-primary"
         aria-label="Scroll up"
       >
-        <ChevronUp className="h-5 w-5" />
+        <ChevronUp className="h-4 w-4" />
       </button>
       
-      <div className="h-24 px-1">
+      <div className="h-16 px-1">
         <Slider
           orientation="vertical"
           value={[scrollPosition]}
@@ -77,10 +77,10 @@ export function ScrollControl({ containerRef }: ScrollControlProps) {
       
       <button
         onClick={scrollDown}
-        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-primary"
+        className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 text-primary"
         aria-label="Scroll down"
       >
-        <ChevronDown className="h-5 w-5" />
+        <ChevronDown className="h-4 w-4" />
       </button>
     </div>
   );

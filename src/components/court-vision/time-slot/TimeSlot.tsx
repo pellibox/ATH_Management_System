@@ -44,14 +44,14 @@ export function TimeSlot({
   };
 
   return (
-    <div className="relative flex border-b border-gray-200">
-      <div className="flex-1 p-2 relative">
+    <div className="relative flex border-b border-gray-200 py-1">
+      <div className="flex-1 px-1 relative">
         <TimeSlotHeader time={time} />
         
         <div className="relative">
           <div 
             ref={scrollContainerRef} 
-            className="max-h-[200px] overflow-auto pr-8 relative"
+            className="max-h-[130px] overflow-auto pr-8 relative"
           >
             <TimeSlotOccupants 
               occupants={occupants} 
@@ -65,21 +65,21 @@ export function TimeSlot({
             />
           </div>
           
-          {/* Always show Vertical Scroll Control */}
-          <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-center items-center w-6 bg-gray-50/80 border-l border-gray-100">
+          {/* Always show Vertical Scroll Control with reduced size */}
+          <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-center items-center w-5 bg-gray-50/80 border-l border-gray-100">
             <button 
               onClick={scrollUp} 
-              className="hover:bg-gray-200 rounded-full p-1 mb-1"
+              className="hover:bg-gray-200 rounded-full p-0.5 mb-1"
               aria-label="Scroll up"
             >
-              <ChevronUp className="h-4 w-4 text-gray-500" />
+              <ChevronUp className="h-3 w-3 text-gray-500" />
             </button>
             <button 
               onClick={scrollDown} 
-              className="hover:bg-gray-200 rounded-full p-1"
+              className="hover:bg-gray-200 rounded-full p-0.5"
               aria-label="Scroll down"
             >
-              <ChevronDown className="h-4 w-4 text-gray-500" />
+              <ChevronDown className="h-3 w-3 text-gray-500" />
             </button>
           </div>
         </div>

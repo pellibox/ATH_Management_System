@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TimeSlot } from "../time-slot/TimeSlot";
@@ -94,21 +95,22 @@ export function CourtScheduleView({
           </div>
         </div>
         
-        <div className="w-8 flex flex-col items-center border-l border-gray-200 bg-white">
+        {/* Time Selection Bar - Now fixed position */}
+        <div className="w-12 fixed right-4 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center rounded-lg shadow-lg bg-white border border-gray-200">
           <button 
             onClick={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-full p-1 hover:bg-gray-100 flex justify-center border-b border-gray-100"
+            className="w-full p-2 hover:bg-gray-100 flex justify-center rounded-t-lg border-b border-gray-100"
             aria-label="Scroll to top"
           >
-            <ChevronUp className="h-4 w-4 text-gray-600" />
+            <ChevronUp className="h-4 w-4 text-primary" />
           </button>
           
-          <div className="flex-1 overflow-y-auto scrollbar-hide py-1">
+          <div className="flex-1 overflow-y-auto scrollbar-hide py-1 max-h-[50vh]">
             {timeSlots.map((time, index) => (
               <button
                 key={`nav-${time}`}
                 onClick={() => scrollToTimeSlot(index)}
-                className="w-full text-xs py-1 px-1 hover:bg-gray-100 text-gray-600"
+                className="w-full text-xs py-0.5 hover:bg-gray-100 text-gray-700 font-medium"
               >
                 {time.split(':')[0]}
               </button>
@@ -117,10 +119,10 @@ export function CourtScheduleView({
           
           <button 
             onClick={() => scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' })}
-            className="w-full p-1 hover:bg-gray-100 flex justify-center border-t border-gray-100"
+            className="w-full p-2 hover:bg-gray-100 flex justify-center rounded-b-lg border-t border-gray-100"
             aria-label="Scroll to bottom"
           >
-            <ChevronDown className="h-4 w-4 text-gray-600" />
+            <ChevronDown className="h-4 w-4 text-primary" />
           </button>
         </div>
       </div>
