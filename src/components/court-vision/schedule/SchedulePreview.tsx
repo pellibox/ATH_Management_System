@@ -29,6 +29,10 @@ export function SchedulePreview({ selectedPerson, courts, date, timeSlots }: Sch
     selectedPerson.preferredContactMethod || "WhatsApp"
   );
 
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const handleSend = () => {
     // Qui andrebbe l'integrazione con un servizio di invio
     console.log(`Inviando schedule a ${selectedPerson.name} via ${contactMethod}`);
@@ -54,7 +58,7 @@ export function SchedulePreview({ selectedPerson, courts, date, timeSlots }: Sch
                 variant="ghost" 
                 size="sm" 
                 className="h-8 w-8 p-0" 
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
               >
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>
@@ -90,7 +94,7 @@ export function SchedulePreview({ selectedPerson, courts, date, timeSlots }: Sch
               </Tabs>
 
               <div className="flex justify-end space-x-2 mt-4">
-                <Button variant="outline" onClick={() => setOpen(false)}>
+                <Button variant="outline" onClick={handleClose}>
                   Annulla
                 </Button>
                 <Button onClick={handleSend} className="flex items-center">

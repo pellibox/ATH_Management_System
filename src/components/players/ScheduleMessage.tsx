@@ -19,6 +19,10 @@ export function ScheduleMessage() {
 
   if (!messagePlayer) return null;
 
+  const handleClose = () => {
+    setMessagePlayer(null);
+  };
+
   return (
     <>
       <DialogHeader className="relative">
@@ -28,7 +32,7 @@ export function ScheduleMessage() {
             variant="ghost" 
             size="sm" 
             className="h-8 w-8 p-0" 
-            onClick={() => setMessagePlayer(null)}
+            onClick={handleClose}
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
