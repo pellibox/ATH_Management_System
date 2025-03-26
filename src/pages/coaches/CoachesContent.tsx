@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Check, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +20,7 @@ export function CoachesContent() {
     coachesList, 
     programs: allPrograms,
     playersList,
-    handleAddCoach,
+    handleAddPerson,
   } = useCourtVision();
   
   // Filter out excluded programs
@@ -71,16 +72,15 @@ export function CoachesContent() {
     setCoaches(coachesList);
   }, [coachesList, setCoaches]);
 
-  const handleAddCoachWrapper = () => {
+  const handleAddCoach = () => {
     if (!newCoach.name) return;
     
-    handleAddCoach({
+    handleAddPerson({
       name: newCoach.name,
       type: PERSON_TYPES.COACH,
       email: newCoach.email,
       phone: newCoach.phone,
       sportTypes: newCoach.sportTypes,
-      id: `coach-${Date.now()}`
     });
     
     setNewCoach({
@@ -131,7 +131,7 @@ export function CoachesContent() {
           <AddCoachDialog 
             newCoach={newCoach}
             setNewCoach={setNewCoach}
-            handleAddCoach={handleAddCoachWrapper}
+            handleAddCoach={handleAddCoach}
             toggleSportType={toggleSportType}
             allSportTypes={allSportTypes}
           />

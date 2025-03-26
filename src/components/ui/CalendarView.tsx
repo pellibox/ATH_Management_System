@@ -1,11 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useCourtVision } from "@/components/court-vision/context/CourtVisionContext";
 
 // Mock data types
 interface CourseEvent {
@@ -83,22 +81,6 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [visibleDays, setVisibleDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  // Safely use CourtVision context - provide defaults if not available
-  let courtVisionContext;
-  try {
-    courtVisionContext = useCourtVision();
-  } catch (error) {
-    console.warn("CourtVision context not available, using defaults");
-    courtVisionContext = {
-      courts: [],
-      timeSlots: timeSlots
-    };
-  }
-  
-  const { courts, timeSlots: courtTimeSlots = timeSlots } = courtVisionContext;
 
   // Get the dates for the current week
   const getWeekDates = () => {
@@ -189,12 +171,6 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
     });
   };
 
-  // Handle day cell click to show expanded view
-  const handleDayClick = (dayIndex: number) => {
-    setSelectedDayIndex(dayIndex);
-    setIsDialogOpen(true);
-  };
-
   // Set mobile view to show only today when switching to mobile
   useEffect(() => {
     if (isMobile) {
@@ -217,223 +193,138 @@ export default function CalendarView({ currentView = "week" }: CalendarViewProps
   }, [currentView, toast]);
 
   return (
-    <>
-      <div className="rounded-xl bg-white shadow-soft overflow-hidden animate-fade-in">
-        {/* Calendar Header */}
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-lg md:text-xl font-semibold">{formatMonthYear()}</h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => isMobile && visibleDays.length === 1 ? navigateDay(-1) : navigateWeek(-1)}
-              className="rounded-full p-1.5 hover:bg-gray-100 transition-colors"
-              aria-label="Previous"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              className="px-3 py-1 text-sm bg-ath-blue-light text-ath-blue rounded-md font-medium"
-              onClick={() => setCurrentWeek(new Date())}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => isMobile && visibleDays.length === 1 ? navigateDay(1) : navigateWeek(1)}
-              className="rounded-full p-1.5 hover:bg-gray-100 transition-colors"
-              aria-label="Next"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Day Selector */}
-        {isMobile && (
-          <div className="flex justify-center p-2 bg-gray-50 border-b">
-            <div className="flex space-x-1">
-              {weekDaysShort.map((day, index) => (
-                <button
-                  key={index}
-                  className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium",
-                    visibleDays.includes(index) 
-                      ? "bg-ath-clay text-white" 
-                      : "bg-white text-gray-600 hover:bg-gray-100"
-                  )}
-                  onClick={() => setVisibleDays([index])}
-                >
-                  {day}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Calendar Grid */}
-        <div className="overflow-x-auto">
-          <div className={isMobile ? "min-w-full" : "min-w-[800px]"}>
-            {/* Days Header */}
-            <div className={`grid ${isMobile ? `grid-cols-${visibleDays.length + 1}` : "grid-cols-8"} border-b`}>
-              <div className="p-2 border-r bg-gray-50"></div>
-              {weekDays.filter((_, index) => visibleDays.includes(index)).map((day, index) => {
-                const dayIndex = visibleDays[index];
-                return (
-                  <div
-                    key={day + index}
-                    className={cn(
-                      "p-3 text-center border-r cursor-pointer hover:bg-gray-100 transition-colors",
-                      isToday(weekDates[dayIndex]) ? "bg-ath-blue-light" : "bg-gray-50"
-                    )}
-                    onClick={() => handleDayClick(dayIndex)}
-                  >
-                    <p className="text-sm font-medium">{day}</p>
-                    <p
-                      className={cn(
-                        "text-2xl font-semibold mt-1",
-                        isToday(weekDates[dayIndex]) ? "text-ath-blue" : ""
-                      )}
-                    >
-                      {formatDay(weekDates[dayIndex])}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Time Slots and Events */}
-            <div className="divide-y">
-              {timeSlots.map((time) => (
-                <div key={time} className={`grid ${isMobile ? `grid-cols-${visibleDays.length + 1}` : "grid-cols-8"}`}>
-                  {/* Time Column */}
-                  <div className="p-2 border-r bg-gray-50 flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-500">{time}</span>
-                  </div>
-
-                  {/* Days Columns */}
-                  {visibleDays.map((dayIndex) => {
-                    const events = getEventsForTimeSlot(time, dayIndex);
-                    
-                    return (
-                      <div 
-                        key={dayIndex} 
-                        className="p-1 border-r min-h-[80px] relative cursor-pointer hover:bg-gray-50"
-                        onClick={() => handleDayClick(dayIndex)}
-                      >
-                        {events.map((event) => (
-                          <div
-                            key={event.id}
-                            className={cn(
-                              "court-event card-hover cursor-pointer",
-                              `court-${event.courtType}`
-                            )}
-                            style={{ height: `${event.duration * 80}px` }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEventClick(event);
-                            }}
-                          >
-                            <div className="flex justify-between items-start">
-                              <h4 className="font-medium text-sm">{event.title}</h4>
-                              <span className="text-xs bg-white/80 rounded px-1.5 py-0.5 shadow-sm">
-                                Court {event.courtNumber}
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-600 mt-1">
-                              {event.instructor}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              {event.students.length} students
-                            </p>
-                            {event.objective && (
-                              <p className="text-xs bg-white/60 rounded px-1.5 py-0.5 mt-1 inline-block">
-                                {event.objective}
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
+    <div className="rounded-xl bg-white shadow-soft overflow-hidden animate-fade-in">
+      {/* Calendar Header */}
+      <div className="p-4 border-b flex items-center justify-between">
+        <h2 className="text-lg md:text-xl font-semibold">{formatMonthYear()}</h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => isMobile && visibleDays.length === 1 ? navigateDay(-1) : navigateWeek(-1)}
+            className="rounded-full p-1.5 hover:bg-gray-100 transition-colors"
+            aria-label="Previous"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            className="px-3 py-1 text-sm bg-ath-blue-light text-ath-blue rounded-md font-medium"
+            onClick={() => setCurrentWeek(new Date())}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => isMobile && visibleDays.length === 1 ? navigateDay(1) : navigateWeek(1)}
+            className="rounded-full p-1.5 hover:bg-gray-100 transition-colors"
+            aria-label="Next"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
-      {/* Day Detail Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
-          {selectedDayIndex !== null && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">
-                  {weekDates[selectedDayIndex].toLocaleDateString("default", { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
-                  })}
-                </h2>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Close</Button>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-4">
-                {(courts || []).map((court) => (
-                  <div key={court.id} className="border rounded-lg overflow-hidden">
-                    <div 
-                      className={cn(
-                        "px-4 py-2 text-white font-medium",
-                        court.type === "tennis-clay" ? "bg-ath-clay" :
-                        court.type === "tennis-hard" ? "bg-ath-hard" :
-                        court.type === "padel" ? "bg-ath-grass" : "bg-ath-central"
-                      )}
-                    >
-                      {court.name} #{court.number}
-                    </div>
-                    <div className="divide-y">
-                      {(courtTimeSlots || timeSlots).map((timeSlot) => {
-                        // Find events for this court and time slot
-                        const courtEvents = mockEvents.filter(event => 
-                          event.courtNumber.toString() === court.number.toString() && 
-                          event.time === timeSlot
-                        );
-                        
-                        return (
-                          <div key={timeSlot} className="flex p-2 min-h-[60px]">
-                            <div className="w-16 text-sm font-medium text-gray-500 pt-1">{timeSlot}</div>
-                            <div className="flex-1">
-                              {courtEvents.map(event => (
-                                <div 
-                                  key={event.id}
-                                  className={cn(
-                                    "p-2 rounded-md mb-1 text-sm",
-                                    `court-${event.courtType}`
-                                  )}
-                                >
-                                  <div className="font-medium">{event.title}</div>
-                                  <div className="text-xs">{event.instructor}</div>
-                                  <div className="text-xs text-gray-600 mt-1">
-                                    {event.students.join(", ")}
-                                  </div>
-                                </div>
-                              ))}
-                              {courtEvents.length === 0 && (
-                                <div className="h-full w-full flex items-center justify-center text-gray-400 text-sm italic">
-                                  Available
-                                </div>
-                              )}
-                            </div>
+      {/* Mobile Day Selector */}
+      {isMobile && (
+        <div className="flex justify-center p-2 bg-gray-50 border-b">
+          <div className="flex space-x-1">
+            {weekDaysShort.map((day, index) => (
+              <button
+                key={index}
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium",
+                  visibleDays.includes(index) 
+                    ? "bg-ath-blue text-white" 
+                    : "bg-white text-gray-600 hover:bg-gray-100"
+                )}
+                onClick={() => setVisibleDays([index])}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Calendar Grid */}
+      <div className="overflow-x-auto">
+        <div className={isMobile ? "min-w-full" : "min-w-[800px]"}>
+          {/* Days Header */}
+          <div className={`grid ${isMobile ? `grid-cols-${visibleDays.length + 1}` : "grid-cols-8"} border-b`}>
+            <div className="p-2 border-r bg-gray-50"></div>
+            {weekDays.filter((_, index) => visibleDays.includes(index)).map((day, index) => {
+              const dayIndex = visibleDays[index];
+              return (
+                <div
+                  key={day + index}
+                  className={cn(
+                    "p-3 text-center border-r",
+                    isToday(weekDates[dayIndex]) ? "bg-ath-blue-light" : "bg-gray-50"
+                  )}
+                >
+                  <p className="text-sm font-medium">{day}</p>
+                  <p
+                    className={cn(
+                      "text-2xl font-semibold mt-1",
+                      isToday(weekDates[dayIndex]) ? "text-ath-blue" : ""
+                    )}
+                  >
+                    {formatDay(weekDates[dayIndex])}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Time Slots and Events */}
+          <div className="divide-y">
+            {timeSlots.map((time) => (
+              <div key={time} className={`grid ${isMobile ? `grid-cols-${visibleDays.length + 1}` : "grid-cols-8"}`}>
+                {/* Time Column */}
+                <div className="p-2 border-r bg-gray-50 flex items-center justify-center">
+                  <span className="text-xs font-medium text-gray-500">{time}</span>
+                </div>
+
+                {/* Days Columns */}
+                {visibleDays.map((dayIndex) => {
+                  const events = getEventsForTimeSlot(time, dayIndex);
+                  
+                  return (
+                    <div key={dayIndex} className="p-1 border-r min-h-[80px] relative">
+                      {events.map((event) => (
+                        <div
+                          key={event.id}
+                          className={cn(
+                            "court-event card-hover cursor-pointer",
+                            `court-${event.courtType}`
+                          )}
+                          style={{ height: `${event.duration * 80}px` }}
+                          onClick={() => handleEventClick(event)}
+                        >
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium text-sm">{event.title}</h4>
+                            <span className="text-xs bg-white/80 rounded px-1.5 py-0.5 shadow-sm">
+                              Court {event.courtNumber}
+                            </span>
                           </div>
-                        );
-                      })}
+                          <p className="text-xs text-gray-600 mt-1">
+                            {event.instructor}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {event.students.length} students
+                          </p>
+                          {event.objective && (
+                            <p className="text-xs bg-white/60 rounded px-1.5 py-0.5 mt-1 inline-block">
+                              {event.objective}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -5,7 +5,6 @@ import { useCourtVision } from "../context/CourtVisionContext";
 import { PeopleTabsList } from "./PeopleTabsList";
 import { PeopleFilters } from "./PeopleFilters";
 import { PeopleTabContent } from "./PeopleTabContent";
-import { PersonData } from "../types";
 
 export function PeopleList() {
   const { 
@@ -20,13 +19,6 @@ export function PeopleList() {
   const [activeTab, setActiveTab] = useState("players");
   const [programFilter, setProgramFilter] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
-  
-  // Create wrapper functions to handle type conversion
-  const handleAddToDragAreaWrapper = (person: PersonData) => {
-    if (person && person.id) {
-      handleAddToDragArea(person.id);
-    }
-  };
   
   return (
     <div className="bg-white rounded-lg shadow-sm p-3">
@@ -50,7 +42,7 @@ export function PeopleList() {
           coachesList={coachesList}
           programFilter={programFilter}
           handleAddPerson={handleAddPerson}
-          handleAddToDragArea={handleAddToDragAreaWrapper}
+          handleAddToDragArea={handleAddToDragArea}
         />
         
         <PeopleTabContent 
@@ -62,7 +54,7 @@ export function PeopleList() {
           programFilter={programFilter}
           availabilityFilter={availabilityFilter}
           handleAddPerson={handleAddPerson}
-          handleAddToDragArea={handleAddToDragAreaWrapper}
+          handleAddToDragArea={handleAddToDragArea}
         />
       </Tabs>
     </div>

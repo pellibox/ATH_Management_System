@@ -1,36 +1,53 @@
+
 import { PersonData } from "../../../../types";
+import { PERSON_TYPES } from "../../../../constants";
+import { calculateTimeSlotSpan } from "../../../../time-slot/utils";
 
 /**
- * Prepares a person object for assignment to a court, setting relevant properties
+ * Process a person assignment, handling time slots, positions, and metadata
  */
 export const preparePersonAssignment = (
   person: PersonData,
   courtId: string,
-  position?: { x: number; y: number },
+  position?: { x: number, y: number },
   timeSlot?: string,
   timeSlots?: string[]
 ): PersonData => {
-  let durationHours = person.durationHours || 1;
-  let endTimeSlot = timeSlot;
+  // Create a deep copy of the person object to avoid reference issues
+  const personWithCourtInfo = { 
+    ...JSON.parse(JSON.stringify(person)), 
+    courtId,
+    position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
+    date: new Date().toISOString().split('T')[0],
+    durationHours: person.durationHours || 1,
+    programColor: person.programColor || (person.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#ef4444")
+  };
 
-  if (timeSlot && timeSlots) {
-    const startIndex = timeSlots.indexOf(timeSlot);
-    const endIndex = startIndex + durationHours * 2 - 1; // Assuming 30 min slots
-    endTimeSlot = timeSlots[endIndex] || timeSlots[timeSlots.length - 1];
+  // IMPORTANT: Set the timeSlot if explicitly provided in the drop
+  if (timeSlot) {
+    console.log(`Setting timeSlot to ${timeSlot} for ${person.name}`);
+    personWithCourtInfo.timeSlot = timeSlot;
+    
+    // Calculate end time slot if duration > 1 or has fractional hours (like 1.5)
+    if (personWithCourtInfo.durationHours !== 1 && timeSlots) {
+      const endTimeSlot = calculateTimeSlotSpan(
+        timeSlot,
+        personWithCourtInfo.durationHours,
+        timeSlots
+      );
+      
+      if (endTimeSlot) {
+        personWithCourtInfo.endTimeSlot = endTimeSlot;
+        console.log(`Setting endTimeSlot to ${endTimeSlot} (spanning ${personWithCourtInfo.durationHours} hours)`);
+      }
+    }
   }
 
-  return {
-    ...person,
-    courtId,
-    position,
-    timeSlot,
-    endTimeSlot,
-    sourceTimeSlot: person.timeSlot,
-  };
+  return personWithCourtInfo;
 };
 
 /**
- * Removes a person from their source court or available list
+ * Create updated courts array with person removed from source
  */
 export const removePersonFromSource = (
   courts: any[],
@@ -38,80 +55,52 @@ export const removePersonFromSource = (
   sourceTimeSlot?: string,
   sourceCourtId?: string
 ): any[] => {
-  if (!sourceTimeSlot && !sourceCourtId) {
-    return courts;
-  }
+  if (!sourceTimeSlot && !sourceCourtId) return [...courts];
+  
+  // Create a new courts array
+  let updatedCourts = JSON.parse(JSON.stringify(courts));
 
-  return courts.map((court) => {
-    if (court.id === sourceCourtId) {
+  // Handle removal for both player and coach types similarly - remove only from specific time slot
+  if (sourceTimeSlot && sourceCourtId) {
+    updatedCourts = updatedCourts.map((court: any) => {
+      if (court.id === sourceCourtId) {
+        return {
+          ...court,
+          occupants: court.occupants.filter((p: PersonData) => 
+            !(p.id === person.id && p.timeSlot === sourceTimeSlot)
+          )
+        };
+      }
+      return court;
+    });
+  } else {
+    // For layout view (non-time-slot), remove from all time slots
+    updatedCourts = updatedCourts.map((court: any) => {
       return {
         ...court,
-        occupants: court.occupants.filter(
-          (occupant: PersonData) =>
-            occupant.id !== person.id || occupant.timeSlot !== sourceTimeSlot
-        ),
+        occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
       };
-    }
-    return court;
-  });
+    });
+  }
+
+  return updatedCourts;
 };
 
 /**
- * Adds a person to the specified court
+ * Add person to target court
  */
 export const addPersonToCourt = (
   courts: any[],
   courtId: string,
-  person: PersonData
+  personWithCourtInfo: PersonData
 ): any[] => {
-  return courts.map((court) => {
+  return courts.map((court: any) => {
     if (court.id === courtId) {
       return {
         ...court,
-        occupants: [...court.occupants, person],
+        occupants: [...court.occupants, personWithCourtInfo],
       };
     }
     return court;
   });
-};
-
-/**
- * Checks if a coach is already assigned to another court at the specified time
- * 
- * @param courts Current courts data
- * @param coachId The ID of the coach to check
- * @param targetCourtId The court ID we want to assign the coach to
- * @param timeSlot The time slot we want to assign the coach to
- * @returns Either false (no overlap) or an object with details about the overlap
- */
-export const checkCoachOverlap = (
-  courts: any[],
-  coachId: string,
-  targetCourtId: string,
-  timeSlot: string
-) => {
-  // Loop through all courts except the target court
-  for (const court of courts) {
-    if (court.id === targetCourtId) continue;
-    
-    // Check if the coach is already assigned to this court at the same time slot
-    const existingAssignment = court.occupants.find(
-      (person: any) => 
-        person.id === coachId && 
-        person.type === "coach" && 
-        (person.timeSlot === timeSlot || 
-          (person.timeSlot && person.endTimeSlot && 
-            timeSlot >= person.timeSlot && timeSlot <= person.endTimeSlot))
-    );
-    
-    if (existingAssignment) {
-      return {
-        courtId: court.id,
-        timeSlot,
-        coachId
-      };
-    }
-  }
-  
-  return false;
 };

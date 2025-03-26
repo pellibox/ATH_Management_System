@@ -11,25 +11,14 @@ export function CourtVisionContent() {
     handleActivityDrop,
     handleRemovePerson,
     handleRemoveActivity,
-    handleUpdateCourt
+    handleRenameCourt,
+    handleChangeCourtType,
+    handleChangeCourtNumber
   } = useCourtVision();
 
   console.log("CourtVisionContent rendering", { 
     filteredCourtsCount: filteredCourts.length
   });
-
-  // Create wrapper functions to support the court grid component
-  const handleRenameCourt = (courtId: string, name: string) => {
-    handleUpdateCourt(courtId, { name });
-  };
-
-  const handleChangeCourtType = (courtId: string, type: string) => {
-    handleUpdateCourt(courtId, { type });
-  };
-
-  const handleChangeCourtNumber = (courtId: string, number: number) => {
-    handleUpdateCourt(courtId, { number });
-  };
 
   return (
     <div className="flex-1 overflow-hidden">

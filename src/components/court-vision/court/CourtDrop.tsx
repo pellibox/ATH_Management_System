@@ -20,7 +20,7 @@ export function CourtDrop({
   onActivityDrop
 }: CourtDropProps) {
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity", "person"],
+    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
     drop: (item: any, monitor) => {
       const clientOffset = monitor.getClientOffset();
       const initialOffset = monitor.getInitialClientOffset();
@@ -32,36 +32,31 @@ export function CourtDrop({
           y: (clientOffset.y - containerRect.top) / containerRect.height
         };
         
-        if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH || item.type === "person") {
+        if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
           if (viewMode === "layout") {
             onDrop(courtId, item as PersonData, position);
           } else {
-            console.log("Court component: schedule view drop - sending to schedule handler");
-            // In schedule view, we'll still process the drop but let the TimeSlotDropArea handle the specific time
-            onDrop(courtId, item as PersonData, position);
+            console.log("Court component: schedule view drop - no direct action needed");
           }
         } else if (item.type === "activity") {
           if (viewMode === "layout") {
             onActivityDrop(courtId, item as ActivityData);
           } else {
-            console.log("Court component: schedule view activity drop - sending to schedule handler");
-            onActivityDrop(courtId, item as ActivityData);
+            console.log("Court component: schedule view activity drop - no direct action needed");
           }
         }
       } else {
-        if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH || item.type === "person") {
+        if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
           if (viewMode === "layout") {
             onDrop(courtId, item as PersonData);
           } else {
-            console.log("Court component: schedule view drop without position - sending to schedule handler");
-            onDrop(courtId, item as PersonData);
+            console.log("Court component: schedule view drop without position - no direct action needed");
           }
         } else if (item.type === "activity") {
           if (viewMode === "layout") {
             onActivityDrop(courtId, item as ActivityData);
           } else {
-            console.log("Court component: schedule view activity drop without position - sending to schedule handler");
-            onActivityDrop(courtId, item as ActivityData);
+            console.log("Court component: schedule view activity drop without position - no direct action needed");
           }
         }
       }

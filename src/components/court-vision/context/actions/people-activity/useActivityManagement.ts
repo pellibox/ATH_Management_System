@@ -9,18 +9,7 @@ export const useActivityManagement = ({
 }: ActivityManagementProps) => {
   const { toast } = useToast();
 
-  const handleAddActivity = (activityData: ActivityData | {name: string, type: string, duration: string}) => {
-    if ('id' in activityData) {
-      setActivities([...activities, activityData as ActivityData]);
-      
-      toast({
-        title: "Attività Aggiunta",
-        description: `${activityData.name} è stata aggiunta alla lista`,
-      });
-      
-      return;
-    }
-    
+  const handleAddActivity = (activityData: {name: string, type: string, duration: string}) => {
     const newActivity: ActivityData = {
       id: `new-activity-${Date.now()}`,
       name: activityData.name,
@@ -36,29 +25,7 @@ export const useActivityManagement = ({
     });
   };
 
-  const handleUpdateActivity = (activityId: string, updatedData: Partial<ActivityData>) => {
-    setActivities(activities.map(activity => 
-      activity.id === activityId ? { ...activity, ...updatedData } : activity
-    ));
-    
-    toast({
-      title: "Attività Aggiornata",
-      description: "L'attività è stata aggiornata con successo",
-    });
-  };
-
-  const handleRemoveActivity = (activityId: string) => {
-    setActivities(activities.filter(activity => activity.id !== activityId));
-    
-    toast({
-      title: "Attività Rimossa",
-      description: "L'attività è stata rimossa dalla lista",
-    });
-  };
-
   return {
-    handleAddActivity,
-    handleUpdateActivity,
-    handleRemoveActivity
+    handleAddActivity
   };
 };
