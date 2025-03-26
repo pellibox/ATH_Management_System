@@ -8,12 +8,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect to dashboard after a short delay
-    const timer = setTimeout(() => {
-      navigate("/dashboard");
-    }, 2000);
-
-    return () => clearTimeout(timer);
+    // Immediate navigation to dashboard
+    navigate("/dashboard");
   }, [navigate]);
 
   return (

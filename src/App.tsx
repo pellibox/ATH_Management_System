@@ -38,7 +38,7 @@ function App() {
           <CourtVisionProvider>
             <div className="flex flex-col min-h-screen">
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route element={<MainLayout />}>
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="calendar" element={<Calendar />} />
