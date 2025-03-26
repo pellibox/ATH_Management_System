@@ -1,3 +1,4 @@
+
 /* Calendar court event styling */
 .court-event {
   padding: 8px;
@@ -192,4 +193,30 @@
 .court-time-slot {
   padding: 2px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Floating time labels */
+.time-label {
+  position: sticky;
+  left: 0;
+  background-color: white;
+  z-index: 20;
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.1);
+  border-radius: 0 4px 4px 0;
+}
+
+/* Floating navigation */
+.time-nav-floating {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 4px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }

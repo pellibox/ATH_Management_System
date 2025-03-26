@@ -30,14 +30,12 @@ export function TimeSlot({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="relative flex border-b border-gray-200 py-0.5">
+    <div className="relative flex border-b border-gray-200 py-0.5 h-[22.5px]">
       <div className="flex-1 px-1 relative">
-        <TimeSlotHeader time={time} />
-        
         <div className="relative">
           <div 
             ref={scrollContainerRef} 
-            className="max-h-[45px] overflow-auto relative"
+            className="max-h-[20px] overflow-auto relative"
           >
             <TimeSlotOccupants 
               occupants={occupants} 

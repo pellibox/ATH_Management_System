@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
@@ -69,9 +70,20 @@ export function CourtScheduleView({
       </div>
       
       <div className="flex flex-1 relative">
+        {/* Time labels column - always visible */}
+        <div className="w-16 z-20 flex flex-col">
+          {timeSlots.map((time, index) => (
+            <div key={`time-label-${time}`} className="h-[22.5px] flex items-center">
+              <div className="bg-white px-1 py-0.5 text-xs font-medium rounded shadow-sm">
+                {time}
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div 
           ref={scrollContainerRef} 
-          className="flex-1 overflow-auto h-[calc(100%-2rem)] relative"
+          className="flex-1 overflow-auto h-[calc(100%-2rem)] relative ml-2"
         >
           <div className="min-h-full pb-16">
             {timeSlots.map((time) => (
@@ -97,8 +109,8 @@ export function CourtScheduleView({
         </div>
         
         {/* Court-specific Time Selection Bar */}
-        <div className="w-10 absolute right-0 top-0 bottom-0 bg-white/95 border-l border-gray-200 shadow-sm z-10 flex flex-col overflow-auto">
-          <div className="py-1 flex flex-col items-center w-full">
+        <div className="w-10 fixed right-0 top-1/4 bottom-1/4 bg-white/95 border border-gray-200 rounded-l-lg shadow-md z-30 flex flex-col overflow-visible">
+          <div className="py-1 flex flex-col items-center w-full h-full justify-center">
             {getUniqueHours(timeSlots).map((hour, index) => (
               <button
                 key={`nav-${hour}`}
