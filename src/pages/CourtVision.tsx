@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { CourtVisionProvider } from "@/components/court-vision/CourtVisionContext";
@@ -10,7 +10,8 @@ import CourtGrid from "@/components/court-vision/CourtGrid";
 import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashboard";
 import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
 import { AvailablePeople } from "@/components/court-vision/AvailablePeople";
-import { PeopleManagement } from "@/components/court-vision/PeopleManagement";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, UserCog } from "lucide-react";
 
 // Main content component that renders based on view type
 function CourtVisionContent() {
@@ -25,12 +26,7 @@ function CourtVisionContent() {
     handleRemoveActivity,
     handleRenameCourt,
     handleChangeCourtType,
-    handleChangeCourtNumber,
-    handleAddToDragArea,
-    handleAssignProgram,
-    playersList,
-    coachesList,
-    programs
+    handleChangeCourtNumber
   } = useCourtVision();
 
   return (
@@ -59,7 +55,7 @@ function CourtVisionContent() {
 
 // Main Court Vision component
 export default function CourtVision() {
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("players");
   
   return (
     <DndProvider backend={HTML5Backend}>
@@ -77,8 +73,8 @@ export default function CourtVision() {
           
           <div className="flex flex-1 gap-4 overflow-hidden">
             {/* Left sidebar for people management */}
-            <div className="w-80 flex flex-col space-y-4 overflow-y-auto pb-20 shrink-0">
-              <AvailablePeopleSidebar />
+            <div className="w-80 flex flex-col space-y-4 overflow-y-auto pb-20 shrink-0 border-r pr-4">
+              <PeopleList />
             </div>
             
             {/* Main content area that scrolls */}
@@ -92,8 +88,8 @@ export default function CourtVision() {
   );
 }
 
-// Sidebar component for available people
-function AvailablePeopleSidebar() {
+// Simplified people component that just shows players and coaches tabs
+function PeopleList() {
   const { 
     people, 
     programs, 
@@ -104,25 +100,42 @@ function AvailablePeopleSidebar() {
     handleAssignProgram
   } = useCourtVision();
   
+  const [activeTab, setActiveTab] = useState("players");
+  
   return (
-    <>
-      <AvailablePeople
-        people={people}
-        programs={programs}
-        onAddPerson={handleAddPerson}
-        onAddToDragArea={handleAddToDragArea}
-        playersList={playersList}
-        coachesList={coachesList}
-      />
-      <PeopleManagement
-        playersList={playersList}
-        coachesList={coachesList}
-        programs={programs}
-        onAddPerson={handleAddPerson}
-        onRemovePerson={() => {}} 
-        onAddToDragArea={handleAddToDragArea}
-        onAssignProgram={handleAssignProgram}
-      />
-    </>
+    <div className="bg-white rounded-xl shadow-sm p-4">
+      <Tabs defaultValue="players" onValueChange={setActiveTab} value={activeTab}>
+        <TabsList className="grid w-full grid-cols-2 mb-3">
+          <TabsTrigger value="players" className="text-xs">
+            <User className="h-3 w-3 mr-1" /> <span>Giocatori</span>
+          </TabsTrigger>
+          <TabsTrigger value="coaches" className="text-xs">
+            <UserCog className="h-3 w-3 mr-1" /> <span>Allenatori</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="players" className="mt-0">
+          <AvailablePeople
+            people={people}
+            programs={programs}
+            onAddPerson={handleAddPerson}
+            onAddToDragArea={handleAddToDragArea}
+            playersList={playersList}
+            coachesList={coachesList}
+          />
+        </TabsContent>
+        
+        <TabsContent value="coaches" className="mt-0">
+          <AvailablePeople
+            people={[]}
+            programs={programs}
+            onAddPerson={handleAddPerson}
+            onAddToDragArea={handleAddToDragArea}
+            playersList={[]}
+            coachesList={coachesList}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

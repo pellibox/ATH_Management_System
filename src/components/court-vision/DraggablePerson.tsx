@@ -40,7 +40,7 @@ export function DraggablePerson({
         person={person}
         programs={programs}
         onAddToDragArea={onAddToDragArea}
-        onRemove={onRemovePerson}
+        onRemove={onRemovePerson ? () => onRemovePerson(person.id) : undefined}
       />
       
       <Popover>

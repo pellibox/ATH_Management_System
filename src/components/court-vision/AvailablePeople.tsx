@@ -4,10 +4,8 @@ import { Users, User, UserCog, Filter, AlertCircle } from "lucide-react";
 import { PersonCard } from "./PersonCard";
 import { PersonData, Program } from "./types";
 import { PERSON_TYPES } from "./constants";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 
 export interface AvailablePeopleProps {
   people: PersonData[];
@@ -30,24 +28,31 @@ export function AvailablePeople({
   playersList = [],
   coachesList = []
 }: AvailablePeopleProps) {
-  const [selectedTab, setSelectedTab] = useState("players");
   const [programFilter, setProgramFilter] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const { toast } = useToast();
+  
+  // Determine which list to show based on provided props
+  const showPlayers = playersList && playersList.length > 0;
+  const showCoaches = coachesList && coachesList.length > 0 && !showPlayers;
   
   // For coaches, we'll show ALL coaches
   const availableCoaches = coachesList;
   
   // Filter available people by type and program
   const filteredPlayers = useMemo(() => {
+    if (!showPlayers) return [];
+    
     return playersList.filter(player => {
       if (programFilter === "all") return true;
       if (programFilter === "none") return !player.programId && (!player.programIds || player.programIds.length === 0);
       return player.programId === programFilter || (player.programIds && player.programIds.includes(programFilter));
     });
-  }, [playersList, programFilter]);
+  }, [playersList, programFilter, showPlayers]);
   
   const filteredCoaches = useMemo(() => {
+    if (!showCoaches && !coachesList.length) return [];
+    
     return availableCoaches.filter(coach => {
       // First apply program filter
       const passesProgram = programFilter === "all" 
@@ -65,7 +70,7 @@ export function AvailablePeople({
           
       return passesProgram && passesAvailability;
     });
-  }, [availableCoaches, programFilter, availabilityFilter]);
+  }, [availableCoaches, programFilter, availabilityFilter, showCoaches, coachesList]);
   
   // Handle attempt to drag an unavailable coach
   const handleAddToDragArea = (person: PersonData) => {
@@ -83,13 +88,11 @@ export function AvailablePeople({
     }
   };
   
+  // Determine which list to display
+  const peopleToShow = showPlayers ? filteredPlayers : filteredCoaches;
+  
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4">
-      <h2 className="font-medium mb-3 flex items-center">
-        <Users className="h-4 w-4 mr-2" /> 
-        <span>Persone Disponibili</span>
-      </h2>
-      
+    <div className="overflow-hidden">
       <div className="mb-3 flex items-center space-x-2">
         <div className="flex-1">
           <Select value={programFilter} onValueChange={setProgramFilter}>
@@ -114,7 +117,7 @@ export function AvailablePeople({
           </Select>
         </div>
         
-        {selectedTab === "coaches" && (
+        {showCoaches && (
           <div className="flex-1">
             <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
               <SelectTrigger className="w-full h-8 text-xs">
@@ -130,84 +133,28 @@ export function AvailablePeople({
         )}
       </div>
       
-      <Tabs defaultValue="players" onValueChange={setSelectedTab} value={selectedTab}>
-        <TabsList className="grid w-full grid-cols-2 mb-3">
-          <TabsTrigger value="players" className="text-xs">
-            <User className="h-3 w-3 mr-1" /> <span>Giocatori ({filteredPlayers.length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="coaches" className="text-xs">
-            <UserCog className="h-3 w-3 mr-1" /> <span>Allenatori ({filteredCoaches.length})</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="players" className="max-h-[280px] overflow-y-auto mt-0">
-          {filteredPlayers.length > 0 ? (
-            filteredPlayers.map((person) => (
-              <PersonCard
-                key={person.id}
-                person={person}
-                programs={programs}
-                onAddToDragArea={onAddToDragArea}
-              />
-            ))
-          ) : (
-            <div className="text-sm text-gray-500 italic p-4 text-center bg-gray-50 rounded-md">
-              {programFilter !== "all" 
-                ? "Nessun giocatore trovato con questo programma" 
-                : "Nessun giocatore disponibile"}
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="coaches" className="max-h-[280px] overflow-y-auto mt-0">
-          {filteredCoaches.length > 0 ? (
-            filteredCoaches.map((person) => (
-              <PersonCard
-                key={person.id}
-                person={person}
-                programs={programs}
-                onAddToDragArea={handleAddToDragArea}
-              />
-            ))
-          ) : (
-            <div className="text-sm text-gray-500 italic p-4 text-center bg-gray-50 rounded-md">
-              {programFilter !== "all" 
-                ? "Nessun allenatore trovato con questo programma" 
-                : availabilityFilter !== "all"
-                  ? availabilityFilter === "available" 
-                    ? "Nessun allenatore disponibile" 
-                    : "Nessun allenatore indisponibile"
-                  : "Non ci sono allenatori"}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-      
-      {/* Program legend */}
-      {programs.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-2">Legenda programmi:</p>
-          <div className="flex flex-wrap gap-1">
-            {programs.map(program => (
-              <Badge 
-                key={program.id} 
-                variant="outline" 
-                className="text-xs"
-                style={{ 
-                  backgroundColor: program.color,
-                  color: 'white',
-                  opacity: 0.8
-                }}
-              >
-                {program.name}
-              </Badge>
-            ))}
-            <Badge variant="outline" className="text-xs bg-gray-200 text-gray-700">
-              Senza programma
-            </Badge>
+      <div className="max-h-[400px] overflow-y-auto">
+        {peopleToShow.length > 0 ? (
+          peopleToShow.map((person) => (
+            <PersonCard
+              key={person.id}
+              person={person}
+              programs={programs}
+              onAddToDragArea={handleAddToDragArea}
+            />
+          ))
+        ) : (
+          <div className="text-sm text-gray-500 italic p-4 text-center bg-gray-50 rounded-md">
+            {programFilter !== "all" 
+              ? `Nessun ${showPlayers ? 'giocatore' : 'allenatore'} trovato con questo programma` 
+              : showCoaches && availabilityFilter !== "all"
+                ? availabilityFilter === "available" 
+                  ? "Nessun allenatore disponibile" 
+                  : "Nessun allenatore indisponibile"
+                : `Nessun ${showPlayers ? 'giocatore' : 'allenatore'} disponibile`}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
