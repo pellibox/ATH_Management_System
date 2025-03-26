@@ -5,6 +5,7 @@ import { CourtProps, PersonData } from "../types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Users, UserCircle, Clock } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface PlayerScheduleTemplateProps {
   player: PersonData;
@@ -126,77 +127,79 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y">
-          {playerAssignments.map((assignment, index) => (
-            <div key={index} className="p-4">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-medium text-lg">
-                    Ore {assignment.timeSlot}
-                  </h3>
-                  <p className="text-gray-600 flex items-center mt-1">
-                    <Badge 
-                      className="mr-2" 
-                      variant="outline"
-                      style={{
-                        backgroundColor: getCourtTypeColor(assignment.courtType),
-                        color: "white"
-                      }}
-                    >
-                      {assignment.courtType}
-                    </Badge>
-                    Campo {assignment.courtName} #{assignment.courtNumber}
-                  </p>
+        <ScrollArea className="max-h-[400px]">
+          <div className="divide-y">
+            {playerAssignments.map((assignment, index) => (
+              <div key={index} className="p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-medium text-lg">
+                      Ore {assignment.timeSlot}
+                    </h3>
+                    <p className="text-gray-600 flex items-center mt-1">
+                      <Badge 
+                        className="mr-2" 
+                        variant="outline"
+                        style={{
+                          backgroundColor: getCourtTypeColor(assignment.courtType),
+                          color: "white"
+                        }}
+                      >
+                        {assignment.courtType}
+                      </Badge>
+                      Campo {assignment.courtName} #{assignment.courtNumber}
+                    </p>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-500">Durata:</span> 1 ora
+                  </div>
                 </div>
-                <div className="text-sm">
-                  <span className="text-gray-500">Durata:</span> 1 ora
-                </div>
+
+                {assignment.coaches.length > 0 && (
+                  <div className="mb-3">
+                    <h4 className="text-sm font-medium text-gray-700 flex items-center mb-1">
+                      <UserCircle className="h-4 w-4 mr-1 text-gray-500" />
+                      Coach:
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {assignment.coaches.map(coach => (
+                        <Badge 
+                          key={coach.id} 
+                          variant="secondary" 
+                          className="text-sm"
+                          style={getPersonBadgeStyle(coach)}
+                        >
+                          {coach.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {assignment.otherPlayers.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 flex items-center mb-1">
+                      <Users className="h-4 w-4 mr-1 text-gray-500" />
+                      Altri Giocatori:
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {assignment.otherPlayers.map(otherPlayer => (
+                        <Badge 
+                          key={otherPlayer.id} 
+                          variant="outline" 
+                          className="text-sm"
+                          style={getPersonBadgeStyle(otherPlayer)}
+                        >
+                          {otherPlayer.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {assignment.coaches.length > 0 && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-medium text-gray-700 flex items-center mb-1">
-                    <UserCircle className="h-4 w-4 mr-1 text-gray-500" />
-                    Coach:
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {assignment.coaches.map(coach => (
-                      <Badge 
-                        key={coach.id} 
-                        variant="secondary" 
-                        className="text-sm"
-                        style={getPersonBadgeStyle(coach)}
-                      >
-                        {coach.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {assignment.otherPlayers.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 flex items-center mb-1">
-                    <Users className="h-4 w-4 mr-1 text-gray-500" />
-                    Altri Giocatori:
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {assignment.otherPlayers.map(otherPlayer => (
-                      <Badge 
-                        key={otherPlayer.id} 
-                        variant="outline" 
-                        className="text-sm"
-                        style={getPersonBadgeStyle(otherPlayer)}
-                      >
-                        {otherPlayer.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

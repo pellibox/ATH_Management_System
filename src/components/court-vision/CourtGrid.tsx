@@ -1,6 +1,7 @@
 
 import { CourtProps, PersonData, ActivityData } from './types';
 import { Court } from './Court';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CourtGridProps {
   courts: CourtProps[];

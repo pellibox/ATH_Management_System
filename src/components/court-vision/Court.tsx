@@ -12,6 +12,7 @@ import { CourtLayout } from "./CourtLayout";
 import { CourtSettings } from "./CourtSettings";
 import { CourtHeader } from "./CourtHeader";
 import { CourtControls } from "./CourtControls";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CourtComponentProps {
   court: CourtProps;
@@ -289,27 +290,29 @@ export function Court({
                 </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto">
-                {timeSlots.map((time) => (
-                  <TimeSlot
-                    key={`${court.id}-${time}`}
-                    courtId={court.id}
-                    time={time}
-                    occupants={getOccupantsForTimeSlot(time)}
-                    activities={getActivitiesForTimeSlot(time)}
-                    onDrop={(courtId, person, position, timeSlot) => {
-                      console.log("Dropping at time:", timeSlot, person);
-                      onDrop(courtId, person, position, timeSlot);
-                    }}
-                    onActivityDrop={(courtId, activity, timeSlot) => {
-                      console.log("Dropping activity at time:", timeSlot, activity);
-                      onActivityDrop(courtId, activity, timeSlot);
-                    }}
-                    onRemovePerson={(personId, time) => onRemovePerson && onRemovePerson(personId, time)}
-                    onRemoveActivity={(activityId, time) => onRemoveActivity && onRemoveActivity(activityId, time)}
-                  />
-                ))}
-              </div>
+              <ScrollArea className="flex-1 h-[calc(100%-48px)] overflow-y-auto pr-2">
+                <div className="min-h-full">
+                  {timeSlots.map((time) => (
+                    <TimeSlot
+                      key={`${court.id}-${time}`}
+                      courtId={court.id}
+                      time={time}
+                      occupants={getOccupantsForTimeSlot(time)}
+                      activities={getActivitiesForTimeSlot(time)}
+                      onDrop={(courtId, person, position, timeSlot) => {
+                        console.log("Dropping at time:", timeSlot, person);
+                        onDrop(courtId, person, position, timeSlot);
+                      }}
+                      onActivityDrop={(courtId, activity, timeSlot) => {
+                        console.log("Dropping activity at time:", timeSlot, activity);
+                        onActivityDrop(courtId, activity, timeSlot);
+                      }}
+                      onRemovePerson={(personId, time) => onRemovePerson && onRemovePerson(personId, time)}
+                      onRemoveActivity={(activityId, time) => onRemoveActivity && onRemoveActivity(activityId, time)}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
             </div>
           )}
 
