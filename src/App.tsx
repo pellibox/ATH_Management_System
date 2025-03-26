@@ -19,6 +19,8 @@ import Tournaments from "./pages/Tournaments";
 import Videos from "./pages/Videos";
 import Integrations from "./pages/Integrations";
 import Activities from "./pages/Activities";
+import ExtraActivities from "./pages/ExtraActivities";
+import Coaches from "./pages/Coaches";
 import "./App.css";
 import "./index.css";
 
@@ -42,11 +44,13 @@ function App() {
                 <Route path="court-vision/layout" element={<CourtVision />} />
                 <Route path="staff" element={<Staff />} />
                 <Route path="players" element={<Players />} />
+                <Route path="coaches" element={<Coaches />} />
                 <Route path="programs" element={<Programs />} />
                 <Route path="tournaments" element={<Tournaments />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="videos" element={<Videos />} />
                 <Route path="activities" element={<Activities />} />
+                <Route path="extra-activities" element={<ExtraActivities />} />
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
