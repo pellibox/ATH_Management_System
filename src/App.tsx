@@ -28,26 +28,11 @@ const Coaches = lazy(() => import("./pages/Coaches"));
 const LoadingFallback = () => (
   <div className="flex justify-center items-center h-screen">
     <div className="text-center">
-      <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="48" 
-        height="48" 
-        viewBox="0 0 24 24" 
-        className="mx-auto"
-        style={{animation: 'spin 1.5s linear infinite'}}
-      >
-        {/* Tennis ball with dashed lines */}
-        <circle cx="12" cy="12" r="10" fill="none" stroke="#FFC107" strokeWidth="2" />
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" 
-              fill="none" 
-              stroke="#FFC107" 
-              strokeWidth="1.5" 
-              strokeDasharray="5,5" />
-        <path d="M2 12h20M12 2v20" 
-              stroke="#FFC107" 
-              strokeWidth="1.5" 
-              strokeDasharray="2,3" />
-      </svg>
+      <img 
+        src="/lovable-uploads/1d4cf35c-0a44-4354-ba59-335096dbc4b6.png" 
+        alt="Tennis Ball Loading" 
+        className="w-16 h-16 mx-auto animate-spin"
+      />
       <p className="mt-4 text-gray-600">Caricamento...</p>
     </div>
   </div>

@@ -58,7 +58,11 @@ export default function Dashboard() {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-ath-blue rounded-full animate-spin mx-auto"></div>
+          <img 
+            src="/lovable-uploads/1d4cf35c-0a44-4354-ba59-335096dbc4b6.png" 
+            alt="Tennis Ball Loading" 
+            className="w-16 h-16 mx-auto animate-spin"
+          />
           <p className="mt-4 text-gray-600">Caricamento dashboard...</p>
         </div>
       </div>
