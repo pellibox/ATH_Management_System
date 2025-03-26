@@ -12,6 +12,7 @@ export default function MainLayout() {
   const isMobile = useIsMobile();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Toggle sidebar collapse state
   const toggleSidebar = () => {
@@ -30,15 +31,24 @@ export default function MainLayout() {
     console.log("MainLayout initializing");
     
     // Force initialization after a brief delay to ensure DOM is ready
-    const timer = setTimeout(() => {
+    const initTimer = setTimeout(() => {
       setIsInitialized(true);
       console.log("MainLayout initialized");
     }, 100);
     
+    // Simulate short loading to ensure smooth transitions
+    const loadTimer = setTimeout(() => {
+      setIsLoading(false);
+      console.log("MainLayout finished loading");
+    }, 200);
+    
     // Scroll to top on route change
     window.scrollTo(0, 0);
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(initTimer);
+      clearTimeout(loadTimer);
+    };
   }, []);
   
   // Handle route changes
@@ -47,7 +57,18 @@ export default function MainLayout() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  console.log("MainLayout rendering, path:", location.pathname, "initialized:", isInitialized);
+  console.log("MainLayout rendering, path:", location.pathname, "initialized:", isInitialized, "isLoading:", isLoading);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-t-ath-blue rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600">Caricamento layout...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AnimationProvider>

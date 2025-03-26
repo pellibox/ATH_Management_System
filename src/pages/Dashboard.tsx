@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [courts, setCourts] = useState<CourtProps[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
   
   // Trigger animations after mount
@@ -18,8 +19,11 @@ export default function Dashboard() {
     console.log("Dashboard component mounted");
     
     try {
-      // Set visibility immediately to avoid blank screen
-      setIsVisible(true);
+      // Set visibility after a brief delay to ensure smooth transition
+      const visibilityTimer = setTimeout(() => {
+        setIsVisible(true);
+        console.log("Dashboard visibility set to true");
+      }, 100);
       
       const defaultCourts: CourtProps[] = [
         { 
@@ -63,26 +67,33 @@ export default function Dashboard() {
       ];
       
       setCourts(defaultCourts);
+      console.log("Dashboard courts data set", defaultCourts);
       
       // Simulate loading to ensure component fully initializes
-      setTimeout(() => {
+      const loadingTimer = setTimeout(() => {
         setIsLoading(false);
         console.log("Dashboard finished loading");
       }, 500);
+      
+      return () => {
+        clearTimeout(visibilityTimer);
+        clearTimeout(loadingTimer);
+      };
     } catch (error) {
       console.error("Error in Dashboard initialization:", error);
+      setHasError(true);
+      setIsLoading(false);
       toast({
         title: "Error",
         description: "Failed to load dashboard data",
         variant: "destructive"
       });
-      setIsLoading(false);
     }
   }, [toast]);
   
   // Add console logs to debug rendering
-  console.log("Dashboard rendering, isVisible:", isVisible, "isLoading:", isLoading);
-  console.log("Courts:", courts);
+  console.log("Dashboard rendering, isVisible:", isVisible, "isLoading:", isLoading, "hasError:", hasError);
+  console.log("Courts length:", courts.length);
   
   if (isLoading) {
     return (
@@ -95,10 +106,26 @@ export default function Dashboard() {
     );
   }
   
+  if (hasError) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <p className="text-xl text-red-500">Si è verificato un errore durante il caricamento della dashboard.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-ath-blue text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Riprova
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="max-w-7xl mx-auto p-4">
       <div className={cn(
-        "mb-8 opacity-100 transform transition-all duration-700",
+        "mb-8 transition-all duration-700",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )}>
         <h1 className="text-3xl font-bold">Benvenuto in ATH Management System</h1>
@@ -109,7 +136,10 @@ export default function Dashboard() {
       <DashboardSummary />
       
       {/* Court Assignments Dashboard */}
-      <div className="mt-8">
+      <div className={cn(
+        "mt-8 transition-all duration-700 delay-200",
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )}>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-xl font-semibold mb-4">Assignazione Campi</h2>
           <AssignmentsDashboard courts={courts} selectedDate={selectedDate} />

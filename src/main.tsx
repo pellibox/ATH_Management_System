@@ -3,7 +3,6 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { CourtVisionProvider } from './components/court-vision/context/CourtVisionContext'
 
 // Add explicit error boundary
 try {
@@ -17,9 +16,7 @@ try {
   
   createRoot(rootElement).render(
     <React.StrictMode>
-      <CourtVisionProvider>
-        <App />
-      </CourtVisionProvider>
+      <App />
     </React.StrictMode>
   );
   
