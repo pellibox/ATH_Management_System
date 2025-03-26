@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Player } from "@/types/player";
-import { MoreVertical, Edit, Trash2, Mail, SortAsc, SortDesc } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Mail, SortAsc, SortDesc, Clock, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,6 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ScheduleButton } from "./ScheduleMessage";
@@ -66,17 +66,14 @@ export function PlayerList() {
     );
   };
 
-  // Get program color for player
   const getProgramColor = (program: string | undefined) => {
     if (!program) return "#e0e0e0"; // Default gray
     
-    // Check if we can find the program in DEFAULT_PROGRAMS
     const foundProgram = DEFAULT_PROGRAMS.find(p => p.name === program || p.id === program);
     if (foundProgram) {
       return foundProgram.color;
     }
     
-    // Create a simple hash of the program name to get a deterministic color
     const hash = program.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8B5CF6", "#EC4899"];
     return colors[hash % colors.length];
@@ -155,40 +152,69 @@ export function PlayerList() {
                   <TableCell>{player.email}</TableCell>
                   <TableCell>{player.phone}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-white z-50">
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedPlayer(player);
+                        }}>
+                          <div className="flex items-center w-full">
+                            <div className="h-4 w-4 mr-2">👁️</div>
+                            Visualizza dettagli
+                          </div>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          setMessagePlayer(player);
+                        }}>
+                          <Mail className="h-4 w-4 mr-2" />
+                          Invia messaggio
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          const dialogTrigger = document.querySelector(`[data-player-id="${player.id}"]`);
+                          if (dialogTrigger instanceof HTMLElement) {
+                            dialogTrigger.click();
+                          }
+                        }}>
+                          <CalendarPlus className="h-4 w-4 mr-2" />
+                          Registra attività
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingPlayer(player);
+                        }}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Modifica
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePlayer(player.id, player.name);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Elimina
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    
+                    <div className="hidden">
                       <ActivityRegistration playerId={player.id} playerName={player.name} />
-                      <ScheduleButton onClick={() => setMessagePlayer(player)} />
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-white">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingPlayer(player);
-                              }}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Modifica
-                              </DropdownMenuItem>
-                            </DialogTrigger>
-                          </Dialog>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeletePlayer(player.id, player.name);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Elimina
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -204,7 +230,6 @@ export function PlayerList() {
         </TableBody>
       </Table>
 
-      {/* Player Detail Dialog */}
       {selectedPlayer && (
         <Dialog open={!!selectedPlayer} onOpenChange={(open) => !open && setSelectedPlayer(null)}>
           <DialogContent className="sm:max-w-[800px] bg-white">
