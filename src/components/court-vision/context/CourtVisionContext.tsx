@@ -30,6 +30,11 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   // Get state from hook
   const initialState = useCourtVisionState();
   
+  console.log("CourtVisionProvider initializing with state:", { 
+    isLayoutView: initialState.isLayoutView,
+    courtsCount: initialState.courts.length 
+  });
+
   // Set up state setters
   const [courts, setCourts] = useState(initialState.courts);
   const [people, setPeople] = useState(initialState.people);
@@ -51,6 +56,7 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   // Update playersList when initialPlayers changes
   useEffect(() => {
     if (initialPlayers && initialPlayers.length > 0) {
+      console.log("Setting playersList from initialPlayers:", initialPlayers.length);
       setPlayersList(initialPlayers);
     }
   }, [initialPlayers]);
@@ -126,6 +132,11 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     ...programHandlers,
     ...actions
   };
+
+  console.log("CourtVisionProvider rendering with context:", { 
+    isLayoutView: contextValue.isLayoutView,
+    filteredCourtsCount: contextValue.filteredCourts.length
+  });
 
   return (
     <CourtVisionContext.Provider value={contextValue}>

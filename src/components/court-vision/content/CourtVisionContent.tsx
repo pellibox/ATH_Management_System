@@ -18,6 +18,11 @@ export function CourtVisionContent() {
     handleChangeCourtNumber
   } = useCourtVision();
 
+  console.log("CourtVisionContent rendering", { 
+    filteredCourtsCount: filteredCourts.length, 
+    isLayoutView 
+  });
+
   return (
     <div className="flex-1 overflow-hidden">
       {isLayoutView ? (

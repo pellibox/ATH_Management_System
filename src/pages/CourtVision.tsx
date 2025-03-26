@@ -12,6 +12,7 @@ export default function CourtVision() {
   const { sharedPlayers } = useSharedPlayers();
   
   useEffect(() => {
+    console.log("CourtVision page mounted");
     console.log("CourtVision: sharedPlayers updated", sharedPlayers);
   }, [sharedPlayers]);
   
