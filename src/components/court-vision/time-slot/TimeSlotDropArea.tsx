@@ -52,7 +52,7 @@ export function TimeSlotDropArea({
     collect: (monitor) => ({
       isOver: !!monitor.isOver()
     })
-  }), [courtId, time]);
+  }), [courtId, time, onDrop, onActivityDrop]);
 
   return (
     <div

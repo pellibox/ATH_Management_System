@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CourtVisionContextType } from "./CourtVisionTypes";
 import { useCourtVisionState } from "./useCourtVisionState";
