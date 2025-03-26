@@ -73,7 +73,7 @@ export function CourtScheduleView({
         {/* Time labels column - always visible */}
         <div className="w-16 z-20 flex flex-col">
           {timeSlots.map((time, index) => (
-            <div key={`time-label-${time}`} className="h-[22.5px] flex items-center">
+            <div key={`time-label-${time}`} className="h-[45px] flex items-center">
               <div className="bg-white px-1 py-0.5 text-xs font-medium rounded shadow-sm">
                 {time}
               </div>
