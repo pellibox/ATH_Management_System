@@ -13,82 +13,7 @@ import { AvailablePeople } from "@/components/court-vision/AvailablePeople";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, UserCog } from "lucide-react";
 
-// Main content component that renders based on view type
-function CourtVisionContent() {
-  const { 
-    filteredCourts, 
-    timeSlots, 
-    selectedDate,
-    isLayoutView,
-    handleDrop,
-    handleActivityDrop,
-    handleRemovePerson,
-    handleRemoveActivity,
-    handleRenameCourt,
-    handleChangeCourtType,
-    handleChangeCourtNumber
-  } = useCourtVision();
-
-  return (
-    <div className="flex-1 pb-20">
-      {isLayoutView ? (
-        <AssignmentsDashboard
-          courts={filteredCourts}
-          selectedDate={selectedDate}
-        />
-      ) : (
-        <CourtGrid
-          courts={filteredCourts}
-          timeSlots={timeSlots}
-          onDrop={handleDrop}
-          onActivityDrop={handleActivityDrop}
-          onRemovePerson={handleRemovePerson}
-          onRemoveActivity={handleRemoveActivity}
-          onRenameCourt={handleRenameCourt}
-          onChangeCourtType={handleChangeCourtType}
-          onChangeCourtNumber={handleChangeCourtNumber}
-        />
-      )}
-    </div>
-  );
-}
-
-// Main Court Vision component
-export default function CourtVision() {
-  const [activeTab, setActiveTab] = useState("players");
-  
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <CourtVisionProvider>
-        <div className="mx-auto py-4 relative flex flex-col h-screen">
-          <div className="mb-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Visione Campo</h1>
-            <ViewModeToggle />
-          </div>
-          
-          <div className="sticky top-0 z-30 bg-white pb-4">
-            <CourtVisionHeader />
-            <CourtTypeLegend />
-          </div>
-          
-          <div className="flex flex-1 gap-4 overflow-hidden">
-            {/* Left sidebar for people management */}
-            <div className="w-80 flex flex-col space-y-4 overflow-y-auto pb-20 shrink-0 border-r pr-4">
-              <PeopleList />
-            </div>
-            
-            {/* Main content area that scrolls */}
-            <div className="flex-1 overflow-y-auto pb-20">
-              <CourtVisionContent />
-            </div>
-          </div>
-        </div>
-      </CourtVisionProvider>
-    </DndProvider>
-  );
-}
-
-// Simplified people component that just shows players and coaches tabs
+// People management component that shows players and coaches tabs
 function PeopleList() {
   const { 
     people, 
@@ -103,7 +28,7 @@ function PeopleList() {
   const [activeTab, setActiveTab] = useState("players");
   
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4">
+    <div className="bg-white rounded-lg shadow-sm p-3">
       <Tabs defaultValue="players" onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="grid w-full grid-cols-2 mb-3">
           <TabsTrigger value="players" className="text-xs">
@@ -137,5 +62,76 @@ function PeopleList() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+// Main content component that renders based on view type
+function CourtVisionContent() {
+  const { 
+    filteredCourts, 
+    timeSlots, 
+    selectedDate,
+    isLayoutView,
+    handleDrop,
+    handleActivityDrop,
+    handleRemovePerson,
+    handleRemoveActivity,
+    handleRenameCourt,
+    handleChangeCourtType,
+    handleChangeCourtNumber
+  } = useCourtVision();
+
+  return (
+    <div className="flex-1">
+      {isLayoutView ? (
+        <AssignmentsDashboard
+          courts={filteredCourts}
+          selectedDate={selectedDate}
+        />
+      ) : (
+        <CourtGrid
+          courts={filteredCourts}
+          timeSlots={timeSlots}
+          onDrop={handleDrop}
+          onActivityDrop={handleActivityDrop}
+          onRemovePerson={handleRemovePerson}
+          onRemoveActivity={handleRemoveActivity}
+          onRenameCourt={handleRenameCourt}
+          onChangeCourtType={handleChangeCourtType}
+          onChangeCourtNumber={handleChangeCourtNumber}
+        />
+      )}
+    </div>
+  );
+}
+
+// Main Court Vision component
+export default function CourtVision() {
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <CourtVisionProvider>
+        <div className="mx-auto py-4 relative flex flex-col h-screen">
+          <div className="mb-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Visione Campo</h1>
+            <ViewModeToggle />
+          </div>
+          
+          {/* Fixed header section with CourtVisionHeader and PeopleList */}
+          <div className="sticky top-0 z-30 bg-white pb-4">
+            <CourtVisionHeader />
+            
+            {/* People management panel */}
+            <div className="mt-4 mb-4">
+              <PeopleList />
+            </div>
+          </div>
+          
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto pb-20">
+            <CourtVisionContent />
+          </div>
+        </div>
+      </CourtVisionProvider>
+    </DndProvider>
   );
 }
