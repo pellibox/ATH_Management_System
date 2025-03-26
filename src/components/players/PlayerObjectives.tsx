@@ -1,19 +1,20 @@
 
-import { useState } from "react";
-import { Player } from "@/types/player";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
 import { Phone } from "lucide-react";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
-interface PlayerObjectivesProps {
-  player: Player;
-  onSave: (objectives: Player["objectives"]) => void;
-  onSendToPlayer: (content: string) => void;
-}
+export function PlayerObjectives() {
+  const { 
+    editingPlayer, 
+    handleSetObjectives, 
+    setMessagePlayer, 
+    setMessageContent 
+  } = usePlayerContext();
 
-export function PlayerObjectives({ player, onSave, onSendToPlayer }: PlayerObjectivesProps) {
-  const [objectives, setObjectives] = useState<Player["objectives"]>(
-    player.objectives || {
+  const [objectives, setObjectives] = useState(
+    editingPlayer?.objectives || {
       daily: "",
       weekly: "",
       monthly: "",
@@ -21,10 +22,28 @@ export function PlayerObjectives({ player, onSave, onSendToPlayer }: PlayerObjec
     }
   );
 
+  // Update objectives when editing player changes
+  useEffect(() => {
+    if (editingPlayer) {
+      setObjectives(editingPlayer.objectives || {
+        daily: "",
+        weekly: "",
+        monthly: "",
+        seasonal: ""
+      });
+    }
+  }, [editingPlayer]);
+
   const handleSendToPlayer = () => {
-    const messageContent = `Training objectives for ${player.name}:\n\nDaily: ${objectives.daily}\n\nWeekly: ${objectives.weekly}\n\nMonthly: ${objectives.monthly}\n\nSeasonal: ${objectives.seasonal}`;
-    onSendToPlayer(messageContent);
+    if (!editingPlayer) return;
+    
+    const messageContent = `Training objectives for ${editingPlayer.name}:\n\nDaily: ${objectives.daily}\n\nWeekly: ${objectives.weekly}\n\nMonthly: ${objectives.monthly}\n\nSeasonal: ${objectives.seasonal}`;
+    
+    setMessagePlayer(editingPlayer);
+    setMessageContent(messageContent);
   };
+
+  if (!editingPlayer) return null;
 
   return (
     <div className="grid gap-4 py-4">
@@ -79,7 +98,7 @@ export function PlayerObjectives({ player, onSave, onSendToPlayer }: PlayerObjec
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={() => onSave(objectives)}>Save Objectives</Button>
+          <Button onClick={() => handleSetObjectives(objectives)}>Save Objectives</Button>
         </div>
       </div>
     </div>

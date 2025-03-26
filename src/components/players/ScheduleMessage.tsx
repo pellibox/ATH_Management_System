@@ -1,33 +1,27 @@
 
-import { useState } from "react";
-import { Player } from "@/types/player";
-import { Button } from "@/components/ui/button";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
-interface ScheduleMessageProps {
-  player: Player;
-  onSend: () => void;
-  setMessageContent: (content: string) => void;
-  messageContent: string;
-  scheduleType: "day" | "week" | "month";
-  setScheduleType: (type: "day" | "week" | "month") => void;
-}
+export function ScheduleMessage() {
+  const { 
+    messagePlayer,
+    messageContent,
+    setMessageContent,
+    scheduleType,
+    setScheduleType,
+    handleSendMessage
+  } = usePlayerContext();
 
-export function ScheduleMessage({ 
-  player, 
-  onSend, 
-  setMessageContent, 
-  messageContent, 
-  scheduleType, 
-  setScheduleType 
-}: ScheduleMessageProps) {
+  if (!messagePlayer) return null;
+
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Send Schedule to {player.name}</DialogTitle>
+        <DialogTitle>Send Schedule to {messagePlayer.name}</DialogTitle>
       </DialogHeader>
       <div className="grid gap-4 py-4">
         <div className="space-y-2">
@@ -59,7 +53,7 @@ export function ScheduleMessage({
         <div className="space-y-2">
           <Label>Message</Label>
           <Textarea 
-            placeholder={`${scheduleType}ly schedule and objectives for ${player.name}`}
+            placeholder={`${scheduleType}ly schedule and objectives for ${messagePlayer.name}`}
             value={messageContent}
             onChange={(e) => setMessageContent(e.target.value)}
             className="min-h-[100px]"
@@ -67,9 +61,9 @@ export function ScheduleMessage({
         </div>
         <div className="flex justify-between">
           <div>
-            <span className="text-sm text-gray-500">Will be sent via: {player.preferredContactMethod || "WhatsApp"}</span>
+            <span className="text-sm text-gray-500">Will be sent via: {messagePlayer.preferredContactMethod || "WhatsApp"}</span>
           </div>
-          <Button onClick={onSend} className="flex gap-2">
+          <Button onClick={handleSendMessage} className="flex gap-2">
             <Send className="h-4 w-4" />
             Send Schedule
           </Button>

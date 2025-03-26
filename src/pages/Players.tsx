@@ -1,9 +1,7 @@
 
 import { useState } from "react";
 import { Plus, Search } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -13,165 +11,34 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Import player types and mock data
-import { Player, mockPlayers } from "@/types/player";
-
 // Import components
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 import { PlayerFilters } from "@/components/players/PlayerFilters";
 import { PlayerList } from "@/components/players/PlayerList";
 import { ScheduleMessage } from "@/components/players/ScheduleMessage";
+import { PlayerProvider, usePlayerContext } from "@/contexts/PlayerContext";
 
+// Players page wrapper with context provider
 export default function Players() {
-  const { toast } = useToast();
-  const [players, setPlayers] = useState<Player[]>(mockPlayers);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [levelFilter, setLevelFilter] = useState<string>("all");
-  const [coachFilter, setCoachFilter] = useState<string>("all");
-  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
-  const [messagePlayer, setMessagePlayer] = useState<Player | null>(null);
-  const [messageContent, setMessageContent] = useState("");
-  const [scheduleType, setScheduleType] = useState<"day" | "week" | "month">("week");
-  const [objectives, setObjectives] = useState({
-    daily: "",
-    weekly: "",
-    monthly: "",
-    seasonal: ""
-  });
-  const [newPlayer, setNewPlayer] = useState<Omit<Player, "id">>({
-    name: "",
-    age: 0,
-    gender: "Male",
-    level: "Beginner",
-    coach: "",
-    phone: "",
-    email: "",
-    joinDate: new Date().toISOString().split("T")[0],
-    notes: "",
-    preferredContactMethod: "WhatsApp",
-    objectives: {
-      daily: "",
-      weekly: "",
-      monthly: "",
-      seasonal: ""
-    }
-  });
+  return (
+    <PlayerProvider>
+      <PlayersContent />
+    </PlayerProvider>
+  );
+}
 
-  // Get unique coaches for filter dropdown
-  const coaches = Array.from(new Set(players.map(player => player.coach)));
-
-  // Filter players based on search and filters
-  const filteredPlayers = players.filter(player => {
-    // Search filter
-    const matchesSearch = searchQuery === "" || 
-      player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      player.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Level filter
-    const matchesLevel = levelFilter === "all" || player.level === levelFilter;
-    
-    // Coach filter
-    const matchesCoach = coachFilter === "all" || player.coach === coachFilter;
-    
-    return matchesSearch && matchesLevel && matchesCoach;
-  });
-
-  // Reset filters
-  const resetFilters = () => {
-    setSearchQuery("");
-    setLevelFilter("all");
-    setCoachFilter("all");
-  };
-
-  // Handle adding a new player
-  const handleAddPlayer = (playerData: Omit<Player, "id">) => {
-    const newId = `p${Date.now()}`;
-    
-    setPlayers([
-      ...players,
-      { id: newId, ...playerData }
-    ]);
-    
-    toast({
-      title: "Player Added",
-      description: `${playerData.name} has been added to the database.`,
-    });
-  };
-
-  // Handle updating a player
-  const handleUpdatePlayer = () => {
-    if (!editingPlayer) return;
-    
-    setPlayers(players.map(player => 
-      player.id === editingPlayer.id ? editingPlayer : player
-    ));
-    
-    setEditingPlayer(null);
-    
-    toast({
-      title: "Player Updated",
-      description: `${editingPlayer.name}'s information has been updated.`,
-    });
-  };
-
-  // Handle deleting a player
-  const handleDeletePlayer = (id: string, name: string) => {
-    setPlayers(players.filter(player => player.id !== id));
-    
-    toast({
-      title: "Player Deleted",
-      description: `${name} has been removed from the database.`,
-      variant: "destructive",
-    });
-  };
-
-  // Handle sending a message or schedule
-  const handleSendMessage = () => {
-    if (!messagePlayer) return;
-    
-    const method = messagePlayer.preferredContactMethod || "WhatsApp";
-    
-    toast({
-      title: `Message Sent via ${method}`,
-      description: `Your ${scheduleType}ly schedule has been sent to ${messagePlayer.name}.`,
-    });
-    
-    setMessagePlayer(null);
-    setMessageContent("");
-  };
-
-  // Handle setting player objectives
-  const handleSetObjectives = (updatedObjectives: Player["objectives"]) => {
-    if (!editingPlayer) return;
-    
-    const updatedPlayer = {
-      ...editingPlayer,
-      objectives: updatedObjectives
-    };
-    
-    setPlayers(players.map(player => 
-      player.id === updatedPlayer.id ? updatedPlayer : player
-    ));
-    
-    setEditingPlayer(null);
-    
-    toast({
-      title: "Objectives Set",
-      description: `Training objectives for ${updatedPlayer.name} have been updated.`,
-    });
-  };
-
-  // Set up an editing player for objectives tab
-  const handleEditPlayerObjectives = (player: Player) => {
-    setEditingPlayer(player);
-    setObjectives(player.objectives || {
-      daily: "",
-      weekly: "",
-      monthly: "",
-      seasonal: ""
-    });
-  };
+// Players content component using the context
+function PlayersContent() {
+  const { 
+    searchQuery, 
+    setSearchQuery, 
+    editingPlayer, 
+    setEditingPlayer,
+    messagePlayer,
+    setMessagePlayer,
+    handleUpdatePlayer
+  } = usePlayerContext();
 
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
@@ -205,8 +72,8 @@ export default function Players() {
                 <DialogTitle>Add New Player</DialogTitle>
               </DialogHeader>
               <PlayerForm 
-                onSave={handleAddPlayer} 
                 buttonText="Add Player"
+                handleSave={() => {}}
               />
             </DialogContent>
           </Dialog>
@@ -214,22 +81,10 @@ export default function Players() {
       </div>
       
       {/* Filters */}
-      <PlayerFilters 
-        levelFilter={levelFilter}
-        setLevelFilter={setLevelFilter}
-        coachFilter={coachFilter}
-        setCoachFilter={setCoachFilter}
-        coaches={coaches}
-        resetFilters={resetFilters}
-      />
+      <PlayerFilters />
       
       {/* Player list */}
-      <PlayerList 
-        filteredPlayers={filteredPlayers}
-        onEditPlayer={setEditingPlayer}
-        onDeletePlayer={handleDeletePlayer}
-        onSchedulePlayer={setMessagePlayer}
-      />
+      <PlayerList />
       
       {/* Edit Dialog */}
       {editingPlayer && (
@@ -246,24 +101,13 @@ export default function Players() {
               
               <TabsContent value="details">
                 <PlayerForm 
-                  player={editingPlayer} 
-                  onSave={(updatedData) => {
-                    setEditingPlayer({...editingPlayer, ...updatedData});
-                    handleUpdatePlayer();
-                  }} 
                   buttonText="Update Player"
+                  handleSave={handleUpdatePlayer}
                 />
               </TabsContent>
               
               <TabsContent value="objectives">
-                <PlayerObjectives 
-                  player={editingPlayer}
-                  onSave={handleSetObjectives}
-                  onSendToPlayer={(content) => {
-                    setMessagePlayer(editingPlayer);
-                    setMessageContent(content);
-                  }}
-                />
+                <PlayerObjectives />
               </TabsContent>
             </Tabs>
           </DialogContent>
@@ -274,14 +118,7 @@ export default function Players() {
       {messagePlayer && (
         <Dialog open={!!messagePlayer} onOpenChange={(open) => !open && setMessagePlayer(null)}>
           <DialogContent>
-            <ScheduleMessage 
-              player={messagePlayer}
-              onSend={handleSendMessage}
-              setMessageContent={setMessageContent}
-              messageContent={messageContent}
-              scheduleType={scheduleType}
-              setScheduleType={setScheduleType}
-            />
+            <ScheduleMessage />
           </DialogContent>
         </Dialog>
       )}

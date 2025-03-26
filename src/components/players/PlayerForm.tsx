@@ -1,6 +1,5 @@
 
-import { useState } from "react";
-import { Player } from "@/types/player";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
@@ -11,37 +10,30 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
 interface PlayerFormProps {
-  player?: Player;
-  onSave: (player: Omit<Player, "id">) => void;
   buttonText: string;
+  handleSave: () => void;
 }
 
-export function PlayerForm({ player, onSave, buttonText }: PlayerFormProps) {
-  const [formData, setFormData] = useState<Omit<Player, "id">>(
-    player ? { ...player } : {
-      name: "",
-      age: 0,
-      gender: "Male",
-      level: "Beginner",
-      coach: "",
-      phone: "",
-      email: "",
-      joinDate: new Date().toISOString().split("T")[0],
-      notes: "",
-      preferredContactMethod: "WhatsApp",
-      objectives: {
-        daily: "",
-        weekly: "",
-        monthly: "",
-        seasonal: ""
-      }
-    }
-  );
+export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
+  const { editingPlayer, newPlayer, setNewPlayer, handleAddPlayer } = usePlayerContext();
+  const [formData, setFormData] = useState(editingPlayer || newPlayer);
+
+  // Update form data when editing player changes
+  useEffect(() => {
+    setFormData(editingPlayer || newPlayer);
+  }, [editingPlayer, newPlayer]);
 
   const handleSubmit = () => {
-    onSave(formData);
+    if (editingPlayer) {
+      // For editing existing player
+      handleSave();
+    } else {
+      // For adding new player
+      handleAddPlayer(formData);
+    }
   };
 
   return (

@@ -8,24 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
-interface PlayerFiltersProps {
-  levelFilter: string;
-  setLevelFilter: (filter: string) => void;
-  coachFilter: string;
-  setCoachFilter: (filter: string) => void;
-  coaches: string[];
-  resetFilters: () => void;
-}
+export function PlayerFilters() {
+  const { levelFilter, setLevelFilter, coachFilter, setCoachFilter, coaches, resetFilters } = usePlayerContext();
 
-export function PlayerFilters({
-  levelFilter,
-  setLevelFilter,
-  coachFilter,
-  setCoachFilter,
-  coaches,
-  resetFilters
-}: PlayerFiltersProps) {
   return (
     <div className="mb-6 bg-white shadow-sm rounded-lg p-4">
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">

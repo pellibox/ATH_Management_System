@@ -18,20 +18,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { ScheduleButton } from "./ScheduleMessage";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
-interface PlayerListProps {
-  filteredPlayers: Player[];
-  onEditPlayer: (player: Player) => void;
-  onDeletePlayer: (id: string, name: string) => void;
-  onSchedulePlayer: (player: Player) => void;
-}
+export function PlayerList() {
+  const { 
+    filteredPlayers,
+    setEditingPlayer, 
+    handleDeletePlayer,
+    setMessagePlayer
+  } = usePlayerContext();
 
-export function PlayerList({ 
-  filteredPlayers, 
-  onEditPlayer, 
-  onDeletePlayer,
-  onSchedulePlayer
-}: PlayerListProps) {
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <Table>
@@ -65,7 +61,7 @@ export function PlayerList({
                 <TableCell>{player.phone}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
-                    <ScheduleButton onClick={() => onSchedulePlayer(player)} />
+                    <ScheduleButton onClick={() => setMessagePlayer(player)} />
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -74,7 +70,7 @@ export function PlayerList({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DialogTrigger asChild onClick={() => onEditPlayer(player)}>
+                        <DialogTrigger asChild onClick={() => setEditingPlayer(player)}>
                           <DropdownMenuItem>
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
@@ -82,7 +78,7 @@ export function PlayerList({
                         </DialogTrigger>
                         <DropdownMenuItem 
                           className="text-red-600"
-                          onClick={() => onDeletePlayer(player.id, player.name)}
+                          onClick={() => handleDeletePlayer(player.id, player.name)}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
