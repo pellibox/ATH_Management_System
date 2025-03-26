@@ -1,18 +1,27 @@
 
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Layers, LayoutGrid } from "lucide-react";
 import { useCourtVision } from "./context/CourtVisionContext";
 
 export function ViewModeToggle() {
   const { isLayoutView, currentSport } = useCourtVision();
   const navigate = useNavigate();
-  const location = useLocation();
   
   const toggleViewMode = () => {
-    if (isLayoutView) {
-      navigate('/court-vision' + (currentSport ? `?sport=${currentSport}` : ''));
-    } else {
-      navigate('/court-vision/layout' + (currentSport ? `?sport=${currentSport}` : ''));
+    try {
+      console.log("Toggling view mode, current state:", { isLayoutView, currentSport });
+      
+      if (isLayoutView) {
+        const newPath = '/court-vision' + (currentSport ? `?sport=${currentSport}` : '');
+        console.log("Navigating to:", newPath);
+        navigate(newPath);
+      } else {
+        const newPath = '/court-vision/layout' + (currentSport ? `?sport=${currentSport}` : '');
+        console.log("Navigating to:", newPath);
+        navigate(newPath);
+      }
+    } catch (error) {
+      console.error("Error in ViewModeToggle:", error);
     }
   };
 
@@ -24,6 +33,7 @@ export function ViewModeToggle() {
         }`}
         onClick={toggleViewMode}
         title="Vista Programmazione"
+        type="button"
       >
         <Layers className="h-4 w-4" />
         <span className="hidden sm:inline">Programmazione</span>
@@ -35,6 +45,7 @@ export function ViewModeToggle() {
         }`}
         onClick={toggleViewMode}
         title="Vista Layout"
+        type="button"
       >
         <LayoutGrid className="h-4 w-4" />
         <span className="hidden sm:inline">Layout</span>

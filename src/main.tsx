@@ -3,6 +3,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { CourtVisionProvider } from './components/court-vision/context/CourtVisionContext'
 
 // Add explicit error boundary
 try {
@@ -12,9 +13,13 @@ try {
     throw new Error("Root element not found. Make sure there is a div with id 'root' in your HTML file.");
   }
 
+  console.log("Mounting application");
+  
   createRoot(rootElement).render(
     <React.StrictMode>
-      <App />
+      <CourtVisionProvider>
+        <App />
+      </CourtVisionProvider>
     </React.StrictMode>
   );
   

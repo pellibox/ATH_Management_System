@@ -1,41 +1,60 @@
 
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
-import Dashboard from "./pages/Dashboard";
-import Calendar from "./pages/Calendar";
-import Courts from "./pages/Courts";
-import CourtVision from "./pages/CourtVision";
-import Staff from "./pages/Staff";
-import Players from "./pages/Players";
-import Programs from "./pages/Programs";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-import Reports from "./pages/Reports";
-import Tournaments from "./pages/Tournaments";
-import Videos from "./pages/Videos";
-import Integrations from "./pages/Integrations";
-import Activities from "./pages/Activities";
-import ExtraActivities from "./pages/ExtraActivities";
-import Coaches from "./pages/Coaches";
-import { CourtVisionProvider } from "./components/court-vision/context/CourtVisionContext";
-import "./App.css";
-import "./index.css";
 
-const queryClient = new QueryClient();
+// Use React.lazy for route-based code splitting
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Calendar = lazy(() => import("./pages/Calendar"));
+const Courts = lazy(() => import("./pages/Courts"));
+const CourtVision = lazy(() => import("./pages/CourtVision"));
+const Staff = lazy(() => import("./pages/Staff"));
+const Players = lazy(() => import("./pages/Players"));
+const Programs = lazy(() => import("./pages/Programs"));
+const Settings = lazy(() => import("./pages/Settings"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Tournaments = lazy(() => import("./pages/Tournaments"));
+const Videos = lazy(() => import("./pages/Videos"));
+const Integrations = lazy(() => import("./pages/Integrations"));
+const Activities = lazy(() => import("./pages/Activities"));
+const ExtraActivities = lazy(() => import("./pages/ExtraActivities"));
+const Coaches = lazy(() => import("./pages/Coaches"));
+
+// Create Loading component for Suspense
+const LoadingFallback = () => (
+  <div className="flex justify-center items-center h-screen">
+    <div className="text-center">
+      <div className="w-12 h-12 border-4 border-t-ath-blue rounded-full animate-spin mx-auto"></div>
+      <p className="mt-4 text-gray-600">Caricamento...</p>
+    </div>
+  </div>
+);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
 
 function App() {
+  console.log("App component rendering");
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CourtVisionProvider>
-          <BrowserRouter>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingFallback />}>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route element={<MainLayout />}>
+              <Route path="/" element={<MainLayout />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="calendar" element={<Calendar />} />
                 <Route path="courts" element={<Courts />} />
@@ -55,10 +74,10 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
-            <Toaster />
-            <Sonner />
-          </BrowserRouter>
-        </CourtVisionProvider>
+          </Suspense>
+          <Toaster />
+          <Sonner />
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );

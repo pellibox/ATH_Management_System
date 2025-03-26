@@ -11,6 +11,7 @@ export default function MainLayout() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Toggle sidebar collapse state
   const toggleSidebar = () => {
@@ -24,16 +25,33 @@ export default function MainLayout() {
     }
   }, [location.pathname, isMobile]);
   
-  // Scroll to top on route change
+  // Initialize component
   useEffect(() => {
+    console.log("MainLayout initializing");
+    
+    // Force initialization after a brief delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      setIsInitialized(true);
+      console.log("MainLayout initialized");
+    }, 100);
+    
+    // Scroll to top on route change
+    window.scrollTo(0, 0);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Handle route changes
+  useEffect(() => {
+    console.log("Route changed to:", location.pathname);
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  console.log("MainLayout rendering, path:", location.pathname);
+  console.log("MainLayout rendering, path:", location.pathname, "initialized:", isInitialized);
 
   return (
     <AnimationProvider>
-      <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+      <div className={`min-h-screen flex flex-col md:flex-row bg-gray-50 ${isInitialized ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
         <Sidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
         
         <div className={`flex-1 transition-all duration-300 flex flex-col ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
