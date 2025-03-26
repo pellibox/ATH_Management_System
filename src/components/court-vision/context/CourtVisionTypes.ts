@@ -1,3 +1,4 @@
+
 import { PersonData, CourtProps, ActivityData, Program } from "../types";
 
 export interface CourtVisionState {
@@ -63,6 +64,7 @@ export interface CourtVisionContextType {
   
   // Coach overlap dialog state and handlers
   showCoachOverlapDialog: boolean;
+  setShowCoachOverlapDialog: (show: boolean) => void;
   pendingCoachAssignment: {
     courtId: string;
     coach: any;
@@ -75,17 +77,26 @@ export interface CourtVisionContextType {
 
   // Schedule actions
   handleSaveTemplate: (name: string) => void;
+  saveAsTemplate: (name: string) => void;
   handleLoadTemplate: (templateId: string) => void;
+  applyTemplate: (template: any) => void;
   handleDeleteTemplate: (templateId: string) => void;
   handleClearSchedule: () => void;
   handleDuplicateSchedule: (sourceDate: Date, targetDate: Date) => void;
+  copyToNextDay: () => void;
+  copyToWeek: () => void;
+  checkUnassignedPeople: () => any[];
   
   // Court actions
   handleAddCourt: (court: CourtProps) => void;
   handleUpdateCourt: (courtId: string, court: Partial<CourtProps>) => void;
   handleRemoveCourt: (courtId: string) => void;
+  handleRenameCourt: (courtId: string, name: string) => void;
+  handleChangeCourtType: (courtId: string, type: string) => void;
+  handleChangeCourtNumber: (courtId: string, number: number) => void;
   
   // People actions
+  handleAddPerson: (person: PersonData) => void;
   handleAddPlayer: (player: PersonData) => void;
   handleUpdatePlayer: (playerId: string, player: Partial<PersonData>) => void;
   handleRemovePlayer: (playerId: string) => void;
@@ -96,5 +107,4 @@ export interface CourtVisionContextType {
   // Activity actions
   handleAddActivity: (activity: ActivityData) => void;
   handleUpdateActivity: (activityId: string, activity: Partial<ActivityData>) => void;
-  handleRemoveActivity: (activityId: string) => void;
 }

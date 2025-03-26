@@ -22,7 +22,14 @@ export const usePersonAssignment = (
   const [pendingAssignment, setPendingAssignment] = useState<PendingAssignment | null>(null);
 
   // Use our specialized hooks
-  const { processAssignment } = useProcessAssignment(
+  const { 
+    processAssignment, 
+    showCoachOverlapDialog,
+    setShowCoachOverlapDialog,
+    pendingCoachAssignment,
+    handleConfirmCoachOverlap,
+    handleCancelCoachOverlap
+  } = useProcessAssignment(
     courts, 
     setCourts, 
     people, 
@@ -51,5 +58,9 @@ export const usePersonAssignment = (
     setShowExtraHoursDialog,
     pendingAssignment,
     setPendingAssignment,
+    showCoachOverlapDialog,
+    pendingCoachAssignment,
+    handleConfirmCoachOverlap,
+    handleCancelCoachOverlap
   };
 };

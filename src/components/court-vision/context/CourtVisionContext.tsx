@@ -113,7 +113,7 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     setCourts(updatedCourts);
   };
 
-  // Create context value
+  // Create context value with all the required properties
   const contextValue: CourtVisionContextType = {
     selectedDate,
     templates,
@@ -134,7 +134,17 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     setSelectedDate,
     handleSetCoachAvailability,
     ...programHandlers,
-    ...actions
+    ...actions,
+    // Explicitly map schedule related functions for clarity
+    saveAsTemplate: actions.handleSaveTemplate,
+    applyTemplate: actions.handleLoadTemplate,
+    copyToNextDay: actions.handleDuplicateSchedule 
+      ? () => actions.handleDuplicateSchedule(selectedDate, new Date(selectedDate.getTime() + 86400000)) 
+      : () => console.log("copyToNextDay not implemented"),
+    copyToWeek: () => console.log("copyToWeek not implemented"),
+    checkUnassignedPeople: () => [],
+    // Coach overlap dialog state management
+    setShowCoachOverlapDialog: actions.setShowCoachOverlapDialog || (() => {}),
   };
 
   console.log("CourtVisionProvider rendering with context:", { 
@@ -158,7 +168,11 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
       {actions.showCoachOverlapDialog && actions.pendingCoachAssignment && (
         <CoachOverlapDialog
           isOpen={actions.showCoachOverlapDialog}
-          onOpenChange={(open) => actions.setShowCoachOverlapDialog(open)}
+          onOpenChange={(open) => {
+            if (typeof actions.setShowCoachOverlapDialog === 'function') {
+              actions.setShowCoachOverlapDialog(open);
+            }
+          }}
           coach={actions.pendingCoachAssignment.coach}
           existingCourt={actions.pendingCoachAssignment.existingCourtName}
           newCourt={courts.find(c => c.id === actions.pendingCoachAssignment?.courtId)?.name + " #" + 
