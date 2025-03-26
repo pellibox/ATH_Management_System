@@ -92,7 +92,7 @@ export function CourtContent({
   }, [currentTimeSlotIndex, timeSlots]);
 
   return (
-    <div className="flex-1 overflow-hidden relative" ref={courtRef}>
+    <div className="flex-1 overflow-auto relative" ref={courtRef}>
       <CourtScheduleView
         courtId={court.id}
         courtName={court.name}

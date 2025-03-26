@@ -32,7 +32,7 @@ export function TimeSlotDropArea({
 }: TimeSlotDropAreaProps) {
   // Handle dropping a person
   const [{ isOver }, dropRef] = useDrop(() => ({
-    accept: ["person", "activity"],
+    accept: ["person", "activity", "player", "coach"],
     drop: (item: any, monitor) => {
       // Get drop position
       const dropPosition = monitor.getClientOffset();
