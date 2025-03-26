@@ -73,9 +73,59 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       }
     });
     
+    // Aggiungi alcuni programmi di fallback se non ci sono programmi disponibili
+    if (programs.length === 0) {
+      // Aggiungi programmi di fallback per Tennis
+      programs.push(
+        {
+          name: "Tennis Junior",
+          category: "junior",
+          categoryLabel: "Junior Program",
+          sport: "Tennis",
+          weeklyHours: 6,
+          totalWeeks: 30
+        },
+        {
+          name: "Tennis Performance",
+          category: "performance",
+          categoryLabel: "Performance",
+          sport: "Tennis",
+          weeklyHours: 10,
+          totalWeeks: 40
+        },
+        {
+          name: "Tennis Adult",
+          category: "adult",
+          categoryLabel: "Adulti",
+          sport: "Tennis",
+          weeklyHours: 4,
+          totalWeeks: 20
+        }
+      );
+      
+      // Aggiungi programmi di fallback per Padel
+      programs.push(
+        {
+          name: "Padel Base",
+          category: "padel",
+          categoryLabel: "Padel Program",
+          sport: "Padel",
+          weeklyHours: 4,
+          totalWeeks: 20
+        },
+        {
+          name: "Padel Avanzato",
+          category: "padel",
+          categoryLabel: "Padel Program",
+          sport: "Padel",
+          weeklyHours: 6,
+          totalWeeks: 30
+        }
+      );
+    }
+    
     console.log("Programmi disponibili:", programs);
     setAvailablePrograms(programs);
-    setFilteredPrograms(programs);
   }, []);
   
   // Filtra i programmi in base agli sport selezionati
@@ -84,6 +134,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       const filtered = availablePrograms.filter(program => 
         selectedSports.includes(program.sport)
       );
+      console.log("Programmi filtrati:", filtered);
       setFilteredPrograms(filtered);
     } else {
       setFilteredPrograms(availablePrograms);
@@ -213,25 +264,27 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                   <div className="space-y-3 border rounded-lg p-3">
                     <label className="text-sm font-medium">Programmi disponibili</label>
                     {Object.keys(programsByCategory).length > 0 ? (
-                      <Select
-                        onValueChange={(value) => handleProgramSelect(value, true)}
-                      >
-                        <SelectTrigger className="bg-white">
-                          <SelectValue placeholder="Seleziona un programma" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white">
-                          {Object.entries(programsByCategory).map(([category, { label, programs }]) => (
-                            <SelectGroup key={category}>
-                              <SelectLabel>{label}</SelectLabel>
-                              {programs.map(program => (
-                                <SelectItem key={program.name} value={program.name}>
-                                  {program.name} ({program.sport})
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="mb-2">
+                        <Select
+                          onValueChange={(value) => handleProgramSelect(value, true)}
+                        >
+                          <SelectTrigger className="bg-white text-black">
+                            <SelectValue placeholder="Seleziona un programma" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white">
+                            {Object.entries(programsByCategory).map(([category, { label, programs }]) => (
+                              <SelectGroup key={category}>
+                                <SelectLabel>{label}</SelectLabel>
+                                {programs.map(program => (
+                                  <SelectItem key={program.name} value={program.name}>
+                                    {program.name} ({program.sport})
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     ) : (
                       <div className="text-sm text-gray-500 p-3 border rounded-md">
                         Nessun programma disponibile per gli sport selezionati.
@@ -419,3 +472,4 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     </CardContent>
   );
 }
+
