@@ -6,7 +6,7 @@ import { TimeSlotActivities } from "./TimeSlotActivities";
 import { TimeSlotOccupants } from "./TimeSlotOccupants";
 import { TimeSlotIndicators } from "./TimeSlotIndicators";
 import { TimeSlotDropArea } from "./TimeSlotDropArea";
-import { calculateProgramDuration } from "./utils";
+import { calculateProgramDuration, calculateMaxProgramDuration } from "./utils";
 
 interface TimeSlotProps {
   time: string;
@@ -36,9 +36,21 @@ export function TimeSlot({
                      "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", 
                      "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"];
   
-  // Calculate duration and end time slot based on program
+  // Drop handler for people (players or coaches)
   const handlePersonDrop = (person: PersonData, timeSlot: string) => {
-    const duration = calculateProgramDuration(person);
+    let duration = calculateProgramDuration(person);
+    
+    // For coaches, we need to check if there are players already assigned to this time slot
+    if (person.type === "coach") {
+      const maxPlayerDuration = calculateMaxProgramDuration(courtId, timeSlot, [{ id: courtId, occupants }]);
+      
+      // Use the max duration of players if it's greater than coach's default duration
+      if (maxPlayerDuration > duration) {
+        duration = maxPlayerDuration;
+        console.log(`Adjusted coach duration to match players: ${duration} hours`);
+      }
+    }
+    
     console.log("Dropping person with duration:", duration, person);
     onDrop(courtId, { ...person, durationHours: duration }, undefined, timeSlot);
   };

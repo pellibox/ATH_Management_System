@@ -27,3 +27,25 @@ export const calculateTimeSlotSpan = (
   if (endIndex >= timeSlots.length) return undefined;
   return timeSlots[endIndex];
 };
+
+// Calculate max program duration for a court with multiple players
+export const calculateMaxProgramDuration = (
+  courtId: string,
+  timeSlot: string,
+  courts: any[]
+): number => {
+  const court = courts.find(c => c.id === courtId);
+  if (!court) return 1;
+  
+  // Find all players assigned to this time slot
+  const playersInSlot = court.occupants.filter(
+    (p: PersonData) => p.type === "player" && p.timeSlot === timeSlot
+  );
+  
+  if (playersInSlot.length === 0) return 1;
+  
+  // Get the maximum program duration among these players
+  return Math.max(
+    ...playersInSlot.map((player: PersonData) => calculateProgramDuration(player))
+  );
+};

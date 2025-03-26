@@ -33,7 +33,7 @@ export const useProcessAssignment = (
     const sourceTimeSlot = person.timeSlot || person.sourceTimeSlot;
     const sourceCourtId = person.courtId;
 
-    // Prepare the person object with court info
+    // Prepare the person object with court info, including proper time slot calculations
     const personWithCourtInfo = preparePersonAssignment(
       person, 
       courtId, 
@@ -70,10 +70,15 @@ export const useProcessAssignment = (
       setPeople(people.filter(p => p.id !== person.id));
     }
 
+    // Construct message with duration info
+    const durationText = personWithCourtInfo.durationHours && personWithCourtInfo.durationHours > 1 
+      ? ` per ${personWithCourtInfo.durationHours} ore`
+      : '';
+    
     // Show success notification
     toast({
       title: isMovingFromExistingAssignment ? "Persona Spostata" : "Persona Assegnata",
-      description: `${person.name} è stata ${isMovingFromExistingAssignment ? "spostata" : "assegnata"} al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}`,
+      description: `${person.name} è stata ${isMovingFromExistingAssignment ? "spostata" : "assegnata"} al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${durationText}`,
     });
   };
 

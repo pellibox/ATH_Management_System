@@ -1,76 +1,82 @@
 
-import { useState } from "react";
-import { useDrag } from "react-dnd";
-import { PERSON_TYPES } from "./constants";
+import React from "react";
+import { X, Clock } from "lucide-react";
 import { PersonData } from "./types";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { Trash2, User } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CourtPersonProps {
   person: PersonData;
-  index: number;
-  total: number;
-  position?: { x: number; y: number };
-  onRemove: (personId: string) => void;
+  index?: number;
+  total?: number;
+  onRemove?: () => void;
+  className?: string;
+  isSpanning?: boolean;
 }
 
-export function CourtPerson({ person, index, total, position, onRemove }: CourtPersonProps) {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: person.type,
-    item: { ...person },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  }));
-
-  const getBackgroundColor = () => {
-    // First check if we have a direct program color
-    if (person.programColor && typeof person.programColor === 'string') {
-      return person.programColor;
-    }
-    
-    // Default colors based on type
-    return person.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#ef4444";
-  };
-
-  const getTextColor = () => {
-    return "#ffffff"; // White text for better contrast
-  };
-
-  const bgColor = getBackgroundColor();
-
+export function CourtPerson({ 
+  person, 
+  index = 0, 
+  total = 1, 
+  onRemove,
+  className = "",
+  isSpanning = false
+}: CourtPersonProps) {
+  const isCoach = person.type === "coach";
+  const textColor = isCoach ? "text-white" : "text-gray-800";
+  const bgColor = isCoach 
+    ? person.programColor || "bg-red-500" 
+    : person.programColor || "bg-blue-200";
+  
+  // Add indication for spanning time slots
+  const durationInfo = person.durationHours && person.durationHours > 1
+    ? `(${person.durationHours}h)`
+    : "";
+  
   return (
-    <ContextMenu>
-      <ContextMenuTrigger>
-        <div
-          ref={drag}
-          className={`flex items-center rounded-md px-2 py-1 shadow-sm border transition-opacity ${
-            isDragging ? "opacity-50" : ""
-          } cursor-grab`}
-          style={{
-            backgroundColor: bgColor,
-            color: getTextColor(),
-            borderColor: "rgba(255,255,255,0.3)"
-          }}
-        >
-          <Avatar className="h-6 w-6 mr-2 flex-shrink-0">
-            <AvatarFallback style={{ backgroundColor: bgColor }}>
-              {person.name.substring(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-xs font-medium truncate max-w-[120px]">{person.name}</span>
-        </div>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="bg-white shadow-md border border-gray-200">
-        <ContextMenuItem 
-          className="flex items-center text-red-500 cursor-pointer"
-          onClick={() => onRemove(person.id)}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          <span>Rimuovi</span>
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div 
+            className={`
+              relative px-2 py-1 rounded-md text-xs font-medium
+              ${bgColor} ${textColor} ${className}
+              ${isSpanning ? 'border-t border-dashed' : ''}
+            `}
+            style={{ minWidth: '80px' }}
+          >
+            <div className="flex justify-between items-center">
+              <span>
+                {person.name} {!isSpanning && durationInfo}
+              </span>
+              
+              {!isSpanning && person.durationHours && person.durationHours > 1 && (
+                <Clock className="h-3 w-3 ml-1" />
+              )}
+              
+              {onRemove && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove();
+                  }}
+                  className="ml-1 hover:bg-white/20 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="text-sm">
+            <p><strong>{person.name}</strong></p>
+            <p>{person.type === "coach" ? "Coach" : "Player"}</p>
+            {person.programId && <p>Program: {person.programId}</p>}
+            {person.durationHours && <p>Duration: {person.durationHours} hour{person.durationHours !== 1 ? 's' : ''}</p>}
+            {person.timeSlot && <p>Time: {person.timeSlot}{person.endTimeSlot ? ` - ${person.endTimeSlot}` : ''}</p>}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

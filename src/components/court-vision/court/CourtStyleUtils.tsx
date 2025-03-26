@@ -46,8 +46,24 @@ export function isTimeSlotOccupied(object: any, timeSlot: string, timeSlots: str
   if (startIndex === -1 || currentIndex === -1) return false;
   
   const duration = object.durationHours || 1;
-  const slotsNeeded = Math.ceil(duration * 2);
+  const slotsNeeded = Math.ceil(duration * 2); // 2 slots per hour
   const endIndex = startIndex + slotsNeeded - 1;
   
   return currentIndex >= startIndex && currentIndex <= endIndex;
+}
+
+// Helper function to style the continuation of a multi-slot assignment
+export function getTimeSlotContinuationStyle(object: any, timeSlot: string, timeSlots: string[]): string {
+  if (!object.timeSlot || timeSlot === object.timeSlot) {
+    return ""; // This is the first slot, no special styling needed
+  }
+  
+  const startIndex = timeSlots.indexOf(object.timeSlot);
+  const currentIndex = timeSlots.indexOf(timeSlot);
+  
+  if (startIndex === -1 || currentIndex === -1 || currentIndex <= startIndex) {
+    return "";
+  }
+  
+  return "opacity-80 border-t-0 pt-0 mt-0"; // Style for continuation slots
 }

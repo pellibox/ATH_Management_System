@@ -60,42 +60,27 @@ export const removePersonFromSource = (
   // Create a new courts array
   let updatedCourts = JSON.parse(JSON.stringify(courts));
 
-  // Handle removal differently based on person type
-  if (person.type === PERSON_TYPES.COACH) {
-    // For coaches, we only remove them from a specific time slot, not from all
-    if (sourceTimeSlot && sourceCourtId) {
-      updatedCourts = updatedCourts.map((court: any) => {
-        if (court.id === sourceCourtId) {
-          return {
-            ...court,
-            occupants: court.occupants.filter((p: PersonData) => 
-              !(p.id === person.id && p.timeSlot === sourceTimeSlot)
-            )
-          };
-        }
-        return court;
-      });
-    }
-  } else {
-    // For players, if dropping to a new time slot, remove from old time slot if exists
-    if (sourceTimeSlot) {
-      updatedCourts = updatedCourts.map((court: any) => {
+  // Handle removal for both player and coach types similarly - remove only from specific time slot
+  if (sourceTimeSlot && sourceCourtId) {
+    updatedCourts = updatedCourts.map((court: any) => {
+      if (court.id === sourceCourtId) {
         return {
           ...court,
           occupants: court.occupants.filter((p: PersonData) => 
             !(p.id === person.id && p.timeSlot === sourceTimeSlot)
           )
         };
-      });
-    } else {
-      // For layout view (non-time-slot), remove from all time slots
-      updatedCourts = updatedCourts.map((court: any) => {
-        return {
-          ...court,
-          occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
-        };
-      });
-    }
+      }
+      return court;
+    });
+  } else {
+    // For layout view (non-time-slot), remove from all time slots
+    updatedCourts = updatedCourts.map((court: any) => {
+      return {
+        ...court,
+        occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
+      };
+    });
   }
 
   return updatedCourts;

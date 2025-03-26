@@ -69,6 +69,7 @@ export function Court({
     }
   };
 
+  // Adjust court height based on sidebar state
   const courtHeight = isSidebarCollapsed ? "h-[675px]" : "h-96 sm:h-[600px]";
   const courtWidth = isSidebarCollapsed ? "w-[600px]" : "w-full";
 
