@@ -36,6 +36,13 @@ export function PeopleManagement({
   const [selectedTab, setSelectedTab] = useState("players");
   const { toast } = useToast();
 
+  // Only allow adding players to drag area (not removing coaches)
+  const handleAddPlayerToDragArea = (person: PersonData) => {
+    // Make a copy to avoid reference issues
+    const playerCopy = { ...person };
+    onAddToDragArea(playerCopy);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-soft p-4">
       <h2 className="font-medium mb-3 flex items-center">
@@ -60,7 +67,7 @@ export function PeopleManagement({
               key={player.id} 
               person={player} 
               programs={programs}
-              onAddToDragArea={onAddToDragArea}
+              onAddToDragArea={handleAddPlayerToDragArea}
               onAssignProgram={onAssignProgram}
             />
           ))}
