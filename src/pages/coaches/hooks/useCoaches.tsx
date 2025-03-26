@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { PersonData, Program } from "@/components/court-vision/types";
 import { CoachAvailabilityEvent } from "@/contexts/programs/types";
-import { EXCLUDED_PROGRAMS } from "@/contexts/programs/useProgramsState";
+import { EXCLUDED_PROGRAMS, EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 
 export function useCoaches(
   coachesList: PersonData[],
@@ -11,7 +11,8 @@ export function useCoaches(
 ) {
   // Filtriamo i programmi per rimuovere quelli esclusi
   const filteredPrograms = programs.filter(program => 
-    !EXCLUDED_PROGRAMS.includes(program.id)
+    !EXCLUDED_PROGRAMS.includes(program.id) && 
+    !EXCLUDED_PROGRAM_NAMES.includes(program.name)
   );
 
   const [coaches, setCoaches] = useState<PersonData[]>(coachesList);
@@ -49,7 +50,9 @@ export function useCoaches(
     const coachProgramIds = coach.programIds || (coach.programId ? [coach.programId] : []);
     
     // Filtra anche i programIds dell'allenatore per rimuovere quelli esclusi
-    const validCoachProgramIds = coachProgramIds.filter(id => !EXCLUDED_PROGRAMS.includes(id));
+    const validCoachProgramIds = coachProgramIds.filter(id => 
+      !EXCLUDED_PROGRAMS.includes(id)
+    );
     
     const matchesProgram = programFilter === "all" || 
       validCoachProgramIds.includes(programFilter);
@@ -128,6 +131,7 @@ export function useCoaches(
     selectedDate,
     setSelectedDate,
     currentView,
-    setCurrentView
+    setCurrentView,
+    filteredPrograms  // Making sure we expose the filtered programs
   };
 }

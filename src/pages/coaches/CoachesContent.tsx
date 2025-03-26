@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Check, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -11,19 +12,21 @@ import { PERSON_TYPES } from "@/components/court-vision/constants";
 import { useCoaches } from "./hooks/useCoaches";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CoachAvailabilityCalendar } from "./components/CoachAvailabilityCalendar";
-import { EXCLUDED_PROGRAMS } from "@/contexts/programs/useProgramsState";
+import { EXCLUDED_PROGRAMS, EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 
 export function CoachesContent() {
   const { toast } = useToast();
   const { 
     coachesList, 
-    programs,
+    programs: allPrograms,
     playersList,
     handleAddPerson,
   } = useCourtVision();
   
-  const filteredPrograms = programs.filter(program => 
-    !EXCLUDED_PROGRAMS.includes(program.id)
+  // Filter out excluded programs
+  const programs = allPrograms.filter(program => 
+    !EXCLUDED_PROGRAMS.includes(program.id) && 
+    !EXCLUDED_PROGRAM_NAMES.includes(program.name)
   );
   
   const [activeTab, setActiveTab] = useState<"list" | "calendar">("list");
@@ -49,8 +52,9 @@ export function CoachesContent() {
     selectedDate,
     setSelectedDate,
     currentView,
-    setCurrentView
-  } = useCoaches(coachesList, playersList, filteredPrograms);
+    setCurrentView,
+    filteredPrograms
+  } = useCoaches(coachesList, playersList, programs);
 
   const [newCoach, setNewCoach] = useState<{
     name: string;
@@ -100,6 +104,9 @@ export function CoachesContent() {
       return { ...prev, sportTypes };
     });
   };
+
+  // Check if we have any programs in the filtered list
+  console.log("Available programs for coaches:", programs.length, programs);
 
   return (
     <div className="max-w-7xl mx-auto animate-fade-in p-6">
@@ -151,12 +158,12 @@ export function CoachesContent() {
             setProgramFilter={setProgramFilter}
             setSearchQuery={setSearchQuery}
             allSportTypes={allSportTypes}
-            programs={filteredPrograms}
+            programs={programs}
           />
           
           <CoachesList 
             filteredCoaches={filteredCoaches}
-            programs={filteredPrograms}
+            programs={programs}
             handleAssignProgram={handleAssignProgram}
             handleSendSchedule={handleSendSchedule}
             onSelectCoach={(coach) => {
