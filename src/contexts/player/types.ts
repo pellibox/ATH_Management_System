@@ -21,7 +21,7 @@ export interface PlayerContextType {
   selectedActivities: string[];
   
   // State setters
-  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>; // Add this line
+  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   setSearchQuery: (query: string) => void;
   setLevelFilter: (filter: string) => void;
   setCoachFilter: (filter: string) => void;
@@ -37,7 +37,7 @@ export interface PlayerContextType {
   
   // Actions
   handleAddPlayer: (player: Omit<Player, "id">) => void;
-  handleUpdatePlayer: () => void;
+  handleUpdatePlayer: (updatedPlayer: Player) => void; // Updated to accept a Player parameter
   handleDeletePlayer: (id: string, name: string) => void;
   handleSendMessage: () => void;
   handleScheduleActivity: (

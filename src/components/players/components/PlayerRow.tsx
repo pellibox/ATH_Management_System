@@ -11,9 +11,21 @@ import { MoreHorizontal } from "lucide-react";
 
 interface PlayerRowProps {
   player: Player;
+  onEdit?: (player: Player) => void;
+  onDelete?: (id: string, name: string) => void;
+  onMessage?: (player: Player) => void;
+  onViewDetails?: (player: Player) => void;
+  onRegisterActivity?: (playerId: string) => void;
 }
 
-export function PlayerRow({ player }: PlayerRowProps) {
+export function PlayerRow({ 
+  player,
+  onEdit,
+  onDelete,
+  onMessage,
+  onViewDetails,
+  onRegisterActivity
+}: PlayerRowProps) {
   const { 
     handleDeletePlayer, 
     setEditingPlayer, 
@@ -32,6 +44,19 @@ export function PlayerRow({ player }: PlayerRowProps) {
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
+
+  // Use passed callback functions if provided, otherwise use context functions
+  const handleEdit = onEdit || setEditingPlayer;
+  const handleDelete = onDelete || ((id: string) => handleDeletePlayer(id, player.name));
+  const handleMessage = onMessage || ((player: Player) => {
+    setMessagePlayer(player);
+    setMessageContent("");
+  });
+  const handleViewDetails = onViewDetails || (() => {});
+  const handleRegisterActivity = onRegisterActivity || (() => {
+    setEditingPlayer(player);
+    setSelectedActivities([]);
+  });
 
   return (
     <TableRow key={player.id} className="border-b hover:bg-gray-50">
@@ -61,16 +86,11 @@ export function PlayerRow({ player }: PlayerRowProps) {
       <TableCell className="text-right">
         <PlayerActionMenu 
           player={player}
-          onDelete={() => handleDeletePlayer(player.id)}
-          onEdit={() => setEditingPlayer(player)}
-          onMessage={() => {
-            setMessagePlayer(player);
-            setMessageContent("");
-          }}
-          onActivity={() => {
-            setEditingPlayer(player);
-            setSelectedActivities([]);
-          }}
+          onDelete={() => handleDelete(player.id, player.name)}
+          onEdit={() => handleEdit(player)}
+          onMessage={() => handleMessage(player)}
+          onRegisterActivity={() => handleRegisterActivity(player.id)}
+          onViewDetails={() => handleViewDetails(player)}
         />
       </TableCell>
     </TableRow>

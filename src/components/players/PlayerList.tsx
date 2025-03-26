@@ -71,9 +71,6 @@ export function PlayerList() {
               <PlayerRow
                 key={player.id}
                 player={player}
-                onEdit={setEditingPlayer}
-                onDelete={handleDeletePlayer}
-                onMessage={setMessagePlayer}
                 onViewDetails={handleViewDetails}
                 onRegisterActivity={handleRegisterActivity}
               />

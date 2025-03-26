@@ -12,11 +12,11 @@ import {
 
 interface PlayerActionMenuProps {
   player: Player;
-  onEdit: (player: Player) => void;
-  onDelete: (id: string, name: string) => void;
-  onMessage: (player: Player) => void;
-  onViewDetails: (player: Player) => void;
-  onRegisterActivity: (playerId: string) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onMessage: () => void;
+  onViewDetails: () => void;
+  onRegisterActivity: () => void;
 }
 
 export function PlayerActionMenu({
@@ -37,7 +37,7 @@ export function PlayerActionMenu({
       <DropdownMenuContent align="end" className="bg-white z-50">
         <DropdownMenuItem onClick={(e) => {
           e.stopPropagation();
-          onViewDetails(player);
+          onViewDetails();
         }}>
           <div className="flex items-center w-full">
             <div className="h-4 w-4 mr-2">👁️</div>
@@ -49,7 +49,7 @@ export function PlayerActionMenu({
         
         <DropdownMenuItem onClick={(e) => {
           e.stopPropagation();
-          onMessage(player);
+          onMessage();
         }}>
           <Mail className="h-4 w-4 mr-2" />
           Invia messaggio
@@ -57,7 +57,7 @@ export function PlayerActionMenu({
         
         <DropdownMenuItem onClick={(e) => {
           e.stopPropagation();
-          onRegisterActivity(player.id);
+          onRegisterActivity();
         }}>
           <CalendarPlus className="h-4 w-4 mr-2" />
           Registra attività
@@ -67,7 +67,7 @@ export function PlayerActionMenu({
         
         <DropdownMenuItem onClick={(e) => {
           e.stopPropagation();
-          onEdit(player);
+          onEdit();
         }}>
           <Edit className="h-4 w-4 mr-2" />
           Modifica
@@ -77,7 +77,7 @@ export function PlayerActionMenu({
           className="text-red-600"
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(player.id, player.name);
+            onDelete();
           }}
         >
           <Trash2 className="h-4 w-4 mr-2" />
