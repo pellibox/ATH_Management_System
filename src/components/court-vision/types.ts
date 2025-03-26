@@ -1,4 +1,3 @@
-
 export interface PersonData {
   id: string;
   name: string;
@@ -19,6 +18,7 @@ export interface PersonData {
   address?: string; // Address information
   birthDate?: string; // Birth date
   notes?: string; // Additional notes
+  preferredContactMethod?: "WhatsApp" | "Email" | "Phone"; // Preferred contact method for sending schedules
 }
 
 export interface ActivityData {

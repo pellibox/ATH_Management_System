@@ -1,6 +1,6 @@
 
 import { useDrag } from "react-dnd";
-import { User, Users, Clock, Layers, Move } from "lucide-react";
+import { User, Users, Clock, Layers, Move, Mail, Phone } from "lucide-react";
 import { PERSON_TYPES } from "./constants";
 import { PersonData } from "./types";
 import { ScrollArea } from "../ui/scroll-area";
@@ -39,7 +39,9 @@ export function Person({
       courtId: person.courtId,
       durationHours: person.durationHours,
       hoursAssigned: person.hoursAssigned, // Include tracking hours
-      sportTypes: person.sportTypes // Include sport types for filtering
+      sportTypes: person.sportTypes, // Include sport types for filtering
+      email: person.email, // Include email for contact info
+      phone: person.phone // Include phone for contact info
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -54,6 +56,7 @@ export function Person({
 
   // Show sport types badges if available
   const hasSportTypes = person.sportTypes && person.sportTypes.length > 0;
+  const hasContactInfo = person.email || person.phone;
 
   return (
     <div
@@ -83,6 +86,23 @@ export function Person({
           </button>
         )}
       </div>
+
+      {hasContactInfo && (
+        <div className="flex flex-col gap-1 mt-1 text-xs text-gray-600">
+          {person.email && (
+            <div className="flex items-center">
+              <Mail className="h-3 w-3 mr-1" />
+              <span className="truncate">{person.email}</span>
+            </div>
+          )}
+          {person.phone && (
+            <div className="flex items-center">
+              <Phone className="h-3 w-3 mr-1" />
+              <span>{person.phone}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {hasSportTypes && (
         <div className="flex flex-wrap gap-1 mt-1">

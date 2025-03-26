@@ -12,7 +12,13 @@ export interface PeopleManagementProps {
   playersList: PersonData[];
   coachesList: PersonData[];
   programs: Program[];
-  onAddPerson: (person: {name: string, type: string}) => void;
+  onAddPerson: (person: {
+    name: string, 
+    type: string, 
+    email?: string, 
+    phone?: string, 
+    sportTypes?: string[]
+  }) => void;
   onRemovePerson: (id: string) => void;
   onAddToDragArea: (person: PersonData) => void;
   onAssignProgram: (personId: string, programId: string) => void;
@@ -33,7 +39,7 @@ export function PeopleManagement({
   return (
     <div className="bg-white rounded-xl shadow-soft p-4">
       <h2 className="font-medium mb-3 flex items-center">
-        <UserCog className="h-4 w-4 mr-2" /> People Database
+        <UserCog className="h-4 w-4 mr-2" /> Database Persone
       </h2>
       
       <AddPersonForm onAddPerson={onAddPerson} />
@@ -41,10 +47,10 @@ export function PeopleManagement({
       <Tabs defaultValue="players" onValueChange={setSelectedTab} value={selectedTab}>
         <TabsList className="grid w-full grid-cols-2 mb-3">
           <TabsTrigger value="players" className="text-xs">
-            <User className="h-3 w-3 mr-1" /> <span className="truncate">Players ({playersList.length})</span>
+            <User className="h-3 w-3 mr-1" /> <span className="truncate">Giocatori ({playersList.length})</span>
           </TabsTrigger>
           <TabsTrigger value="coaches" className="text-xs">
-            <UserCog className="h-3 w-3 mr-1" /> <span className="truncate">Coaches ({coachesList.length})</span>
+            <UserCog className="h-3 w-3 mr-1" /> <span className="truncate">Allenatori ({coachesList.length})</span>
           </TabsTrigger>
         </TabsList>
         
