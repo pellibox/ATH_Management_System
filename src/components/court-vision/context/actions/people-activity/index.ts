@@ -17,39 +17,39 @@ export const usePeopleActivityActions = (
   courts
 ) => {
   // People management actions
-  const peopleManagement = usePeopleManagement(
+  const peopleManagement = usePeopleManagement({
     people, 
     setPeople, 
     playersList, 
     setPlayersList, 
     coachesList, 
     setCoachesList
-  );
+  });
   
   // Activity management actions
-  const activityManagement = useActivityManagement(
+  const activityManagement = useActivityManagement({
     activities,
     setActivities
-  );
+  });
   
   // Program assignment actions
-  const programAssignment = useProgramAssignment(
+  const programAssignment = useProgramAssignment({
     playersList,
     setPlayersList,
     coachesList,
     setCoachesList,
     programs,
     courts
-  );
+  });
   
   // Coach availability actions
-  const coachAvailability = useCoachAvailability(
+  const coachAvailability = useCoachAvailability({
     coachesList,
     setCoachesList,
     people,
     setPeople,
     courts
-  );
+  });
   
   return {
     ...peopleManagement,
