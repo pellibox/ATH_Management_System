@@ -73,7 +73,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setObjectives
   });
 
-  // Context value
+  // Context value - the type error was here, we need to ensure we're using the correct type
   const contextValue: PlayerContextType = {
     // State
     players,
@@ -102,7 +102,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setMessageContent,
     setScheduleType,
     setObjectives,
-    setNewPlayer,
+    setNewPlayer: (player: Omit<Player, "id">) => setNewPlayer(player as Player), // Fix type here
     setSelectedActivities,
     resetFilters,
     

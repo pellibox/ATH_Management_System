@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 import { ProgramsHeader } from "@/components/programs/ProgramsHeader";
 import { ProgramFilters } from "@/components/programs/ProgramFilters";
 import { ProgramCategorySection } from "@/components/programs/ProgramCategorySection";
-import { ProgramDetail } from "@/components/programs/ProgramCard";
+import { ProgramDetail, ProgramCard } from "@/components/programs/ProgramCard";
 
 // Define program categories for filtering
 const PROGRAM_CATEGORIES = {
