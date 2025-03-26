@@ -6,7 +6,6 @@ import { DateSelector } from './DateSelector';
 import { SendScheduleDialog } from './schedule-dialog';
 import { ScheduleTemplate } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AvailableActivities } from './AvailableActivities';
 import { ScheduleTemplates } from './ScheduleTemplates';
 import { useCourtVision } from './context/CourtVisionContext';
 
@@ -26,12 +25,10 @@ export default function CourtVisionHeader() {
     saveAsTemplate,
     copyToNextDay,
     copyToWeek,
-    checkUnassignedPeople,
-    handleActivityDrop,
-    handleAddActivity
+    checkUnassignedPeople
   } = useCourtVision();
   
-  const [activeTab, setActiveTab] = useState<"assignments" | "activities" | "templates">("assignments");
+  const [activeTab, setActiveTab] = useState<"assignments" | "templates">("assignments");
   
   // Get today's assignments from courts
   const getTodaysAssignments = () => {
@@ -91,10 +88,6 @@ export default function CourtVisionHeader() {
             <Layers className="h-4 w-4 mr-2" />
             <span>Assegnazioni di Oggi{totalAssignments > 0 ? ` (${totalAssignments})` : ''}</span>
           </TabsTrigger>
-          <TabsTrigger value="activities" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Clock className="h-4 w-4 mr-2" />
-            <span>Attività</span>
-          </TabsTrigger>
           <TabsTrigger value="templates" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <FileText className="h-4 w-4 mr-2" />
             <span>Templates</span>
@@ -131,14 +124,6 @@ export default function CourtVisionHeader() {
               </div>
             )}
           </div>
-        </TabsContent>
-                
-        <TabsContent value="activities" className="mt-0">
-          <AvailableActivities 
-            activities={activities}
-            onAddActivity={handleAddActivity}
-            onActivityDrop={handleActivityDrop}
-          />
         </TabsContent>
         
         <TabsContent value="templates" className="mt-0">

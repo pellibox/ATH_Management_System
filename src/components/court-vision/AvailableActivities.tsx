@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Activity, PlaySquare } from "lucide-react";
 import { ActivityData } from "./types";
@@ -23,6 +24,7 @@ export function AvailableActivities({
   });
   
   const handleAddActivity = () => {
+    if (!newActivity.name.trim()) return;
     onAddActivity(newActivity);
     setNewActivity({ name: "", type: ACTIVITY_TYPES.MATCH, duration: "1h" });
   };
@@ -43,17 +45,12 @@ export function AvailableActivities({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-soft p-4">
-      <h2 className="font-medium mb-3 flex items-center">
-        <PlaySquare className="h-4 w-4 mr-2" /> Available Activities
-      </h2>
-      
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-        <h3 className="text-sm font-medium mb-2">Add New Activity</h3>
+    <div className="space-y-3">
+      <div className="p-3 bg-gray-50 rounded-lg">
         <div className="space-y-2">
           <input
             type="text"
-            placeholder="Activity Name"
+            placeholder="Nome Attività"
             className="w-full px-3 py-2 text-sm border rounded"
             value={newActivity.name}
             onChange={(e) => setNewActivity({ ...newActivity, name: e.target.value })}
@@ -69,7 +66,7 @@ export function AvailableActivities({
               <option value={ACTIVITY_TYPES.TRAINING}>Training</option>
               <option value={ACTIVITY_TYPES.BASKET_DRILL}>Basket Drill</option>
               <option value={ACTIVITY_TYPES.GAME}>Game</option>
-              <option value={ACTIVITY_TYPES.OTHER}>Other</option>
+              <option value={ACTIVITY_TYPES.OTHER}>Altro</option>
             </select>
             
             <select
@@ -77,19 +74,20 @@ export function AvailableActivities({
               value={newActivity.duration}
               onChange={(e) => setNewActivity({ ...newActivity, duration: e.target.value })}
             >
-              <option value="30m">30 minutes</option>
-              <option value="45m">45 minutes</option>
-              <option value="1h">1 hour</option>
-              <option value="1.5h">1.5 hours</option>
-              <option value="2h">2 hours</option>
+              <option value="30m">30 minuti</option>
+              <option value="45m">45 minuti</option>
+              <option value="1h">1 ora</option>
+              <option value="1.5h">1.5 ore</option>
+              <option value="2h">2 ore</option>
             </select>
           </div>
           
           <button
             className="w-full bg-green-500 text-white text-sm py-1.5 rounded hover:bg-green-600 transition-colors"
             onClick={handleAddActivity}
+            disabled={!newActivity.name.trim()}
           >
-            Add Activity
+            Aggiungi Attività
           </button>
         </div>
       </div>
@@ -100,19 +98,22 @@ export function AvailableActivities({
             {activities.map((activity) => (
               <div
                 key={activity.id}
-                className={`flex items-center justify-between p-2 rounded ${getActivityColor(activity.type)}`}
+                className="flex items-center justify-between p-2.5 border rounded-md hover:bg-gray-50 transition-colors cursor-grab"
                 draggable
                 onDragStart={(e) => {
                   e.dataTransfer.setData("application/json", JSON.stringify(activity));
                 }}
               >
-                <div>
-                  <span className="text-sm">{activity.name}</span>
-                  <span className="text-xs ml-2 opacity-80">{activity.duration}</span>
+                <div className="flex items-center">
+                  <div className={`px-2 py-1 rounded-full text-xs mr-2 ${getActivityColor(activity.type)}`}>
+                    {activity.type}
+                  </div>
+                  <span className="text-sm font-medium">{activity.name}</span>
+                  <span className="text-xs ml-2 text-gray-500">{activity.duration}</span>
                 </div>
                 <button
                   onClick={() => onRemoveActivity && onRemoveActivity(activity.id)}
-                  className="ml-auto text-white hover:text-red-200"
+                  className="ml-auto text-gray-400 hover:text-red-500 p-1"
                   aria-label="Remove activity"
                 >
                   ×
@@ -121,8 +122,8 @@ export function AvailableActivities({
             ))}
           </div>
         ) : (
-          <div className="text-sm text-gray-500 italic p-2">
-            All activities assigned to courts
+          <div className="text-sm text-gray-500 italic p-2 text-center bg-gray-50 rounded-md">
+            Nessuna attività disponibile
           </div>
         )}
       </div>

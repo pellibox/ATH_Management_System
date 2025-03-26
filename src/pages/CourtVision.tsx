@@ -11,8 +11,9 @@ import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashb
 import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
 import { AvailablePeople } from "@/components/court-vision/AvailablePeople";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, UserCog, Filter } from "lucide-react";
+import { User, UserCog, Filter, PlaySquare } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AvailableActivities } from "@/components/court-vision/AvailableActivities";
 
 // People management component that shows players and coaches tabs
 function PeopleList() {
@@ -111,6 +112,30 @@ function PeopleList() {
   );
 }
 
+// Activities panel component
+function ActivitiesPanel() {
+  const { 
+    activities,
+    handleActivityDrop,
+    handleAddActivity
+  } = useCourtVision();
+  
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-3 mt-4">
+      <div className="flex items-center mb-3">
+        <PlaySquare className="h-4 w-4 mr-2" />
+        <h3 className="text-sm font-medium">Attività</h3>
+      </div>
+      
+      <AvailableActivities 
+        activities={activities}
+        onAddActivity={handleAddActivity}
+        onActivityDrop={handleActivityDrop}
+      />
+    </div>
+  );
+}
+
 // Main content component that renders based on view type
 function CourtVisionContent() {
   const { 
@@ -166,9 +191,10 @@ export default function CourtVision() {
           
           {/* Main content area with sidebar layout */}
           <div className="flex flex-1 gap-4 overflow-hidden">
-            {/* Left sidebar for players and coaches */}
-            <div className="w-80 flex-shrink-0 overflow-y-auto pb-4">
+            {/* Left sidebar for players, coaches and activities */}
+            <div className="w-80 flex-shrink-0 overflow-y-auto pb-4 flex flex-col">
               <PeopleList />
+              <ActivitiesPanel />
             </div>
             
             {/* Main content area */}
