@@ -8,10 +8,13 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import { SharedPlayerProvider } from "./contexts/shared/SharedPlayerContext";
 
+// Import components directly instead of using lazy for the problematic ones
+import CourtVision from "./pages/CourtVision";
+
+// Use lazy loading for other components
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const Courts = lazy(() => import("./pages/Courts"));
-const CourtVision = lazy(() => import("./pages/CourtVision"));
 const Staff = lazy(() => import("./pages/Staff"));
 const Players = lazy(() => import("./pages/Players"));
 const Programs = lazy(() => import("./pages/Programs"));
