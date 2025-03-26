@@ -8,6 +8,7 @@ interface ProgramCategorySectionProps {
   programs: ProgramDetail[];
   expandedProgram: string | null;
   toggleExpand: (id: string) => void;
+  onUpdateProgram?: (updatedProgram: ProgramDetail) => void;
 }
 
 export const ProgramCategorySection = ({
@@ -16,7 +17,8 @@ export const ProgramCategorySection = ({
   borderColor,
   programs,
   expandedProgram,
-  toggleExpand
+  toggleExpand,
+  onUpdateProgram
 }: ProgramCategorySectionProps) => {
   if (programs.length === 0) {
     return null;
@@ -43,6 +45,7 @@ export const ProgramCategorySection = ({
             program={program}
             expandedProgram={expandedProgram}
             toggleExpand={toggleExpand}
+            onUpdateProgram={onUpdateProgram}
           />
         ))}
       </div>

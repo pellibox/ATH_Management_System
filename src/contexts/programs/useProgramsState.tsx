@@ -23,8 +23,15 @@ export function useProgramsState() {
       ...TENNIS_PROGRAMS.PADEL
     ];
     
-    setAllPrograms(programs);
-    setFilteredPrograms(programs);
+    // Add default values for enrollmentOpen if not present
+    const programsWithDefaults = programs.map(program => ({
+      ...program,
+      enrollmentOpen: program.enrollmentOpen !== false ? true : false,
+      nextStart: program.nextStart || "Settembre 2024"
+    }));
+    
+    setAllPrograms(programsWithDefaults);
+    setFilteredPrograms(programsWithDefaults);
   }, []);
   
   // Filter programs when filter or search changes
@@ -70,6 +77,28 @@ export function useProgramsState() {
     setSearchQuery("");
   };
   
+  // Update program
+  const updateProgram = (updatedProgram: ProgramDetail) => {
+    // Update in allPrograms
+    const updatedAllPrograms = allPrograms.map(program => 
+      program.id === updatedProgram.id ? updatedProgram : program
+    );
+    
+    setAllPrograms(updatedAllPrograms);
+    
+    // Also update in TENNIS_PROGRAMS for persistence
+    // Find which category the program belongs to
+    const category = getCategoryFromId(updatedProgram.id);
+    if (category && TENNIS_PROGRAMS[category.toUpperCase()]) {
+      const categoryPrograms = TENNIS_PROGRAMS[category.toUpperCase()];
+      const programIndex = categoryPrograms.findIndex(p => p.id === updatedProgram.id);
+      
+      if (programIndex !== -1) {
+        categoryPrograms[programIndex] = updatedProgram;
+      }
+    }
+  };
+  
   return {
     filter,
     setFilter,
@@ -79,6 +108,7 @@ export function useProgramsState() {
     allPrograms,
     filteredPrograms,
     toggleExpand,
-    resetFilters
+    resetFilters,
+    updateProgram
   };
 }

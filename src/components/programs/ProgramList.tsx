@@ -9,9 +9,10 @@ import { CATEGORY_DESCRIPTIONS, CATEGORY_COLORS } from "@/contexts/programs/cons
 interface ProgramListProps {
   expandedProgram: string | null;
   toggleExpand: (id: string) => void;
+  onUpdateProgram?: (updatedProgram: ProgramDetail) => void;
 }
 
-export function ProgramList({ expandedProgram, toggleExpand }: ProgramListProps) {
+export function ProgramList({ expandedProgram, toggleExpand, onUpdateProgram }: ProgramListProps) {
   return (
     <div className="space-y-6">
       {/* Dynamic Category Sections */}
@@ -24,6 +25,7 @@ export function ProgramList({ expandedProgram, toggleExpand }: ProgramListProps)
           programs={getProgramsByCategory(value)}
           expandedProgram={expandedProgram}
           toggleExpand={toggleExpand}
+          onUpdateProgram={onUpdateProgram}
         />
       ))}
     </div>

@@ -10,6 +10,7 @@ interface FilteredProgramsListProps {
   expandedProgram: string | null;
   toggleExpand: (id: string) => void;
   resetFilters: () => void;
+  onUpdateProgram?: (updatedProgram: ProgramDetail) => void;
 }
 
 export const FilteredProgramsList = ({
@@ -17,7 +18,8 @@ export const FilteredProgramsList = ({
   filteredPrograms,
   expandedProgram,
   toggleExpand,
-  resetFilters
+  resetFilters,
+  onUpdateProgram
 }: FilteredProgramsListProps) => {
   const categoryKey = Object.keys(CATEGORY_DESCRIPTIONS).find(key => 
     key.toLowerCase() === filter.toUpperCase()
@@ -45,6 +47,7 @@ export const FilteredProgramsList = ({
             program={program}
             expandedProgram={expandedProgram}
             toggleExpand={toggleExpand}
+            onUpdateProgram={onUpdateProgram}
           />
         ))}
       </div>

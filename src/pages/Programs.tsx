@@ -5,8 +5,10 @@ import { ProgramFilters } from "@/components/programs/ProgramFilters";
 import { ProgramList } from "@/components/programs/ProgramList";
 import { FilteredProgramsList } from "@/components/programs/FilteredProgramsList";
 import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Programs() {
+  const { toast } = useToast();
   const {
     filter,
     setFilter,
@@ -15,8 +17,17 @@ export default function Programs() {
     expandedProgram,
     filteredPrograms,
     toggleExpand,
-    resetFilters
+    resetFilters,
+    updateProgram
   } = useProgramsState();
+
+  const handleUpdateProgram = (updatedProgram) => {
+    updateProgram(updatedProgram);
+    toast({
+      title: "Programma aggiornato",
+      description: `Le modifiche a "${updatedProgram.name}" sono state salvate con successo.`,
+    });
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 animate-fade-in">
@@ -32,7 +43,8 @@ export default function Programs() {
       {filter === "all" ? (
         <ProgramList 
           expandedProgram={expandedProgram} 
-          toggleExpand={toggleExpand} 
+          toggleExpand={toggleExpand}
+          onUpdateProgram={handleUpdateProgram}
         />
       ) : (
         <FilteredProgramsList
@@ -41,6 +53,7 @@ export default function Programs() {
           expandedProgram={expandedProgram}
           toggleExpand={toggleExpand}
           resetFilters={resetFilters}
+          onUpdateProgram={handleUpdateProgram}
         />
       )}
     </div>
