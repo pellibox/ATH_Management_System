@@ -1,27 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useLocation } from "react-router-dom";
-import { 
-  PersonData, 
-  ActivityData, 
-  CourtProps, 
-  ScheduleTemplate, 
-  DateSchedule,
-  Program 
-} from "../types";
+
+import React, { createContext, useContext, useState } from "react";
 import { CourtVisionContextType } from "./CourtVisionTypes";
-import { 
-  DEFAULT_TIME_SLOTS,
-  DEFAULT_COURTS,
-  DEFAULT_PEOPLE,
-  DEFAULT_ACTIVITIES,
-  DEFAULT_PLAYERS,
-  DEFAULT_COACHES,
-  DEFAULT_PROGRAMS
-} from "./CourtVisionDefaults";
+import { useCourtVisionState } from "./useCourtVisionState";
 import { useCourtVisionActions } from "./CourtVisionActions";
 import { useCourtVisionFilters } from "./CourtVisionFilters";
+import { useProgramHandlers } from "./useProgramHandlers";
 import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
-import { useToast } from "@/hooks/use-toast";
+import { CourtVisionProviderProps } from "./types";
 
 export const CourtVisionContext = createContext<CourtVisionContextType | undefined>(undefined);
 
@@ -33,41 +18,43 @@ export const useCourtVision = () => {
   return context;
 };
 
-interface CourtVisionProviderProps {
-  children: ReactNode;
-}
-
 export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ children }) => {
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const currentSport = params.get('sport') || '';
-  const isLayoutView = location.pathname.includes('/layout');
-  const { toast } = useToast();
+  // Get state from hook
+  const state = useCourtVisionState();
   
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
-  const [dateSchedules, setDateSchedules] = useState<DateSchedule[]>([]);
-  const [timeSlots, setTimeSlots] = useState<string[]>(DEFAULT_TIME_SLOTS);
-  const [courts, setCourts] = useState<CourtProps[]>(DEFAULT_COURTS);
-  const [filteredCourts, setFilteredCourts] = useState<CourtProps[]>(DEFAULT_COURTS);
-  const [people, setPeople] = useState<PersonData[]>(DEFAULT_PEOPLE);
-  const [activities, setActivities] = useState<ActivityData[]>(DEFAULT_ACTIVITIES);
-  const [playersList, setPlayersList] = useState<PersonData[]>(DEFAULT_PLAYERS);
-  const [coachesList, setCoachesList] = useState<PersonData[]>(DEFAULT_COACHES);
-  const [programs, setPrograms] = useState<Program[]>(DEFAULT_PROGRAMS);
-  const [filteredPlayers, setFilteredPlayers] = useState<PersonData[]>(DEFAULT_PLAYERS);
-  const [filteredCoaches, setFilteredCoaches] = useState<PersonData[]>(DEFAULT_COACHES);
+  // Set up state setters
+  const [courts, setCourts] = useState(state.courts);
+  const [people, setPeople] = useState(state.people);
+  const [activities, setActivities] = useState(state.activities);
+  const [playersList, setPlayersList] = useState(state.playersList);
+  const [coachesList, setCoachesList] = useState(state.coachesList);
+  const [programs, setPrograms] = useState(state.programs);
+  const [templates, setTemplates] = useState(state.templates);
+  const [dateSchedules, setDateSchedules] = useState(state.dateSchedules);
+  const [selectedDate, setSelectedDate] = useState(state.selectedDate);
+  const [showExtraHoursDialog, setShowExtraHoursDialog] = useState(state.showExtraHoursDialog);
+  const [pendingAssignment, setPendingAssignment] = useState(state.pendingAssignment);
 
+  // Apply filters
   useCourtVisionFilters({
     courts,
-    currentSport,
+    currentSport: state.currentSport,
     playersList,
     coachesList,
-    setFilteredCourts,
-    setFilteredPlayers,
-    setFilteredCoaches
+    setFilteredCourts: (courts) => state.filteredCourts = courts,
+    setFilteredPlayers: (players) => state.filteredPlayers = players,
+    setFilteredCoaches: (coaches) => state.filteredCoaches = coaches
   });
 
+  // Get program handlers
+  const programHandlers = useProgramHandlers(
+    programs,
+    setPrograms,
+    playersList,
+    coachesList
+  );
+
+  // Get actions
   const actions = useCourtVisionActions({
     courts,
     setCourts,
@@ -87,97 +74,36 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     setDateSchedules,
     selectedDate,
     setSelectedDate,
-    timeSlots
+    timeSlots: state.timeSlots
   });
 
-  const handleAddProgram = (program: Program) => {
-    setPrograms([...programs, program]);
-  };
-
-  const handleRemoveProgram = (programId: string) => {
-    const isAssigned = [...playersList, ...coachesList].some(person => 
-      (person.programId === programId) || 
-      (person.programIds && person.programIds.includes(programId))
-    );
-    
-    if (isAssigned) {
-      toast({
-        title: "Impossibile Rimuovere",
-        description: "Questo programma è assegnato ad almeno una persona. Rimuovi l'assegnazione prima di eliminare il programma.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setPrograms(programs.filter(p => p.id !== programId));
-    
-    toast({
-      title: "Programma Rimosso",
-      description: "Il programma è stato rimosso con successo.",
-    });
-  };
-
+  // Handle coach availability
   const handleSetCoachAvailability = (coachId: string, isPresent: boolean, reason?: string) => {
     const updatedCourts = actions.handleSetCoachAvailability(coachId, isPresent, reason);
     setCourts(updatedCourts);
   };
 
-  useEffect(() => {
-    const dateString = selectedDate.toISOString().split('T')[0];
-    const existingSchedule = dateSchedules.find(schedule => schedule.date === dateString);
-    
-    console.log("Loading schedule for date:", dateString);
-    console.log("Existing schedule found:", existingSchedule ? "Yes" : "No");
-    
-    if (existingSchedule) {
-      console.log("Setting courts from schedule:", existingSchedule.courts);
-      setCourts(existingSchedule.courts);
-    } else {
-      console.log("No schedule found, using default courts");
-      setCourts(DEFAULT_COURTS);
-    }
-  }, [selectedDate, dateSchedules]);
-
-  useEffect(() => {
-    const dateString = selectedDate.toISOString().split('T')[0];
-    
-    console.log("Saving schedule for date:", dateString);
-    console.log("Current courts state:", courts);
-    
-    setDateSchedules(prevSchedules => {
-      const existingIndex = prevSchedules.findIndex(schedule => schedule.date === dateString);
-      
-      if (existingIndex >= 0) {
-        const updatedSchedules = [...prevSchedules];
-        updatedSchedules[existingIndex] = { date: dateString, courts };
-        return updatedSchedules;
-      } else {
-        return [...prevSchedules, { date: dateString, courts }];
-      }
-    });
-  }, [courts, selectedDate]);
-
+  // Create context value
   const contextValue: CourtVisionContextType = {
     selectedDate,
     templates,
     dateSchedules,
-    timeSlots,
+    timeSlots: state.timeSlots,
     courts,
-    filteredCourts,
+    filteredCourts: state.filteredCourts,
     people,
     activities,
     playersList,
     coachesList,
     programs,
-    filteredPlayers,
-    filteredCoaches,
-    currentSport,
-    isLayoutView,
+    filteredPlayers: state.filteredPlayers,
+    filteredCoaches: state.filteredCoaches,
+    currentSport: state.currentSport,
+    isLayoutView: state.isLayoutView,
 
     setSelectedDate,
-    handleAddProgram,
-    handleRemoveProgram,
     handleSetCoachAvailability,
+    ...programHandlers,
     ...actions
   };
 

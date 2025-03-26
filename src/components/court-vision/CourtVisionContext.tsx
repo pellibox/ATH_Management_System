@@ -1,5 +1,5 @@
 
-// This file is now just a re-export to maintain compatibility with existing imports
+// This file is just a re-export to maintain compatibility with existing imports
 import { 
   CourtVisionContext,
   CourtVisionProvider, 
