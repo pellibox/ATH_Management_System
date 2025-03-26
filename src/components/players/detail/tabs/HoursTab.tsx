@@ -212,10 +212,16 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     
     const completedHours = player.completedHours || 0;
     setProgramHours(totalProgramHours);
-    setRemainingHours(totalProgramHours - completedHours);
+    
+    // Fix: Calculate remaining hours, ensuring it doesn't go negative
+    const remaining = Math.max(0, totalProgramHours - completedHours);
+    setRemainingHours(remaining);
   }, [selectedPrograms, player.completedHours, availablePrograms]);
 
-  const hoursProgress = programHours > 0 ? ((programHours - remainingHours) / programHours) * 100 : 0;
+  // Fix: Calculate progress percentage, capping at 100% if completedHours exceeds programHours
+  const hoursProgress = programHours > 0 
+    ? Math.min(100, ((player.completedHours || 0) / programHours) * 100) 
+    : 0;
 
   const getProgramDetails = (programName: string) => {
     const program = availablePrograms.find(p => p.name === programName);
@@ -274,6 +280,23 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     acc[program.category].programs.push(program);
     return acc;
   }, {} as Record<string, { label: string, programs: typeof filteredPrograms }>);
+
+  // Fix: Format display message for remaining hours and completion percentage
+  const formatRemainingHours = () => {
+    const completedHours = player.completedHours || 0;
+    if (completedHours >= programHours) {
+      // Program completed or exceeded
+      const extraHours = completedHours - programHours;
+      if (extraHours > 0) {
+        return `+${extraHours.toFixed(1)} ore extra`;
+      } else {
+        return "Completato";
+      }
+    } else {
+      // Still has hours to complete
+      return `${remainingHours.toFixed(1)}`;
+    }
+  };
 
   return (
     <CardContent className="p-4 pt-2">
@@ -439,8 +462,12 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
           </div>
           <Progress value={hoursProgress} className="h-2" />
           <div className="flex justify-between text-sm">
-            <span>Ore rimanenti: <span className="font-medium">{remainingHours.toFixed(1)}</span></span>
-            <span>Completamento: <span className="font-medium">{Math.round(hoursProgress)}%</span></span>
+            <span>
+              Ore rimanenti: <span className="font-medium">{formatRemainingHours()}</span>
+            </span>
+            <span>
+              Completamento: <span className="font-medium">{Math.round(hoursProgress)}%</span>
+            </span>
           </div>
         </div>
         
