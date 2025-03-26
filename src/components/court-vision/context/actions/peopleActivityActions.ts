@@ -23,7 +23,8 @@ export const usePeopleActivityActions = (
       type: personData.type as "player" | "coach",
       email: personData.email,
       phone: personData.phone,
-      sportTypes: personData.sportTypes
+      sportTypes: personData.sportTypes,
+      programIds: [] // Initialize empty array for multiple programs
     };
     
     setPeople([...people, newPerson]);
@@ -77,26 +78,44 @@ export const usePeopleActivityActions = (
   };
 
   const handleAssignProgram = (personId: string, programId: string) => {
-    // Update in playersList
+    // Update in playersList - now supporting multiple programs
     const updatedPlayersList = playersList.map(player => {
       if (player.id === personId) {
+        // Initialize programIds array if it doesn't exist
+        const currentProgramIds = player.programIds || [];
+        
+        // Add the program if not already assigned, otherwise remove it (toggle behavior)
+        const newProgramIds = currentProgramIds.includes(programId)
+          ? currentProgramIds.filter(id => id !== programId)
+          : [...currentProgramIds, programId];
+          
         const program = programs.find(p => p.id === programId);
         return { 
           ...player, 
-          programId, 
+          programIds: newProgramIds,
+          programId: newProgramIds.length > 0 ? newProgramIds[0] : undefined, // Keep first as main for backward compatibility
           programColor: program?.color 
         };
       }
       return player;
     });
     
-    // Update in coachesList
+    // Update in coachesList - now supporting multiple programs
     const updatedCoachesList = coachesList.map(coach => {
       if (coach.id === personId) {
+        // Initialize programIds array if it doesn't exist
+        const currentProgramIds = coach.programIds || [];
+        
+        // Add the program if not already assigned, otherwise remove it
+        const newProgramIds = currentProgramIds.includes(programId)
+          ? currentProgramIds.filter(id => id !== programId)
+          : [...currentProgramIds, programId];
+          
         const program = programs.find(p => p.id === programId);
         return { 
           ...coach, 
-          programId, 
+          programIds: newProgramIds,
+          programId: newProgramIds.length > 0 ? newProgramIds[0] : undefined, // Keep first as main for backward compatibility
           programColor: program?.color 
         };
       }
@@ -108,10 +127,19 @@ export const usePeopleActivityActions = (
       ...court,
       occupants: court.occupants.map(occupant => {
         if (occupant.id === personId) {
+          // Initialize programIds array if it doesn't exist
+          const currentProgramIds = occupant.programIds || [];
+          
+          // Add the program if not already assigned, otherwise remove it
+          const newProgramIds = currentProgramIds.includes(programId)
+            ? currentProgramIds.filter(id => id !== programId)
+            : [...currentProgramIds, programId];
+            
           const program = programs.find(p => p.id === programId);
           return { 
             ...occupant, 
-            programId, 
+            programIds: newProgramIds,
+            programId: newProgramIds.length > 0 ? newProgramIds[0] : undefined, // Keep first as main for backward compatibility
             programColor: program?.color 
           };
         }

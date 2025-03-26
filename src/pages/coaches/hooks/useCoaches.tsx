@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { PersonData, Program } from "@/components/court-vision/types";
+import { CoachAvailabilityEvent } from "@/contexts/programs/types";
 
 export function useCoaches(
   coachesList: PersonData[],
@@ -11,6 +12,9 @@ export function useCoaches(
   const [searchQuery, setSearchQuery] = useState("");
   const [sportTypeFilter, setSportTypeFilter] = useState<string>("all");
   const [programFilter, setProgramFilter] = useState<string>("all");
+  const [availabilityEvents, setAvailabilityEvents] = useState<CoachAvailabilityEvent[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentView, setCurrentView] = useState<"week" | "day" | "month">("week");
 
   // Get all unique sport types from players and coaches
   const allSportTypes = Array.from(
@@ -35,20 +39,50 @@ export function useCoaches(
     const matchesSportType = sportTypeFilter === "all" || 
       (coach.sportTypes && coach.sportTypes.includes(sportTypeFilter));
     
-    // Program filter
-    const matchesProgram = programFilter === "all" || coach.programId === programFilter;
+    // Program filter - now checks if any of the coach's programs match
+    const matchesProgram = programFilter === "all" || 
+      (coach.programIds && coach.programIds.includes(programFilter));
     
     return matchesSearch && matchesSportType && matchesProgram;
   });
 
-  // Handle assigning a program to a coach
+  // Handle assigning a program to a coach (now supporting multiple programs)
   const handleAssignProgram = (coachId: string, programId: string) => {
     setCoaches(prevCoaches => 
-      prevCoaches.map(coach => 
-        coach.id === coachId 
-          ? { ...coach, programId } 
-          : coach
-      )
+      prevCoaches.map(coach => {
+        if (coach.id === coachId) {
+          // Initialize programIds array if it doesn't exist
+          const currentProgramIds = coach.programIds || [];
+          
+          // Add the program if not already assigned, otherwise remove it (toggle behavior)
+          const newProgramIds = currentProgramIds.includes(programId)
+            ? currentProgramIds.filter(id => id !== programId)
+            : [...currentProgramIds, programId];
+            
+          return { 
+            ...coach, 
+            programIds: newProgramIds
+          };
+        }
+        return coach;
+      })
+    );
+  };
+
+  // Handle adding a new availability event
+  const handleAddAvailabilityEvent = (event: CoachAvailabilityEvent) => {
+    setAvailabilityEvents(prev => [...prev, event]);
+  };
+
+  // Handle removing an availability event
+  const handleRemoveAvailabilityEvent = (eventId: string) => {
+    setAvailabilityEvents(prev => prev.filter(event => event.id !== eventId));
+  };
+
+  // Handle updating an availability event
+  const handleUpdateAvailabilityEvent = (eventId: string, updatedEvent: Partial<CoachAvailabilityEvent>) => {
+    setAvailabilityEvents(prev => 
+      prev.map(event => event.id === eventId ? { ...event, ...updatedEvent } : event)
     );
   };
 
@@ -69,6 +103,14 @@ export function useCoaches(
     filteredCoaches,
     allSportTypes,
     handleAssignProgram,
-    handleSendSchedule
+    handleSendSchedule,
+    availabilityEvents,
+    handleAddAvailabilityEvent,
+    handleRemoveAvailabilityEvent,
+    handleUpdateAvailabilityEvent,
+    selectedDate,
+    setSelectedDate,
+    currentView,
+    setCurrentView
   };
 }

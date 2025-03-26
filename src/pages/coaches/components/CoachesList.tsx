@@ -7,13 +7,15 @@ interface CoachesListProps {
   programs: Program[];
   handleAssignProgram: (coachId: string, programId: string) => void;
   handleSendSchedule: (coachId: string, type: "day" | "week" | "month") => void;
+  onSelectCoach?: (coach: PersonData) => void;
 }
 
 export function CoachesList({ 
   filteredCoaches, 
   programs, 
   handleAssignProgram, 
-  handleSendSchedule 
+  handleSendSchedule,
+  onSelectCoach
 }: CoachesListProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -25,6 +27,8 @@ export function CoachesList({
             programs={programs}
             onAssignProgram={handleAssignProgram}
             onSendSchedule={handleSendSchedule}
+            onViewCalendar={onSelectCoach ? () => onSelectCoach(coach) : undefined}
+            multiplePrograms={true} // Enable multiple program selection
           />
         ))
       ) : (
