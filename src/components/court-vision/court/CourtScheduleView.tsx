@@ -80,7 +80,7 @@ export function CourtScheduleView({
           ))}
         </div>
         
-        {/* Make the scroll control more prominent */}
+        {/* Scroll control positioned on the inside of the court */}
         <ScrollControl containerRef={scrollContainerRef} />
       </div>
     </div>
