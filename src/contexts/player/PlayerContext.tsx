@@ -102,7 +102,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setMessageContent,
     setScheduleType,
     setObjectives,
-    setNewPlayer: (player: Omit<Player, "id">) => setNewPlayer(player as Player), // Fix type here
+    // Fix the type issue here - we need to correctly type the setNewPlayer function
+    setNewPlayer: (player: Omit<Player, "id">) => setNewPlayer({ ...player, id: "new-temp-id" } as Player),
     setSelectedActivities,
     resetFilters,
     
