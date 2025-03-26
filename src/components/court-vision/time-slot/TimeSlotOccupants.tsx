@@ -3,6 +3,7 @@ import React from "react";
 import { PersonData } from "../types";
 import { CourtPerson } from "../CourtPerson";
 import { isTimeSlotOccupied, getTimeSlotContinuationStyle } from "../court/CourtStyleUtils";
+import { calculateProgramDuration, calculateTimeSlotSpan } from "./utils";
 
 interface TimeSlotOccupantsProps {
   occupants: PersonData[];

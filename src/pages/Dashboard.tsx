@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { CourtProps } from "@/components/court-vision/types";
@@ -18,18 +17,15 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { sharedPlayers } = useSharedPlayers();
   
-  // Trigger animations after mount
   useEffect(() => {
     console.log("Dashboard component mounted");
     
     try {
-      // Set visibility after a brief delay to ensure smooth transition
       const visibilityTimer = setTimeout(() => {
         setIsVisible(true);
         console.log("Dashboard visibility set to true");
       }, 100);
       
-      // Simulate loading to ensure component fully initializes
       const loadingTimer = setTimeout(() => {
         setIsLoading(false);
         console.log("Dashboard finished loading");
@@ -51,7 +47,6 @@ export default function Dashboard() {
     }
   }, [toast]);
   
-  // Add console logs to debug rendering
   console.log("Dashboard rendering, isVisible:", isVisible, "isLoading:", isLoading, "hasError:", hasError);
   
   if (isLoading) {
@@ -85,7 +80,6 @@ export default function Dashboard() {
     );
   }
 
-  // Create empty courts array as a fallback
   const emptyCourts: CourtProps[] = [];
   
   return (
@@ -101,12 +95,10 @@ export default function Dashboard() {
           </p>
         </div>
         
-        {/* Dashboard Summary wrapped in PlayerProvider */}
         <PlayerProvider>
           <DashboardSummary />
         </PlayerProvider>
         
-        {/* Court Assignments Dashboard */}
         <div className={cn(
           "mt-8 transition-all duration-700 delay-200",
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"

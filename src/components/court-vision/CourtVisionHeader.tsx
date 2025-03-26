@@ -4,10 +4,9 @@ import { Calendar, Layers, Clock, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateSelector } from './DateSelector';
 import { SendScheduleDialog } from './schedule-dialog';
-import { ScheduleTemplate } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScheduleTemplates } from './ScheduleTemplates';
-import { useCourtVision } from './context/CourtVisionContext';
+import { useCourtVision } from '@/components/court-vision/CourtVisionContext';
 
 export default function CourtVisionHeader() {
   const { 

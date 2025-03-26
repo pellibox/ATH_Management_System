@@ -13,7 +13,9 @@ export const CourtVisionContext = createContext<CourtVisionContextType | undefin
 
 export const useCourtVision = () => {
   const context = useContext(CourtVisionContext);
+  console.log("useCourtVision called, context exists:", !!context);
   if (!context) {
+    console.error("useCourtVision called outside of provider");
     throw new Error("useCourtVision must be used within a CourtVisionProvider");
   }
   return context;
@@ -27,6 +29,8 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   children, 
   initialPlayers = [] 
 }) => {
+  console.log("CourtVisionProvider rendering with children:", !!children);
+  
   // Get state from hook
   const initialState = useCourtVisionState();
   

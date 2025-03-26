@@ -63,7 +63,6 @@ function App() {
                   <Route path="calendar" element={<Calendar />} />
                   <Route path="courts" element={<Courts />} />
                   <Route path="court-vision" element={<CourtVision />} />
-                  <Route path="court-vision/layout" element={<CourtVision />} />
                   <Route path="staff" element={<Staff />} />
                   <Route path="players" element={<Players />} />
                   <Route path="coaches" element={<Coaches />} />
