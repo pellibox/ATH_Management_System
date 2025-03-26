@@ -37,7 +37,7 @@ export default function CourtGrid({
   });
   
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full pr-16">
       <div className="space-y-8 pb-16">
         {Object.entries(courtsByType).map(([type, typeCourts]) => (
           <div key={type} className="space-y-4">

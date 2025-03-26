@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 interface ScrollControlProps {
   containerRef: React.RefObject<HTMLDivElement>;
 }
 
 export function ScrollControl({ containerRef }: ScrollControlProps) {
-  // This component is now empty as we're removing the global scroll control
+  // Component emptied as we're now using per-court time selection
   return null;
 }

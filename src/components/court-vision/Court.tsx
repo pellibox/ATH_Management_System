@@ -94,7 +94,7 @@ export function Court({
               onChangeNumber={handleChangeNumber}
             />
 
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden relative">
               <CourtScheduleView
                 courtId={court.id}
                 courtName={court.name}

@@ -37,7 +37,7 @@ export function TimeSlot({
         <div className="relative">
           <div 
             ref={scrollContainerRef} 
-            className="max-h-[130px] overflow-auto relative"
+            className="max-h-[90px] overflow-auto relative"
           >
             <TimeSlotOccupants 
               occupants={occupants} 

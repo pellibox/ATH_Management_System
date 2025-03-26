@@ -3,7 +3,6 @@ import React, { useRef } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
-import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface CourtScheduleViewProps {
   courtId: string;
@@ -93,14 +92,14 @@ export function CourtScheduleView({
           </div>
         </div>
         
-        {/* Time Selection Bar - Now relative to each court */}
-        <div className="w-10 absolute right-0 top-0 bottom-0 flex flex-col items-center bg-white/90 border-l border-gray-100 overflow-y-auto">
-          <div className="py-1 flex flex-col items-center w-full">
+        {/* Floating Time Selection Bar */}
+        <div className="w-12 fixed right-0 top-1/2 transform -translate-y-1/2 bg-white/95 border border-gray-200 rounded-l-lg shadow-md z-20 flex flex-col overflow-visible max-h-[80vh]">
+          <div className="py-2 flex flex-col items-center w-full overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             {timeSlots.map((time, index) => (
               <button
                 key={`nav-${time}`}
                 onClick={() => scrollToTimeSlot(index)}
-                className="w-full text-xs py-1 hover:bg-gray-100 text-gray-700 font-medium"
+                className="w-full text-xs py-1.5 hover:bg-gray-100 text-gray-700 font-medium"
               >
                 {time.split(':')[0]}
               </button>
