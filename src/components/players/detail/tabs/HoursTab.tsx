@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 import { Player } from "@/types/player";
+import { useEffect, useState } from "react";
 
 interface HoursTabProps {
   player: Player;
@@ -15,8 +16,30 @@ interface HoursTabProps {
 
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
   // Calculate program hours based on player's program
-  const programHours = player.program ? 40 : 0; // Default to 40 hours if in a program
+  const [programHours, setProgramHours] = useState(player.program ? 40 : 0);
   const completedHours = player.completedHours || 0;
+  
+  useEffect(() => {
+    // Update program hours whenever the player's program changes
+    if (player.program) {
+      // In a real app, you would fetch this from a program database
+      // For now, we'll use some hardcoded values based on the program name
+      if (player.program === "Junior Excellence") {
+        setProgramHours(40);
+      } else if (player.program === "Elite Performance") {
+        setProgramHours(60);
+      } else if (player.program === "Foundation") {
+        setProgramHours(30);
+      } else if (player.program === "Pro Circuit") {
+        setProgramHours(80);
+      } else {
+        setProgramHours(40); // Default value
+      }
+    } else {
+      setProgramHours(0);
+    }
+  }, [player.program]);
+
   const remainingHours = Math.max(0, programHours - completedHours);
   const hoursProgress = programHours > 0 ? (completedHours / programHours) * 100 : 0;
 

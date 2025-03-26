@@ -50,8 +50,9 @@ export function SchedulePreview({ selectedPerson, courts, date, timeSlots }: Sch
               Anteprima Programmazione - {format(date, "dd/MM/yyyy")}
             </DialogTitle>
             <DialogClose className="absolute right-0 top-0">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setOpen(false)}>
                 <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
               </Button>
             </DialogClose>
           </DialogHeader>

@@ -47,6 +47,7 @@ export function SendScheduleDialog({
   onCheckUnassigned 
 }: SendScheduleDialogProps) {
   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [scheduleType, setScheduleType] = useState<"day" | "week" | "month">("day");
   const [contactMethod, setContactMethod] = useState<"WhatsApp" | "Email" | "Phone">("WhatsApp");
   const [recipientType, setRecipientType] = useState<"players" | "coaches" | "both">("both");
@@ -82,6 +83,8 @@ export function SendScheduleDialog({
       title: "Programmazioni Inviate",
       description: `Le programmazioni sono state inviate a ${recipients.length} persone via ${contactMethod}`,
     });
+    
+    setDialogOpen(false);
   };
 
   const timeSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
@@ -93,9 +96,9 @@ export function SendScheduleDialog({
 
   return (
     <>
-      <Dialog>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="flex items-center bg-ath-black text-white">
+          <Button className="flex items-center bg-ath-black text-white" onClick={() => setDialogOpen(true)}>
             <Send className="h-4 w-4 mr-2" />
             Invia Programmazione
           </Button>
@@ -104,8 +107,9 @@ export function SendScheduleDialog({
           <DialogHeader className="relative">
             <DialogTitle>Invia Programmazione</DialogTitle>
             <DialogClose className="absolute right-0 top-0">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setDialogOpen(false)}>
                 <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
               </Button>
             </DialogClose>
           </DialogHeader>
@@ -210,8 +214,9 @@ export function SendScheduleDialog({
           <DialogHeader className="relative">
             <DialogTitle>Anteprima Programmazione</DialogTitle>
             <DialogClose className="absolute right-0 top-0">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowPreview(false)}>
                 <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
               </Button>
             </DialogClose>
           </DialogHeader>
