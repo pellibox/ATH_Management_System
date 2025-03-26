@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from "react";
 import { PlayerContextType } from "./types";
 import { Player, mockPlayers } from "@/types/player";
 import { defaultObjectives, defaultNewPlayer, mockExtraActivities } from "./initialState";
-import { usePlayerActions } from "./playerActions";
+import { usePlayerActions } from "./actions";
 
 // Create the context
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -60,7 +60,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setProgramFilter("all");
   };
 
-  // Use the player actions
+  // Use the refactored player actions
   const playerActions = usePlayerActions({
     players,
     setPlayers,
@@ -97,7 +97,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     selectedActivities,
 
     // State setters
-    setPlayers,  // Add this line to expose setPlayers in the context
+    setPlayers,
     setSearchQuery,
     setLevelFilter,
     setCoachFilter,
