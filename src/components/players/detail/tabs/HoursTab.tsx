@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Clock, RotateCcw } from "lucide-react";
-import { Player, ProgramDetails, programDetailsMap } from "@/types/player";
+import { Player } from "@/types/player";
 import { useEffect, useState } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
+import { calculateProgramHours } from "@/types/player/programs";
 
 interface HoursTabProps {
   player: Player;
@@ -18,18 +20,53 @@ interface HoursTabProps {
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
   const [programHours, setProgramHours] = useState(0);
   const [remainingHours, setRemainingHours] = useState(0);
+  const [availablePrograms, setAvailablePrograms] = useState<string[]>([]);
+  
+  // Load all available programs from TENNIS_PROGRAMS
+  useEffect(() => {
+    const allPrograms: string[] = [];
+    
+    // Combine all program categories into a single array of program names
+    Object.values(TENNIS_PROGRAMS).forEach(categoryPrograms => {
+      categoryPrograms.forEach(program => {
+        allPrograms.push(program.name);
+      });
+    });
+    
+    // Remove duplicates and sort alphabetically
+    setAvailablePrograms([...new Set(allPrograms)].sort());
+  }, []);
   
   useEffect(() => {
-    // Calculate total program hours based on program details
-    if (player.program && programDetailsMap[player.program]) {
-      const details = programDetailsMap[player.program];
-      const totalHours = details.weeks * details.sessionsPerWeek * details.hoursPerSession;
+    // Calculate program hours based on the selected program
+    if (player.program) {
+      // Find the program in all categories
+      let programDetails: any = null;
       
-      // Calculate remaining hours by subtracting completed hours
-      const completedHours = player.completedHours || 0;
+      // Search through all program categories
+      for (const category in TENNIS_PROGRAMS) {
+        const foundProgram = TENNIS_PROGRAMS[category].find(
+          p => p.name === player.program
+        );
+        
+        if (foundProgram) {
+          programDetails = foundProgram;
+          break;
+        }
+      }
       
-      setProgramHours(totalHours);
-      setRemainingHours(totalHours - completedHours);
+      if (programDetails && programDetails.weeklyHours && programDetails.totalWeeks) {
+        const totalHours = programDetails.weeklyHours * programDetails.totalWeeks;
+        
+        // Calculate remaining hours by subtracting completed hours
+        const completedHours = player.completedHours || 0;
+        
+        setProgramHours(totalHours);
+        setRemainingHours(totalHours - completedHours);
+      } else {
+        setProgramHours(0);
+        setRemainingHours(0);
+      }
     } else {
       setProgramHours(0);
       setRemainingHours(0);
@@ -38,7 +75,19 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
 
   const hoursProgress = programHours > 0 ? ((programHours - remainingHours) / programHours) * 100 : 0;
 
-  const availablePrograms = Object.keys(programDetailsMap);
+  // Get program details for the selected program
+  const getProgramDetails = (programName: string) => {
+    for (const category in TENNIS_PROGRAMS) {
+      const program = TENNIS_PROGRAMS[category].find(p => p.name === programName);
+      if (program) {
+        return {
+          weeklyHours: program.weeklyHours,
+          totalWeeks: program.totalWeeks
+        };
+      }
+    }
+    return null;
+  };
 
   return (
     <CardContent className="p-4 pt-2">
@@ -85,11 +134,10 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                       {player.program}
                     </span>
-                    {programDetailsMap[player.program] && (
+                    {player.program && getProgramDetails(player.program) && (
                       <span className="ml-2 text-gray-600">
-                        ({programDetailsMap[player.program].weeks} settimane, 
-                        {programDetailsMap[player.program].sessionsPerWeek} sessioni/sett., 
-                        {programDetailsMap[player.program].hoursPerSession} ore/sessione)
+                        ({getProgramDetails(player.program)?.totalWeeks} settimane, 
+                        {getProgramDetails(player.program)?.weeklyHours} ore/settimana)
                       </span>
                     )}
                   </div>
