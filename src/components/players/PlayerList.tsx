@@ -65,6 +65,16 @@ export function PlayerList() {
     );
   };
 
+  // Get program color for player
+  const getProgramColor = (program: string | undefined) => {
+    if (!program) return "bg-gray-300";
+    
+    // Create a simple hash of the program name to get a deterministic color
+    const hash = program.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500", "bg-teal-500"];
+    return colors[hash % colors.length];
+  };
+
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <Table>
@@ -105,7 +115,14 @@ export function PlayerList() {
                 className="cursor-pointer hover:bg-gray-50" 
                 onClick={() => setSelectedPlayer(player)}
               >
-                <TableCell className="font-medium">{player.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white mr-2 ${getProgramColor(player.program)}`}>
+                      {player.name.substring(0, 1).toUpperCase()}
+                    </div>
+                    {player.name}
+                  </div>
+                </TableCell>
                 <TableCell>
                   {player.program ? (
                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">

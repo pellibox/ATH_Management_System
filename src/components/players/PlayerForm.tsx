@@ -19,8 +19,13 @@ interface PlayerFormProps {
 }
 
 export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
-  const { editingPlayer, newPlayer, setNewPlayer } = usePlayerContext();
+  const { editingPlayer, newPlayer, setNewPlayer, players } = usePlayerContext();
   const [formData, setFormData] = useState(editingPlayer || newPlayer);
+
+  // Get all unique programs
+  const programs = Array.from(
+    new Set(players.filter(p => p.program).map(p => p.program))
+  );
 
   // Update form data when editing player changes
   useEffect(() => {
@@ -40,7 +45,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
   return (
     <div className="grid grid-cols-2 gap-4 py-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Name</label>
+        <label className="text-sm font-medium">Nome</label>
         <Input 
           value={formData.name} 
           onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -48,7 +53,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
       </div>
       
       <div className="space-y-2">
-        <label className="text-sm font-medium">Age</label>
+        <label className="text-sm font-medium">Età</label>
         <Input 
           type="number" 
           value={formData.age || ''} 
@@ -57,50 +62,42 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
       </div>
       
       <div className="space-y-2">
-        <label className="text-sm font-medium">Gender</label>
+        <label className="text-sm font-medium">Genere</label>
         <Select 
           value={formData.gender} 
           onValueChange={(value) => setFormData({...formData, gender: value as any})}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select gender" />
+            <SelectValue placeholder="Seleziona genere" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Male">Male</SelectItem>
-            <SelectItem value="Female">Female</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
+            <SelectItem value="Male">Maschio</SelectItem>
+            <SelectItem value="Female">Femmina</SelectItem>
+            <SelectItem value="Other">Altro</SelectItem>
           </SelectContent>
         </Select>
       </div>
       
       <div className="space-y-2">
-        <label className="text-sm font-medium">Level</label>
+        <label className="text-sm font-medium">Programma</label>
         <Select 
-          value={formData.level} 
-          onValueChange={(value) => setFormData({...formData, level: value as any})}
+          value={formData.program || ""} 
+          onValueChange={(value) => setFormData({...formData, program: value})}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select level" />
+            <SelectValue placeholder="Seleziona programma" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Beginner">Beginner</SelectItem>
-            <SelectItem value="Intermediate">Intermediate</SelectItem>
-            <SelectItem value="Advanced">Advanced</SelectItem>
-            <SelectItem value="Professional">Professional</SelectItem>
+            <SelectItem value="">Nessun programma</SelectItem>
+            {programs.map(program => (
+              <SelectItem key={program} value={program}>{program}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
       
       <div className="space-y-2">
-        <label className="text-sm font-medium">Coach</label>
-        <Input 
-          value={formData.coach} 
-          onChange={(e) => setFormData({...formData, coach: e.target.value})}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Phone</label>
+        <label className="text-sm font-medium">Telefono</label>
         <Input 
           value={formData.phone} 
           onChange={(e) => setFormData({...formData, phone: e.target.value})}
@@ -119,7 +116,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
       </div>
       
       <div className="space-y-2">
-        <label className="text-sm font-medium">Join Date</label>
+        <label className="text-sm font-medium">Data iscrizione</label>
         <Input 
           type="date" 
           value={formData.joinDate} 
@@ -128,7 +125,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Preferred Contact Method</label>
+        <label className="text-sm font-medium">Metodo di contatto preferito</label>
         <Select
           value={formData.preferredContactMethod}
           onValueChange={(value) => setFormData({
@@ -137,29 +134,29 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
           })}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Contact Method" />
+            <SelectValue placeholder="Metodo di contatto" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="WhatsApp">WhatsApp</SelectItem>
             <SelectItem value="Email">Email</SelectItem>
-            <SelectItem value="Phone">Phone</SelectItem>
+            <SelectItem value="Phone">Telefono</SelectItem>
           </SelectContent>
         </Select>
       </div>
       
       <div className="space-y-2 col-span-2">
-        <label className="text-sm font-medium">Notes</label>
+        <label className="text-sm font-medium">Note</label>
         <textarea 
           className="w-full p-2 border rounded-md text-sm min-h-[80px]"
           value={formData.notes} 
           onChange={(e) => setFormData({...formData, notes: e.target.value})}
-          placeholder="Player notes, special requirements, etc."
+          placeholder="Note sul giocatore, requisiti speciali, etc."
         />
       </div>
       
       <div className="flex justify-end gap-2 col-span-2">
         <DialogClose asChild>
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline">Annulla</Button>
         </DialogClose>
         <Button onClick={handleSubmit} disabled={!formData.name}>{buttonText}</Button>
       </div>
