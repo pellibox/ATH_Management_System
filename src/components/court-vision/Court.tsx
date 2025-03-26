@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -299,13 +298,13 @@ export function Court({
                   time={time}
                   occupants={getOccupantsForTimeSlot(time)}
                   activities={getActivitiesForTimeSlot(time)}
-                  onDrop={(courtId, time, person) => {
-                    console.log("Dropping at time:", time, person);
-                    onDrop(courtId, person, undefined, time);
+                  onDrop={(courtId, person, position, timeSlot) => {
+                    console.log("Dropping at time:", timeSlot, person);
+                    onDrop(courtId, person, position, timeSlot);
                   }}
-                  onActivityDrop={(courtId, time, activity) => {
-                    console.log("Dropping activity at time:", time, activity);
-                    onActivityDrop(courtId, activity, time);
+                  onActivityDrop={(courtId, activity, timeSlot) => {
+                    console.log("Dropping activity at time:", timeSlot, activity);
+                    onActivityDrop(courtId, activity, timeSlot);
                   }}
                   onRemovePerson={(personId, time) => onRemovePerson && onRemovePerson(personId, time)}
                   onRemoveActivity={(activityId, time) => onRemoveActivity && onRemoveActivity(activityId, time)}

@@ -72,10 +72,7 @@ export function PlayerList() {
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
                     <ActivityRegistration playerId={player.id} playerName={player.name} />
-                    <ScheduleButton onClick={(e) => {
-                      e.stopPropagation();
-                      setMessagePlayer(player);
-                    }} />
+                    <ScheduleButton onClick={() => setMessagePlayer(player)} />
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
