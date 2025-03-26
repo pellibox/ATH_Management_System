@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CourtsTab } from "@/components/settings/CourtsTab";
-import { TimeSlotsTab } from "@/components/settings/TimeSlotsTab";
+import CourtsTab from "@/components/settings/CourtsTab";
+import TimeSlotsTab from "@/components/settings/TimeSlotsTab";
 import { EmailSettingsTab } from "@/components/settings/EmailSettingsTab";
 import { SettingsIcon, Clock, MapPin, Mail } from "lucide-react";
 

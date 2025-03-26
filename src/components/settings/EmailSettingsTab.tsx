@@ -1,196 +1,201 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Mail, Save, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Send, Save } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { format } from "date-fns";
 
 export function EmailSettingsTab() {
   const { toast } = useToast();
   const [emailSettings, setEmailSettings] = useState({
-    senderEmail: "",
-    sendCopy: false,
-    emailFooter: "",
-    scheduleSubject: "Programmazione Allenamento - {{date}}",
-    reminderSubject: "Promemoria Allenamento - {{date}}",
-    sendAutomaticReminders: false,
-    smtpServer: "",
-    smtpPort: "587",
-    smtpUsername: "",
-    smtpPassword: "",
-    useSMTP: false
+    senderEmail: "academy@example.com",
+    senderName: "Tennis Academy",
+    signature: "Best regards,\nThe Academy Team",
+    scheduleNotifications: true,
+    tournamentNotifications: true,
+    billingSummaries: false,
+    playerProgressReports: true
   });
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEmailSettings({
-      ...emailSettings,
-      [name]: value
-    });
-  };
-  
-  const handleSwitchChange = (name: string, checked: boolean) => {
-    setEmailSettings({
-      ...emailSettings,
-      [name]: checked
-    });
-  };
+  const [templates, setTemplates] = useState({
+    scheduleTemplate: `Dear {playerName},
+
+We are pleased to inform you that your schedule for {date} has been set.
+
+Your coach: {coachName}
+Time: {timeSlot}
+Court: {courtName}
+
+{notes}
+
+Best regards,
+The Academy Team`,
+    reminderTemplate: `Dear {playerName},
+
+This is a reminder about your upcoming session tomorrow.
+
+Time: {timeSlot}
+Coach: {coachName}
+Court: {courtName}
+
+We look forward to seeing you!
+
+Best regards,
+The Academy Team`
+  });
   
   const handleSaveSettings = () => {
-    // In a real app, save these settings to a backend
-    console.log("Saving email settings:", emailSettings);
-    
+    // In a real app, this would save to a backend
     toast({
-      title: "Impostazioni salvate",
-      description: "Le impostazioni per l'invio degli schedule sono state salvate con successo."
+      title: "Email Settings Saved",
+      description: "Your email settings have been updated successfully"
     });
   };
   
-  const handleTestEmail = () => {
-    // In a real app, this would send a test email
-    toast({
-      title: "Email di test inviata",
-      description: `Un'email di test è stata inviata a ${emailSettings.senderEmail}`
+  const handleTemplateChange = (template: string, value: string) => {
+    setTemplates({
+      ...templates,
+      [template]: value
     });
   };
   
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Impostazioni Email per Schedules
-          </CardTitle>
-          <CardDescription>
-            Configura le impostazioni per l'invio delle programmazioni via email
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="senderEmail">Email Mittente</Label>
-            <Input
-              id="senderEmail"
-              name="senderEmail"
-              placeholder="nome@tuaaccademia.com"
-              value={emailSettings.senderEmail}
-              onChange={handleChange}
-            />
-            <p className="text-xs text-gray-500">Quest'email sarà utilizzata come mittente per tutte le comunicazioni</p>
-          </div>
+    <div className="animate-fade-in">
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Email Settings</h2>
+        <p className="text-gray-500">Configure how emails are sent from the system</p>
+      </div>
+      
+      <div className="space-y-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 className="text-lg font-medium mb-4">Sender Information</h3>
           
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="sendCopy"
-              checked={emailSettings.sendCopy}
-              onCheckedChange={(checked) => handleSwitchChange("sendCopy", checked)}
-            />
-            <Label htmlFor="sendCopy">Invia una copia all'email del mittente</Label>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="emailFooter">Firma/Footer Email</Label>
-            <Input
-              id="emailFooter"
-              name="emailFooter"
-              placeholder="Il Team di Coaching"
-              value={emailSettings.emailFooter}
-              onChange={handleChange}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="scheduleSubject">Oggetto Email Programmazione</Label>
-            <Input
-              id="scheduleSubject"
-              name="scheduleSubject"
-              value={emailSettings.scheduleSubject}
-              onChange={handleChange}
-            />
-            <p className="text-xs text-gray-500">Usa {{date}}, {{player}}, {{coach}} come placeholder</p>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="sendAutomaticReminders"
-              checked={emailSettings.sendAutomaticReminders}
-              onCheckedChange={(checked) => handleSwitchChange("sendAutomaticReminders", checked)}
-            />
-            <Label htmlFor="sendAutomaticReminders">Invia promemoria automatici (24h prima)</Label>
-          </div>
-          
-          <div className="pt-2 border-t">
-            <div className="flex items-center space-x-2 mb-4">
-              <Switch
-                id="useSMTP"
-                checked={emailSettings.useSMTP}
-                onCheckedChange={(checked) => handleSwitchChange("useSMTP", checked)}
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="senderEmail">Sender Email</Label>
+              <Input 
+                id="senderEmail" 
+                value={emailSettings.senderEmail}
+                onChange={(e) => setEmailSettings({...emailSettings, senderEmail: e.target.value})}
               />
-              <Label htmlFor="useSMTP">Usa server SMTP personalizzato</Label>
             </div>
             
-            {emailSettings.useSMTP && (
-              <div className="space-y-4 pl-6 border-l-2 border-gray-100">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpServer">Server SMTP</Label>
-                    <Input
-                      id="smtpServer"
-                      name="smtpServer"
-                      placeholder="smtp.provider.com"
-                      value={emailSettings.smtpServer}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpPort">Porta SMTP</Label>
-                    <Input
-                      id="smtpPort"
-                      name="smtpPort"
-                      value={emailSettings.smtpPort}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpUsername">Username SMTP</Label>
-                    <Input
-                      id="smtpUsername"
-                      name="smtpUsername"
-                      value={emailSettings.smtpUsername}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpPassword">Password SMTP</Label>
-                    <Input
-                      id="smtpPassword"
-                      name="smtpPassword"
-                      type="password"
-                      value={emailSettings.smtpPassword}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            <div>
+              <Label htmlFor="senderName">Sender Name</Label>
+              <Input 
+                id="senderName" 
+                value={emailSettings.senderName}
+                onChange={(e) => setEmailSettings({...emailSettings, senderName: e.target.value})}
+              />
+            </div>
+            
+            <div className="sm:col-span-2">
+              <Label htmlFor="signature">Email Signature</Label>
+              <Textarea 
+                id="signature" 
+                value={emailSettings.signature}
+                onChange={(e) => setEmailSettings({...emailSettings, signature: e.target.value})}
+                rows={3}
+              />
+            </div>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={handleTestEmail}>
-            <Send className="h-4 w-4 mr-2" />
-            Invia Email di Test
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 className="text-lg font-medium mb-4">Notification Preferences</h3>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">Schedule Notifications</div>
+                <div className="text-sm text-gray-500">Email players when their schedule is updated</div>
+              </div>
+              <Switch 
+                checked={emailSettings.scheduleNotifications}
+                onCheckedChange={(checked) => setEmailSettings({...emailSettings, scheduleNotifications: checked})}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">Tournament Notifications</div>
+                <div className="text-sm text-gray-500">Email about upcoming tournaments</div>
+              </div>
+              <Switch 
+                checked={emailSettings.tournamentNotifications}
+                onCheckedChange={(checked) => setEmailSettings({...emailSettings, tournamentNotifications: checked})}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">Billing Summaries</div>
+                <div className="text-sm text-gray-500">Send monthly billing summaries</div>
+              </div>
+              <Switch 
+                checked={emailSettings.billingSummaries}
+                onCheckedChange={(checked) => setEmailSettings({...emailSettings, billingSummaries: checked})}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">Player Progress Reports</div>
+                <div className="text-sm text-gray-500">Send coaches' assessments to players</div>
+              </div>
+              <Switch 
+                checked={emailSettings.playerProgressReports}
+                onCheckedChange={(checked) => setEmailSettings({...emailSettings, playerProgressReports: checked})}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 className="text-lg font-medium mb-4">Email Templates</h3>
+          
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="scheduleTemplate" className="mb-1 block">Schedule Notification Template</Label>
+              <div className="text-xs text-gray-500 mb-2">
+                Available variables: {'{playerName}'}, {'{date}'}, {'{coachName}'}, {'{timeSlot}'}, {'{courtName}'}, {'{notes}'}
+              </div>
+              <Textarea 
+                id="scheduleTemplate" 
+                value={templates.scheduleTemplate}
+                onChange={(e) => handleTemplateChange('scheduleTemplate', e.target.value)}
+                rows={8}
+                className="font-mono text-sm"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="reminderTemplate" className="mb-1 block">Reminder Template</Label>
+              <div className="text-xs text-gray-500 mb-2">
+                Available variables: {'{playerName}'}, {'{date}'}, {'{coachName}'}, {'{timeSlot}'}, {'{courtName}'}
+              </div>
+              <Textarea 
+                id="reminderTemplate" 
+                value={templates.reminderTemplate}
+                onChange={(e) => handleTemplateChange('reminderTemplate', e.target.value)}
+                rows={8}
+                className="font-mono text-sm"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex justify-end">
+          <Button onClick={handleSaveSettings} className="px-8">
+            <Save className="mr-2 h-4 w-4" />
+            Save Settings
           </Button>
-          <Button onClick={handleSaveSettings}>
-            <Save className="h-4 w-4 mr-2" />
-            Salva Impostazioni
-          </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { EnhancedPlayerList } from "@/components/players/EnhancedPlayerList";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -12,7 +13,7 @@ import { PlayerList } from "@/components/players/PlayerList";
 import { ScheduleMessage } from "@/components/players/ScheduleMessage";
 
 function PlayersContent() {
-  const { editingPlayer, messagePlayer } = usePlayerContext();
+  const { editingPlayer, messagePlayer, addPlayer, updatePlayer } = usePlayerContext();
   
   return (
     <div className="max-w-7xl mx-auto">
@@ -35,7 +36,7 @@ function PlayersContent() {
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
-            <PlayerForm />
+            <PlayerForm buttonText="Aggiungi Giocatore" handleSave={addPlayer} />
           </DialogContent>
         </Dialog>
       </div>
@@ -46,7 +47,7 @@ function PlayersContent() {
       {editingPlayer && (
         <Dialog open={!!editingPlayer} onOpenChange={(open) => !open && null}>
           <DialogContent className="sm:max-w-[600px]">
-            <PlayerForm />
+            <PlayerForm buttonText="Aggiorna Giocatore" handleSave={updatePlayer} />
           </DialogContent>
         </Dialog>
       )}
