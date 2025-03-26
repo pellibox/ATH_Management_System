@@ -1,3 +1,4 @@
+
 import { PersonData, ActivityData, CourtProps, Program } from "../types";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES, DEFAULT_PROGRAMS as PROGRAM_DEFAULTS } from "../constants";
 
@@ -30,11 +31,11 @@ export const DEFAULT_COURTS: CourtProps[] = [
 ];
 
 export const DEFAULT_PEOPLE: PersonData[] = [
-  { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER },
-  { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER },
-  { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER },
-  { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH },
-  { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH },
+  { id: "player1", name: "Giulia Bianchi", type: PERSON_TYPES.PLAYER, email: "giulia.bianchi@example.com" },
+  { id: "player2", name: "Luca Verdi", type: PERSON_TYPES.PLAYER, email: "luca.verdi@example.com" },
+  { id: "player3", name: "Marco Rossi", type: PERSON_TYPES.PLAYER, email: "marco.rossi@example.com" },
+  { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH, email: "anderson@example.com" },
+  { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH, email: "martinez@example.com" },
 ];
 
 export const DEFAULT_ACTIVITIES: ActivityData[] = [
@@ -44,17 +45,17 @@ export const DEFAULT_ACTIVITIES: ActivityData[] = [
 ];
 
 export const DEFAULT_PLAYERS: PersonData[] = [
-  { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"] },
-  { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"] },
-  { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"] },
-  { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER, sportTypes: ["padel"] },
-  { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER, sportTypes: ["pickleball"] },
+  { id: "player1", name: "Giulia Bianchi", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"], email: "giulia.bianchi@example.com", programId: "elite" },
+  { id: "player2", name: "Luca Verdi", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"], email: "luca.verdi@example.com", programId: "foundation" },
+  { id: "player3", name: "Marco Rossi", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"], email: "marco.rossi@example.com", programId: "junior" },
+  { id: "player4", name: "Sofia Marino", type: PERSON_TYPES.PLAYER, sportTypes: ["padel"], email: "sofia.marino@example.com", programId: "pro" },
+  { id: "player5", name: "Andrea Esposito", type: PERSON_TYPES.PLAYER, sportTypes: ["pickleball"], email: "andrea.esposito@example.com" },
 ];
 
 export const DEFAULT_COACHES: PersonData[] = [
-  { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH, sportTypes: ["tennis"] },
-  { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH, sportTypes: ["padel"] },
-  { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH, sportTypes: ["tennis"] },
+  { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH, sportTypes: ["tennis"], email: "anderson@example.com" },
+  { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH, sportTypes: ["padel"], email: "martinez@example.com" },
+  { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH, sportTypes: ["tennis"], email: "thompson@example.com" },
 ];
 
 export const DEFAULT_PROGRAMS = PROGRAM_DEFAULTS;

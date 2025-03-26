@@ -6,7 +6,7 @@ import { ViewModeToggle } from "@/components/court-vision/ViewModeToggle";
 import CourtVisionHeader from "@/components/court-vision/CourtVisionHeader";
 import { CourtVisionSidebar } from "@/components/court-vision/sidebar/CourtVisionSidebar";
 import { CourtVisionContent } from "@/components/court-vision/content/CourtVisionContent";
-import { CourtVisionProvider } from "@/components/court-vision/CourtVisionContext";
+import { CourtVisionProvider } from "@/components/court-vision/context/CourtVisionContext";
 
 // Main Court Vision component
 export default function CourtVision() {
