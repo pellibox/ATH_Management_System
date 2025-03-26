@@ -5,23 +5,17 @@ import { CourtProps } from "@/components/court-vision/types";
 import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashboard";
 import { DashboardSummary } from "@/components/dashboard/DashboardSummary";
 import { useToast } from "@/hooks/use-toast";
-import { useCourtVision } from "@/components/court-vision/context/CourtVisionContext";
+import { CourtVisionProvider } from "@/components/court-vision/context/CourtVisionContext";
 import { format } from "date-fns";
 import { PlayerProvider } from "@/contexts/PlayerContext";
+import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
 export default function Dashboard() {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
-  const { 
-    courts,
-    filteredCourts,
-    selectedDate,
-    setSelectedDate,
-    playersList,
-    coachesList
-  } = useCourtVision();
+  const { sharedPlayers } = useSharedPlayers();
   
   // Trigger animations after mount
   useEffect(() => {
@@ -58,7 +52,6 @@ export default function Dashboard() {
   
   // Add console logs to debug rendering
   console.log("Dashboard rendering, isVisible:", isVisible, "isLoading:", isLoading, "hasError:", hasError);
-  console.log("Courts length:", filteredCourts.length);
   
   if (isLoading) {
     return (
@@ -88,32 +81,34 @@ export default function Dashboard() {
   }
   
   return (
-    <div className="max-w-7xl mx-auto p-4">
-      <div className={cn(
-        "mb-8 transition-all duration-700",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      )}>
-        <h1 className="text-3xl font-bold">Benvenuto in ATH Management System</h1>
-        <p className="text-gray-600 mt-1">
-          Ecco cosa sta succedendo nella tua accademia oggi ({format(selectedDate, 'dd/MM/yyyy')})
-        </p>
-      </div>
-      
-      {/* Dashboard Summary wrapped in PlayerProvider */}
-      <PlayerProvider>
-        <DashboardSummary />
-      </PlayerProvider>
-      
-      {/* Court Assignments Dashboard */}
-      <div className={cn(
-        "mt-8 transition-all duration-700 delay-200",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      )}>
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-xl font-semibold mb-4">Assignazione Campi</h2>
-          <AssignmentsDashboard courts={filteredCourts} selectedDate={selectedDate} />
+    <CourtVisionProvider initialPlayers={sharedPlayers}>
+      <div className="max-w-7xl mx-auto p-4">
+        <div className={cn(
+          "mb-8 transition-all duration-700",
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        )}>
+          <h1 className="text-3xl font-bold">Benvenuto in ATH Management System</h1>
+          <p className="text-gray-600 mt-1">
+            Ecco cosa sta succedendo nella tua accademia oggi ({format(new Date(), 'dd/MM/yyyy')})
+          </p>
+        </div>
+        
+        {/* Dashboard Summary wrapped in PlayerProvider */}
+        <PlayerProvider>
+          <DashboardSummary />
+        </PlayerProvider>
+        
+        {/* Court Assignments Dashboard */}
+        <div className={cn(
+          "mt-8 transition-all duration-700 delay-200",
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        )}>
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-semibold mb-4">Assignazione Campi</h2>
+            <AssignmentsDashboard />
+          </div>
         </div>
       </div>
-    </div>
+    </CourtVisionProvider>
   );
 }
