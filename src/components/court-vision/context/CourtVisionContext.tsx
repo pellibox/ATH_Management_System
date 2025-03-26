@@ -114,6 +114,30 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     setCourts(updatedCourts);
   };
 
+  // Court management functions
+  const handleAddCourt = (court: CourtProps) => {
+    console.log("Adding court:", court);
+    setCourts([...courts, { 
+      ...court, 
+      occupants: [], 
+      activities: [] 
+    }]);
+  };
+
+  const handleUpdateCourt = (courtId: string, courtData: Partial<CourtProps>) => {
+    console.log("Updating court:", courtId, courtData);
+    setCourts(courts.map(court => 
+      court.id === courtId 
+        ? { ...court, ...courtData } 
+        : court
+    ));
+  };
+
+  const handleRemoveCourt = (courtId: string) => {
+    console.log("Removing court:", courtId);
+    setCourts(courts.filter(court => court.id !== courtId));
+  };
+
   // Create empty implementation functions to satisfy TypeScript requirements
   const handleSaveTemplate = (name: string) => {
     if (actions.saveAsTemplate) {
@@ -208,6 +232,11 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     handleCreateProgram: programHandlers.handleCreateProgram,
     handleUpdateProgram: programHandlers.handleUpdateProgram,
     handleDeleteProgram: programHandlers.handleDeleteProgram,
+    
+    // Court management
+    handleAddCourt,
+    handleUpdateCourt,
+    handleRemoveCourt,
     
     // Schedule operations
     handleSaveTemplate,
