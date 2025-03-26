@@ -116,8 +116,8 @@ export const TimeSlot = memo(function TimeSlot({
   onRemovePerson, 
   onRemoveActivity 
 }: TimeSlotProps) {
-  // Define timeSlots array from the defaults
-  const timeSlots = DEFAULT_TIME_SLOTS;
+  // Define local timeSlots array from the defaults
+  const localTimeSlots = DEFAULT_TIME_SLOTS;
   const { toast } = useToast();
   
   // Use callbacks for better performance
@@ -147,8 +147,8 @@ export const TimeSlot = memo(function TimeSlot({
     
     if (!startSlot) return false;
     
-    const startIndex = timeSlots.indexOf(startSlot);
-    const currentIndex = timeSlots.indexOf(timeSlot);
+    const startIndex = localTimeSlots.indexOf(startSlot);
+    const currentIndex = localTimeSlots.indexOf(timeSlot);
     
     if (startIndex === -1 || currentIndex === -1) return false;
     
@@ -166,6 +166,13 @@ export const TimeSlot = memo(function TimeSlot({
     return occupants.filter(person => person.timeSlot === time).length;
   };
 
+  // Check if a player is already assigned to another court at this time
+  const isPlayerAssignedElsewhere = (playerId: string): boolean => {
+    // This would need to check all courts, but for simplicity we'll just return false
+    // This functionality would need to be implemented at a higher level with access to all courts
+    return false;
+  };
+
   // Enhanced drop target handling
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
@@ -175,6 +182,16 @@ export const TimeSlot = memo(function TimeSlot({
       if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
         // Handle person drop
         const personItem = item as PersonData;
+        
+        // Special check for players who can only be assigned once across all courts
+        if (item.type === PERSON_TYPES.PLAYER && isPlayerAssignedElsewhere(personItem.id)) {
+          toast({
+            title: "Giocatore già assegnato",
+            description: "Questo giocatore è già assegnato ad un altro campo in questo orario.",
+            variant: "destructive"
+          });
+          return;
+        }
         
         // Check if we're exceeding the maximum number of occupants for this time slot
         if (countExactTimeSlotOccupants() >= MAX_OCCUPANTS_PER_SLOT) {
