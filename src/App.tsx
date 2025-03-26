@@ -5,7 +5,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { CourtVisionProvider } from './components/court-vision/context/CourtVisionContext';
 import MainLayout from "./components/layout/MainLayout";
 
 // Use React.lazy for route-based code splitting
@@ -52,34 +51,32 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
-          <CourtVisionProvider>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/" element={<MainLayout />}>
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="calendar" element={<Calendar />} />
-                  <Route path="courts" element={<Courts />} />
-                  <Route path="court-vision" element={<CourtVision />} />
-                  <Route path="court-vision/layout" element={<CourtVision />} />
-                  <Route path="staff" element={<Staff />} />
-                  <Route path="players" element={<Players />} />
-                  <Route path="coaches" element={<Coaches />} />
-                  <Route path="programs" element={<Programs />} />
-                  <Route path="tournaments" element={<Tournaments />} />
-                  <Route path="reports" element={<Reports />} />
-                  <Route path="videos" element={<Videos />} />
-                  <Route path="activities" element={<Activities />} />
-                  <Route path="extra-activities" element={<ExtraActivities />} />
-                  <Route path="integrations" element={<Integrations />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </Suspense>
-            <Toaster />
-            <Sonner />
-          </CourtVisionProvider>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<MainLayout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="calendar" element={<Calendar />} />
+                <Route path="courts" element={<Courts />} />
+                <Route path="court-vision" element={<CourtVision />} />
+                <Route path="court-vision/layout" element={<CourtVision />} />
+                <Route path="staff" element={<Staff />} />
+                <Route path="players" element={<Players />} />
+                <Route path="coaches" element={<Coaches />} />
+                <Route path="programs" element={<Programs />} />
+                <Route path="tournaments" element={<Tournaments />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="videos" element={<Videos />} />
+                <Route path="activities" element={<Activities />} />
+                <Route path="extra-activities" element={<ExtraActivities />} />
+                <Route path="integrations" element={<Integrations />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </Suspense>
+          <Toaster />
+          <Sonner />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
