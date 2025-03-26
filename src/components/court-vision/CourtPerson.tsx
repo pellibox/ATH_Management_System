@@ -11,7 +11,7 @@ interface CourtPersonProps {
   onRemove?: () => void;
   className?: string;
   isSpanning?: boolean;
-  position?: { x: number, y: number }; // Add this prop to fix the error
+  position?: { x: number, y: number };
 }
 
 export function CourtPerson({ 
@@ -21,7 +21,7 @@ export function CourtPerson({
   onRemove,
   className = "",
   isSpanning = false,
-  position // Add this to the destructuring
+  position
 }: CourtPersonProps) {
   const isCoach = person.type === "coach";
   
@@ -65,7 +65,10 @@ export function CourtPerson({
             style={{ 
               minWidth: '85px',
               maxWidth: '100%',
-              backgroundColor: isCoach ? (person.programColor || "#b00c20") : (person.programColor ? `${person.programColor}20` : "#e6f0ff")
+              backgroundColor: isCoach ? (person.programColor || "#b00c20") : (person.programColor ? `${person.programColor}20` : "#e6f0ff"),
+              left: position ? `${position.x * 100}%` : 'auto',
+              top: position ? `${position.y * 100}%` : 'auto',
+              position: position ? 'absolute' : 'relative'
             }}
           >
             <div className="flex justify-between items-center w-full truncate">
