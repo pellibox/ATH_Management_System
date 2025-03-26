@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ActionsProps } from "./types";
 import { useCourtActions } from "./courtActions";
 import { useAssignmentActions } from "./assignment";
-import { usePeopleActivityActions } from "./peopleActivityActions";
+import { usePeopleActivityActions } from "./people-activity";
 import { useScheduleActions } from "./scheduleActions";
 
 export const useCourtVisionActions = (props: ActionsProps) => {
