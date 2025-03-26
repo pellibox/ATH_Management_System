@@ -7,6 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { PROGRAM_COLORS } from "@/components/court-vision/constants";
+import { 
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter
+} from "@/components/ui/card";
 
 export interface ProgramDetail {
   id: string;
@@ -100,11 +106,12 @@ export const ProgramCard = ({
       key={program.id} 
       className={cn(
         "bg-white rounded-xl shadow-soft overflow-hidden transition-all duration-300",
-        isExpanded ? `ring-2` : "",
+        isExpanded ? `ring-2 col-span-1 md:col-span-2 lg:col-span-3` : "",
         "card-hover"
       )}
       style={{ borderLeft: `4px solid ${program.color}` }}
     >
+      {/* Card Header with Title and Basic Info */}
       <div 
         className="p-4 cursor-pointer relative"
         onClick={() => !isEditing && toggleExpand(program.id)}
@@ -313,144 +320,242 @@ export const ProgramCard = ({
       
       {/* Expanded details */}
       {isExpanded && (
-        <div className="px-4 pb-4 pt-0 border-t-0 animate-fade-in">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="text-xs font-medium text-gray-500 mb-2">Dettagli Programma</h4>
-              {isEditing ? (
-                <div className="space-y-1.5">
-                  {editedProgram.details && editedProgram.details.map((detail, idx) => (
-                    <div key={idx} className="flex items-start gap-1">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeDetail(idx);
-                        }}
-                        className="p-0.5 rounded bg-red-100 text-red-600 mt-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                      <Input
-                        value={detail}
-                        onChange={(e) => handleDetailChange(idx, e.target.value)}
-                        className="h-6 text-xs"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                  ))}
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addDetail();
-                    }}
-                    className="text-xs text-blue-600 hover:text-blue-800"
-                  >
-                    + Aggiungi dettaglio
-                  </button>
-                </div>
-              ) : (
-                <ul className="space-y-1.5">
-                  {program.details && program.details.map((detail, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <Check className="h-3 w-3 text-ath-blue mr-1 mt-0.5 flex-shrink-0" />
-                      <span className="text-xs">{detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+        <div className="px-4 pb-4 pt-0 border-t border-gray-100 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column - Program Details */}
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <h4 className="text-xs font-medium text-gray-700 mb-2">Dettagli Programma</h4>
+                {isEditing ? (
+                  <div className="space-y-1.5">
+                    {editedProgram.details && editedProgram.details.map((detail, idx) => (
+                      <div key={idx} className="flex items-start gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeDetail(idx);
+                          }}
+                          className="p-0.5 rounded bg-red-100 text-red-600 mt-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        <Input
+                          value={detail}
+                          onChange={(e) => handleDetailChange(idx, e.target.value)}
+                          className="h-6 text-xs"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    ))}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addDetail();
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      + Aggiungi dettaglio
+                    </button>
+                  </div>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {program.details && program.details.map((detail, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <Check className="h-3 w-3 text-ath-blue mr-1 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs">{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               
-              {program.weeklyHours && program.weeklyHours > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-xs font-medium text-gray-500 mb-2">Monte Ore</h4>
+              {/* Hours Section */}
+              {(program.weeklyHours || isEditing) && (
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h4 className="text-xs font-medium text-gray-700 mb-2">Monte Ore</h4>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-xs text-gray-600">Ore settimanali:</span>
-                      <span className="text-xs font-medium">{program.weeklyHours} ore</span>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          value={editedProgram.weeklyHours || 0}
+                          onChange={(e) => handleInputChange('weeklyHours', parseFloat(e.target.value) || 0)}
+                          className="h-6 w-20 text-xs text-right"
+                          min={0}
+                          step={0.5}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className="text-xs font-medium">{program.weeklyHours} ore</span>
+                      )}
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs text-gray-600">Settimane totali:</span>
-                      <span className="text-xs font-medium">{program.totalWeeks}</span>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          value={editedProgram.totalWeeks || 0}
+                          onChange={(e) => handleInputChange('totalWeeks', parseInt(e.target.value, 10) || 0)}
+                          className="h-6 w-20 text-xs text-right"
+                          min={0}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className="text-xs font-medium">{program.totalWeeks}</span>
+                      )}
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs text-gray-600">Monte ore totale:</span>
-                      <span className="text-xs font-medium">{program.weeklyHours * (program.totalWeeks || 0)} ore</span>
+                      <span className="text-xs font-medium">
+                        {isEditing 
+                          ? (editedProgram.weeklyHours || 0) * (editedProgram.totalWeeks || 0)
+                          : (program.weeklyHours || 0) * (program.totalWeeks || 0)
+                        } ore
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
             </div>
             
-            <div>
-              <h4 className="text-xs font-medium text-gray-500 mb-2">Informazioni</h4>
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-600">Costo:</span>
-                  {isEditing ? (
-                    <Input
-                      value={editedProgram.cost || ''}
-                      onChange={(e) => handleInputChange('cost', e.target.value)}
-                      className="h-6 w-32 text-xs"
-                      placeholder="Prezzo"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <span className="text-xs font-medium">{program.cost}</span>
-                  )}
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-600">Iscrizioni:</span>
-                  {isEditing ? (
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      <span className="text-xs">{editedProgram.enrollmentOpen ? "Aperte" : "Chiuse"}</span>
-                      <Switch 
-                        checked={editedProgram.enrollmentOpen || false}
-                        onCheckedChange={(checked) => handleInputChange('enrollmentOpen', checked)}
+            {/* Right Column - Program Information */}
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <h4 className="text-xs font-medium text-gray-700 mb-2">Informazioni</h4>
+                <div className="space-y-2">
+                  {/* Cost */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Costo:</span>
+                    {isEditing ? (
+                      <Input
+                        value={editedProgram.cost || ''}
+                        onChange={(e) => handleInputChange('cost', e.target.value)}
+                        className="h-6 w-32 text-xs text-right"
+                        placeholder="Prezzo"
+                        onClick={(e) => e.stopPropagation()}
                       />
-                    </div>
-                  ) : (
-                    <span className="text-xs">{program.enrollmentOpen !== false ? "Aperte" : "Chiuse"}</span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-600">Integrazione VICKI™:</span>
-                  <span className="text-xs">
-                    {program.vicki === true 
-                      ? "Inclusa" 
-                      : program.vicki === "optional" 
-                        ? "Disponibile su richiesta" 
-                        : "Non disponibile"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-600">Prossimo inizio:</span>
-                  {isEditing ? (
-                    <Input
-                      value={editedProgram.nextStart || ''}
-                      onChange={(e) => handleInputChange('nextStart', e.target.value)}
-                      className="h-6 w-32 text-xs"
-                      placeholder="es. Settembre 2024"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <span className="text-xs">{program.nextStart || "Settembre 2024"}</span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-600">Color code:</span>
-                  <div className="flex items-center gap-1">
-                    <span 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: program.color }}
-                    ></span>
-                    <span className="text-xs">{program.color}</span>
+                    ) : (
+                      <span className="text-xs font-medium">{program.cost}</span>
+                    )}
+                  </div>
+                  
+                  {/* Enrollment Status */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Iscrizioni:</span>
+                    {isEditing ? (
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-xs">{editedProgram.enrollmentOpen ? "Aperte" : "Chiuse"}</span>
+                        <Switch 
+                          checked={editedProgram.enrollmentOpen || false}
+                          onCheckedChange={(checked) => handleInputChange('enrollmentOpen', checked)}
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-xs font-medium">
+                        {program.enrollmentOpen !== false ? "Aperte" : "Chiuse"}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Vicki Integration */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Integrazione VICKI™:</span>
+                    {isEditing ? (
+                      <Select
+                        value={editedProgram.vicki ? 
+                          (editedProgram.vicki === true ? "true" : "optional") 
+                          : "false"
+                        }
+                        onValueChange={(value) => {
+                          let vickiValue: boolean | string | undefined;
+                          if (value === "true") vickiValue = true;
+                          else if (value === "optional") vickiValue = "optional";
+                          else vickiValue = undefined;
+                          
+                          handleInputChange('vicki', vickiValue);
+                        }}
+                      >
+                        <SelectTrigger className="h-6 w-32 text-xs" onClick={(e) => e.stopPropagation()}>
+                          <SelectValue placeholder="Vicki" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Inclusa</SelectItem>
+                          <SelectItem value="optional">Su richiesta</SelectItem>
+                          <SelectItem value="false">Non disponibile</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <span className="text-xs font-medium">
+                        {program.vicki === true 
+                          ? "Inclusa" 
+                          : program.vicki === "optional" 
+                            ? "Disponibile su richiesta" 
+                            : "Non disponibile"}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Next Start */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Prossimo inizio:</span>
+                    {isEditing ? (
+                      <Input
+                        value={editedProgram.nextStart || ''}
+                        onChange={(e) => handleInputChange('nextStart', e.target.value)}
+                        className="h-6 w-32 text-xs text-right"
+                        placeholder="es. Settembre 2024"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span className="text-xs font-medium">{program.nextStart || "Settembre 2024"}</span>
+                    )}
+                  </div>
+                  
+                  {/* Color Code */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Color code:</span>
+                    {isEditing ? (
+                      <div className="flex flex-wrap gap-1 text-right">
+                        {Object.values(PROGRAM_COLORS).map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            className={`w-4 h-4 rounded-full border ${
+                              editedProgram.color === color ? "border-black" : "border-transparent"
+                            }`}
+                            style={{ backgroundColor: color }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleInputChange('color', color);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <span 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: program.color }}
+                        ></span>
+                        <span className="text-xs">{program.color}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
               
+              {/* Actions Section - Removed the subscription button as requested */}
               {!isEditing && (
-                <div className="mt-4 flex gap-2 justify-end">
-                  <button className="px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs hover:bg-gray-200 transition-colors">
-                    Dettagli
+                <div className="flex gap-2 justify-end">
+                  <button 
+                    className="px-3 py-1.5 rounded text-xs font-medium bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleExpand(program.id);
+                    }}
+                  >
+                    Chiudi
                   </button>
                 </div>
               )}
