@@ -47,7 +47,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
     }
   };
   
-  // Get program color for the card border
+  // Get program color for the card border - use the same function as PlayerRow
   const programColor = getPersonProgramColor(person);
 
   // Get assigned programs

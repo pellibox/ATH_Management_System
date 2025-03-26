@@ -6,6 +6,7 @@ import { PersonData, Program } from "./types";
 import { PERSON_TYPES } from "./constants";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { getProgramColor } from "@/components/players/utils/programUtils";
 
 export interface AvailablePeopleProps {
   people: PersonData[];
@@ -97,14 +98,20 @@ export function AvailablePeople({
     <div className="overflow-hidden">
       <div className="max-h-[400px] overflow-y-auto">
         {peopleToShow.length > 0 ? (
-          peopleToShow.map((person) => (
-            <PersonCard
-              key={person.id}
-              person={person}
-              programs={programs}
-              onAddToDragArea={handleAddToDragArea}
-            />
-          ))
+          peopleToShow.map((person) => {
+            // Get program color for the card border - similar to PlayerRow component
+            const programColor = person.program ? getProgramColor(person.program) : 
+                                (person.programId && programs.find(p => p.id === person.programId)?.color) || "#e0e0e0";
+            
+            return (
+              <PersonCard
+                key={person.id}
+                person={person}
+                programs={programs}
+                onAddToDragArea={handleAddToDragArea}
+              />
+            );
+          })
         ) : (
           <div className="text-sm text-gray-500 italic p-4 text-center bg-gray-50 rounded-md">
             {programFilter !== "all" 

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AvailablePeople } from "../AvailablePeople";
 import { useCourtVision } from "../context/CourtVisionContext";
+import { getProgramColor } from "@/components/players/utils/programUtils";
 
 export function PeopleList() {
   const { 

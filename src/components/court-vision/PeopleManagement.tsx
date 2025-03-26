@@ -8,6 +8,8 @@ import { PersonCard } from "./PersonCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CoachAvailabilityActions } from "./CoachAvailabilityActions";
+import { PlayerAvatar } from "@/components/players/components/PlayerAvatar";
+import { getProgramColor } from "@/components/players/utils/programUtils";
 
 export interface PeopleManagementProps {
   playersList: PersonData[];
