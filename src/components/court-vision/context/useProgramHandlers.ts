@@ -10,11 +10,21 @@ export function useProgramHandlers(
 ) {
   const { toast } = useToast();
 
-  const handleAddProgram = (program: Program) => {
+  const handleCreateProgram = (program: Program) => {
     setPrograms([...programs, program]);
   };
 
-  const handleRemoveProgram = (programId: string) => {
+  const handleAddProgram = handleCreateProgram; // Alias for backward compatibility
+
+  const handleUpdateProgram = (programId: string, updatedProgram: Partial<Program>) => {
+    setPrograms(programs.map(program => 
+      program.id === programId 
+        ? { ...program, ...updatedProgram } 
+        : program
+    ));
+  };
+
+  const handleDeleteProgram = (programId: string) => {
     const isAssigned = [...playersList, ...coachesList].some(person => 
       (person.programId === programId) || 
       (person.programIds && person.programIds.includes(programId))
@@ -37,8 +47,13 @@ export function useProgramHandlers(
     });
   };
 
+  const handleRemoveProgram = handleDeleteProgram; // Alias for backward compatibility
+
   return {
     handleAddProgram,
-    handleRemoveProgram
+    handleRemoveProgram,
+    handleCreateProgram,
+    handleUpdateProgram,
+    handleDeleteProgram
   };
 }
