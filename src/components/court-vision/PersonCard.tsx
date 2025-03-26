@@ -11,6 +11,7 @@ import { PersonData, Program } from "./types";
 import { PERSON_TYPES } from "./constants";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { getProgramColor } from "@/components/players/utils/programUtils";
 
 interface PersonCardProps {
   person: PersonData;
@@ -23,7 +24,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
     item: person,
-    canDrag: person.isPresent !== false, // Can drag if not explicitly marked as absent
+    canDrag: person.isPresent !== false, 
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -46,6 +47,13 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
     }
   };
   
+  // Determine program color
+  const programColor = person.programId 
+    ? getProgramColor(person.programId)
+    : (person.programIds && person.programIds.length > 0 
+      ? getProgramColor(person.programIds[0]) 
+      : "#e0e0e0");
+
   // Find all assigned programs
   const assignedPrograms = person.programIds 
     ? programs.filter(p => person.programIds?.includes(p.id))
@@ -74,6 +82,10 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
           } rounded-md border border-gray-200 ${
             isDragging ? "opacity-50" : ""
           } transition-colors ${isUnavailable ? "cursor-not-allowed" : "cursor-grab"}`}
+          style={{ 
+            borderLeftWidth: '4px', 
+            borderLeftColor: programColor 
+          }}
         >
           <div className="flex items-center space-x-2">
             {/* Avatar with color from primary program */}
