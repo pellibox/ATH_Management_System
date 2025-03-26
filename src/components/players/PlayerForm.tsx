@@ -18,12 +18,12 @@ import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 
 interface PlayerFormProps {
   buttonText: string;
-  handleSave: (playerData?: Omit<Player, "id">) => void;
+  handleSave: (playerData?: Player) => void;
 }
 
 export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
   const { editingPlayer, newPlayer, setNewPlayer, players } = usePlayerContext();
-  const [formData, setFormData] = useState(editingPlayer || newPlayer);
+  const [formData, setFormData] = useState<Player>(editingPlayer || newPlayer);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [availablePrograms, setAvailablePrograms] = useState<{name: string, category: string}[]>([]);
 
@@ -75,7 +75,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
   const handleSubmit = () => {
     if (editingPlayer) {
       // For editing existing player
-      handleSave();
+      handleSave(formData);
     } else {
       // For adding new player
       handleSave(formData);

@@ -19,18 +19,37 @@ export const useUpdatePlayer = ({
   } | null>(null);
 
   const handleUpdatePlayer = (updatedPlayer: Player) => {
-    setPlayers(
-      players.map((player) =>
-        player.id === updatedPlayer.id ? updatedPlayer : player
-      )
-    );
-    
-    toast({
-      title: "Giocatore aggiornato",
-      description: `${updatedPlayer.name} è stato aggiornato con successo`,
-    });
+    try {
+      if (!updatedPlayer || !updatedPlayer.id) {
+        console.error("Invalid player data:", updatedPlayer);
+        toast({
+          title: "Errore",
+          description: "Dati del giocatore non validi",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setPlayers(
+        players.map((player) =>
+          player.id === updatedPlayer.id ? updatedPlayer : player
+        )
+      );
+      
+      toast({
+        title: "Giocatore aggiornato",
+        description: `${updatedPlayer.name} è stato aggiornato con successo`,
+      });
 
-    setEditingPlayer(null);
+      setEditingPlayer(null);
+    } catch (error) {
+      console.error("Error updating player:", error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'aggiornamento",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleAssignCoach = (playerId: string, coachId: string, force = false) => {

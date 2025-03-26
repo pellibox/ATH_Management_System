@@ -24,7 +24,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   
   // Fix the initial state of newPlayer by ensuring it has an id
-  const [newPlayer, setNewPlayer] = useState({
+  const [newPlayer, setNewPlayer] = useState<Player>({
     ...defaultNewPlayer,
     id: "new-temp-id" // Add a temporary ID for type safety
   });
@@ -77,7 +77,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setObjectives
   });
 
-  // Context value - the type error was here, we need to ensure we're using the correct type
+  // Context value
   const contextValue: PlayerContextType = {
     // State
     players,
@@ -108,9 +108,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setScheduleType,
     setObjectives,
     // Fixed setNewPlayer function with proper typing
-    setNewPlayer: (player: Omit<Player, "id">) => setNewPlayer({ 
+    setNewPlayer: (player: Player) => setNewPlayer({ 
       ...player, 
-      id: "new-temp-id" // Always set a temporary ID
+      id: player.id || "new-temp-id" // Keep existing ID or set temporary ID
     }),
     setSelectedActivities,
     resetFilters,

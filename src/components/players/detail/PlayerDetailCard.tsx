@@ -21,6 +21,7 @@ import { InfoTab } from "./tabs/InfoTab";
 import { MedicalTab } from "./tabs/MedicalTab";
 import { HoursTab } from "./tabs/HoursTab";
 import { DocumentsTab } from "./tabs/DocumentsTab";
+import { useToast } from "@/hooks/use-toast";
 
 interface PlayerDetailCardProps {
   player: Player;
@@ -33,7 +34,8 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
   const [isEditing, setIsEditing] = useState(false);
   const [editedPlayer, setEditedPlayer] = useState<Player>({ ...player });
   
-  const { players, setPlayers } = usePlayerContext();
+  const { players, setPlayers, handleUpdatePlayer } = usePlayerContext();
+  const { toast } = useToast();
   
   // When player prop changes, update the editedPlayer state
   useEffect(() => {
@@ -65,12 +67,31 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
   };
 
   const handleSave = () => {
-    // Update player in the context
-    setPlayers(players.map(p => 
-      p.id === editedPlayer.id ? editedPlayer : p
-    ));
-    
-    setIsEditing(false);
+    try {
+      // Use the context's update function if available, otherwise update directly
+      if (handleUpdatePlayer) {
+        handleUpdatePlayer(editedPlayer);
+      } else {
+        // Update player in the context
+        setPlayers(players.map(p => 
+          p.id === editedPlayer.id ? editedPlayer : p
+        ));
+      }
+      
+      toast({
+        title: "Giocatore aggiornato",
+        description: `${editedPlayer.name} è stato aggiornato con successo`,
+      });
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving player:", error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante il salvataggio",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
