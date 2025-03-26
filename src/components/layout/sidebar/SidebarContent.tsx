@@ -42,6 +42,9 @@ export default function SidebarContent({
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
+  // Use red clay color for active items
+  const activeClasses = "bg-ath-red-clay/20 text-ath-red-clay font-medium";
+
   return (
     <div className="flex flex-col h-full">
       <SidebarLogo collapsed={collapsed} toggleSidebar={toggleSidebar} />
@@ -53,7 +56,8 @@ export default function SidebarContent({
             icon={LayoutGrid}
             label="Dashboard" 
             isActive={isLinkActive('/dashboard')} 
-            collapsed={collapsed} 
+            collapsed={collapsed}
+            activeClass={activeClasses}
           />
 
           <SidebarSubmenu
@@ -65,6 +69,7 @@ export default function SidebarContent({
             onOpenChange={setCourtsOpen}
             currentPath={location.pathname}
             searchParams={location.search}
+            activeClass={activeClasses}
             items={[
               { label: 'All Courts', path: '/court-vision' },
               { label: 'Tennis', path: '/court-vision?sport=tennis' },
@@ -82,6 +87,7 @@ export default function SidebarContent({
             open={peopleOpen}
             onOpenChange={setPeopleOpen}
             currentPath={location.pathname}
+            activeClass={activeClasses}
             items={[
               { 
                 label: 'Giocatori', 
@@ -104,6 +110,7 @@ export default function SidebarContent({
             open={activitiesOpen}
             onOpenChange={setActivitiesOpen}
             currentPath={location.pathname}
+            activeClass={activeClasses}
             items={[
               { 
                 label: 'Programmi', 
@@ -133,7 +140,8 @@ export default function SidebarContent({
             icon={CalendarDays}
             label="Calendar" 
             isActive={isLinkActive('/calendar')} 
-            collapsed={collapsed} 
+            collapsed={collapsed}
+            activeClass={activeClasses}
           />
           
           <SidebarLink 
@@ -141,7 +149,8 @@ export default function SidebarContent({
             icon={Activity}
             label="Reports" 
             isActive={isLinkActive('/reports')} 
-            collapsed={collapsed} 
+            collapsed={collapsed}
+            activeClass={activeClasses}
           />
           
           <SidebarLink 
@@ -149,7 +158,8 @@ export default function SidebarContent({
             icon={Activity}
             label="Videos" 
             isActive={isLinkActive('/videos')} 
-            collapsed={collapsed} 
+            collapsed={collapsed}
+            activeClass={activeClasses}
           />
 
           <SidebarLink 
@@ -157,7 +167,8 @@ export default function SidebarContent({
             icon={Settings} 
             label="Settings" 
             isActive={isLinkActive('/settings')} 
-            collapsed={collapsed} 
+            collapsed={collapsed}
+            activeClass={activeClasses}
           />
         </ul>
       </nav>

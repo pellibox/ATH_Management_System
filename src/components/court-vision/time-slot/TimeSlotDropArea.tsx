@@ -1,48 +1,67 @@
 
 import React from "react";
 import { useDrop } from "react-dnd";
-import { PERSON_TYPES } from "../constants";
 import { PersonData, ActivityData } from "../types";
 
 interface TimeSlotDropAreaProps {
-  children: React.ReactNode;
   courtId: string;
   time: string;
-  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
-  onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
+  children: React.ReactNode;
+  onDrop: (
+    courtId: string,
+    person: PersonData,
+    position?: { x: number; y: number },
+    timeSlot?: string
+  ) => void;
+  onActivityDrop: (
+    courtId: string,
+    activity: ActivityData,
+    timeSlot?: string
+  ) => void;
+  "data-time-slot"?: string;
 }
 
 export function TimeSlotDropArea({
-  children,
   courtId,
   time,
+  children,
   onDrop,
-  onActivityDrop
+  onActivityDrop,
+  "data-time-slot": dataTimeSlot,
+  ...rest
 }: TimeSlotDropAreaProps) {
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
-    drop: (item: any) => {
-      if (item.type === "activity") {
-        // Handle activity drop
-        const activity = item as ActivityData;
-        onActivityDrop(courtId, activity, time);
-      } else {
-        // Handle person drop
-        const person = item as PersonData;
+  // Handle dropping a person
+  const [{ isOver }, dropRef] = useDrop(() => ({
+    accept: ["person", "activity"],
+    drop: (item: any, monitor) => {
+      // Get drop position
+      const dropPosition = monitor.getClientOffset();
+      
+      if (item.type === "person" || item.type === "player" || item.type === "coach") {
+        // Person drop
+        const person = item;
         onDrop(courtId, person, undefined, time);
+        return { dropped: true };
+      } else if (item.type === "activity") {
+        // Activity drop
+        const activity = item;
+        onActivityDrop(courtId, activity, time);
+        return { dropped: true };
       }
     },
     collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
-  }), [courtId, time, onDrop, onActivityDrop]);
+      isOver: !!monitor.isOver()
+    })
+  }), [courtId, time]);
 
   return (
     <div
-      ref={drop}
-      className={`min-h-20 border-b border-gray-200 p-2 relative ${
-        isOver ? "bg-gray-100" : ""
+      ref={dropRef}
+      className={`relative border-b border-gray-200 p-2 transition-colors ${
+        isOver ? "bg-green-50" : ""
       }`}
+      data-time-slot={dataTimeSlot || time}
+      {...rest}
     >
       {children}
     </div>

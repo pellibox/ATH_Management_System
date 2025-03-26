@@ -86,6 +86,7 @@ export function TimeSlot({
         }
       }}
       onActivityDrop={onActivityDrop}
+      data-time-slot={time}
     >
       <TimeSlotHeader time={time} />
       

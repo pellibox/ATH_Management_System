@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface SidebarLinkProps {
   to: string;
@@ -10,37 +9,28 @@ interface SidebarLinkProps {
   label: string;
   isActive: boolean;
   collapsed: boolean;
+  activeClass?: string;
 }
 
-export default function SidebarLink({ to, icon: Icon, label, isActive, collapsed }: SidebarLinkProps) {
-  const location = useLocation();
-  const isCurrent = location.pathname === to;
-  
+export default function SidebarLink({ 
+  to, 
+  icon: Icon, 
+  label, 
+  isActive, 
+  collapsed,
+  activeClass = "bg-gray-100" 
+}: SidebarLinkProps) {
   return (
     <li>
       <Link
         to={to}
-        className={cn(
-          "flex items-center py-2 px-3 rounded-md text-sm transition-colors relative group",
-          isActive 
-            ? "bg-ath-clay text-white font-medium" 
-            : "text-gray-600 hover:bg-gray-100"
-        )}
+        className={`flex items-center p-2 rounded-md transition-colors duration-150 hover:bg-gray-100 ${
+          isActive ? activeClass : ''
+        }`}
       >
-        <Icon className={cn(
-          "h-5 w-5 flex-shrink-0",
-          isActive ? "text-white" : isCurrent ? "text-ath-clay" : "text-gray-500 group-hover:text-gray-700",
-          collapsed ? "mx-auto" : "mr-2"
-        )} />
-        
+        <Icon className={`h-5 w-5 ${isActive ? 'text-ath-red-clay' : 'text-gray-500'}`} />
         {!collapsed && (
-          <span className={cn("truncate", isCurrent && !isActive && "text-ath-clay font-medium")}>{label}</span>
-        )}
-        
-        {collapsed && (
-          <span className="absolute left-full ml-2 rounded bg-gray-900 px-2 py-1 text-xs text-white invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            {label}
-          </span>
+          <span className="ml-3 whitespace-nowrap">{label}</span>
         )}
       </Link>
     </li>
