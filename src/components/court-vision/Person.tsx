@@ -12,7 +12,7 @@ interface PersonProps {
 
 export function Person({ person, onRemove, onAddToDragArea, programs = [] }: PersonProps) {
   // Get program color using the same utility as in PlayerRow
-  const programColor = person.program ? getProgramColor(person.program) : 
+  const programColor = person.programId ? getProgramColor(person.programId) : 
                      (person.programId && programs.find(p => p.id === person.programId)?.color) || "#e0e0e0";
 
   // Simple wrapper component that passes props to PersonCard

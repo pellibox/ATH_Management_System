@@ -7,8 +7,8 @@ import { getProgramColor } from "@/components/players/utils/programUtils";
  */
 export function getPersonProgramColor(person: PersonData): string {
   // First try to use the same utility function as in PlayerRow for consistency
-  if (person.program) {
-    return getProgramColor(person.program);
+  if (person.programId) {
+    return getProgramColor(person.programId);
   }
   
   // Use programColor if directly available on the person
@@ -38,12 +38,6 @@ export function getAssignedPrograms(person: PersonData, programs: Program[]): Pr
   // If person has a single programId
   if (person.programId) {
     const program = programs.find(p => p.id === person.programId);
-    return program ? [program] : [];
-  }
-  
-  // If person has a program name, match it by name
-  if (person.program) {
-    const program = programs.find(p => p.name === person.program);
     return program ? [program] : [];
   }
   
