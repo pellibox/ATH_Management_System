@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Player } from "@/types/player";
 import { 
@@ -24,7 +23,8 @@ import {
   Phone, 
   AlertTriangle,
   FileCheck,
-  CalendarDays
+  CalendarDays,
+  Tag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -57,6 +57,16 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
     activity.participants?.includes(player.id)
   );
 
+  // Get background color for the player avatar based on the program instead of level
+  const getAvatarBgColor = () => {
+    if (!player.program) return "bg-gray-500";
+    
+    // Create a simple hash of the program name to get a deterministic color
+    const hash = player.program.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500", "bg-teal-500"];
+    return colors[hash % colors.length];
+  };
+
   return (
     <Card className="w-full max-w-4xl">
       <CardHeader className="pb-2">
@@ -64,12 +74,7 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
           <div>
             <CardTitle className="text-2xl flex items-center">
               <span 
-                className={`h-10 w-10 rounded-full flex items-center justify-center text-white mr-3 text-lg ${
-                  player.level === "Beginner" ? "bg-gray-500" :
-                  player.level === "Intermediate" ? "bg-blue-500" :
-                  player.level === "Advanced" ? "bg-green-500" :
-                  "bg-purple-500"
-                }`}
+                className={`h-10 w-10 rounded-full flex items-center justify-center text-white mr-3 text-lg ${getAvatarBgColor()}`}
               >
                 {player.name.substring(0, 1)}
               </span>
@@ -79,21 +84,13 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
               </Badge>
             </CardTitle>
             <CardDescription className="mt-1 flex items-center gap-2">
-              <span className="flex items-center">
-                <User className="h-4 w-4 mr-1" />
-                {player.level} 
-              </span>
-              {player.coach && (
+              {player.program ? (
                 <span className="flex items-center">
-                  <span className="text-gray-500 mx-1">•</span>
-                  Coach: {player.coach}
-                </span>
-              )}
-              {player.program && (
-                <span className="flex items-center">
-                  <span className="text-gray-500 mx-1">•</span>
+                  <Tag className="h-4 w-4 mr-1" />
                   Programma: {player.program}
                 </span>
+              ) : (
+                <span className="text-gray-500">Nessun programma assegnato</span>
               )}
             </CardDescription>
           </div>

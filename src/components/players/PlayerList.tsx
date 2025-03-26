@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Player } from "@/types/player";
-import { MoreVertical, Edit, Trash2, UserPlus, Mail, Phone, CalendarClock } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Mail, SortAsc, SortDesc } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -33,23 +33,73 @@ export function PlayerList() {
   } = usePlayerContext();
 
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [sortColumn, setSortColumn] = useState<"name" | "program" | "email" | "phone">("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const handleSort = (column: "name" | "program" | "email" | "phone") => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedPlayers = [...filteredPlayers].sort((a, b) => {
+    const valueA = (a[sortColumn] || "").toString().toLowerCase();
+    const valueB = (b[sortColumn] || "").toString().toLowerCase();
+    
+    if (sortDirection === "asc") {
+      return valueA.localeCompare(valueB);
+    } else {
+      return valueB.localeCompare(valueA);
+    }
+  });
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortColumn !== column) return null;
+    return sortDirection === "asc" ? (
+      <SortAsc className="h-4 w-4 ml-1 inline" />
+    ) : (
+      <SortDesc className="h-4 w-4 ml-1 inline" />
+    );
+  };
 
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Level</TableHead>
-            <TableHead>Coach</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-gray-50"
+              onClick={() => handleSort("name")}
+            >
+              Nome <SortIcon column="name" />
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-gray-50"
+              onClick={() => handleSort("program")}
+            >
+              Programma <SortIcon column="program" />
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-gray-50"
+              onClick={() => handleSort("email")}
+            >
+              Email <SortIcon column="email" />
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-gray-50"
+              onClick={() => handleSort("phone")}
+            >
+              Telefono <SortIcon column="phone" />
+            </TableHead>
+            <TableHead className="text-right">Azioni</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredPlayers.length > 0 ? (
-            filteredPlayers.map((player) => (
+          {sortedPlayers.length > 0 ? (
+            sortedPlayers.map((player) => (
               <TableRow 
                 key={player.id} 
                 className="cursor-pointer hover:bg-gray-50" 
@@ -57,16 +107,14 @@ export function PlayerList() {
               >
                 <TableCell className="font-medium">{player.name}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    player.level === "Beginner" ? "bg-gray-100 text-gray-700" :
-                    player.level === "Intermediate" ? "bg-blue-100 text-blue-700" :
-                    player.level === "Advanced" ? "bg-green-100 text-green-700" :
-                    "bg-purple-100 text-purple-700"
-                  }`}>
-                    {player.level}
-                  </span>
+                  {player.program ? (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                      {player.program}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">Non assegnato</span>
+                  )}
                 </TableCell>
-                <TableCell>{player.coach}</TableCell>
                 <TableCell>{player.email}</TableCell>
                 <TableCell>{player.phone}</TableCell>
                 <TableCell className="text-right">
@@ -88,7 +136,7 @@ export function PlayerList() {
                               setEditingPlayer(player);
                             }}>
                               <Edit className="h-4 w-4 mr-2" />
-                              Edit
+                              Modifica
                             </DropdownMenuItem>
                           </DialogTrigger>
                         </Dialog>
@@ -100,7 +148,7 @@ export function PlayerList() {
                           }}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
+                          Elimina
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -110,8 +158,8 @@ export function PlayerList() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                No players found matching your search criteria
+              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                Nessun giocatore trovato con i criteri di ricerca specificati
               </TableCell>
             </TableRow>
           )}

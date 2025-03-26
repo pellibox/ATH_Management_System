@@ -1,127 +1,115 @@
 
+import React from "react";
+import { Search, X, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { usePlayerContext } from "@/contexts/PlayerContext";
-import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
-export const PlayerFilters = () => {
-  const { 
-    searchQuery, 
-    setSearchQuery, 
-    levelFilter, 
-    setLevelFilter, 
-    coachFilter, 
-    setCoachFilter,
+export function PlayerFilters() {
+  const {
+    searchQuery,
+    setSearchQuery,
     programFilter,
     setProgramFilter,
-    coaches, 
-    resetFilters 
+    resetFilters,
+    players,
   } = usePlayerContext();
 
-  // Extract all unique programs from TENNIS_PROGRAMS
-  const allPrograms = [
-    ...TENNIS_PROGRAMS.PERFORMANCE,
-    ...TENNIS_PROGRAMS.JUNIOR,
-    ...TENNIS_PROGRAMS.PERSONAL,
-    ...TENNIS_PROGRAMS.ADULT,
-    ...TENNIS_PROGRAMS.COACH,
-    ...TENNIS_PROGRAMS.PADEL
-  ];
+  // Get unique programs
+  const programs = React.useMemo(() => {
+    const uniquePrograms = new Set<string>();
+    players.forEach((player) => {
+      if (player.program) {
+        uniquePrograms.add(player.program);
+      }
+    });
+    return Array.from(uniquePrograms);
+  }, [players]);
+
+  const isFiltersApplied = searchQuery || programFilter !== "all";
 
   return (
-    <div className="mb-6 space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-            Cerca
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              id="search"
-              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ath-blue/20"
-              placeholder="Cerca nome, email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
-        
-        <div>
-          <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-1">
-            Livello
-          </label>
-          <select
-            id="level"
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ath-blue/20"
-            value={levelFilter}
-            onChange={(e) => setLevelFilter(e.target.value)}
-          >
-            <option value="all">Tutti i livelli</option>
-            <option value="Beginner">Principiante</option>
-            <option value="Intermediate">Intermedio</option>
-            <option value="Advanced">Avanzato</option>
-            <option value="Professional">Professionista</option>
-          </select>
-        </div>
-        
-        <div>
-          <label htmlFor="coach" className="block text-sm font-medium text-gray-700 mb-1">
-            Coach
-          </label>
-          <select
-            id="coach"
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ath-blue/20"
-            value={coachFilter}
-            onChange={(e) => setCoachFilter(e.target.value)}
-          >
-            <option value="all">Tutti i coach</option>
-            {coaches.map((coach) => (
-              <option key={coach} value={coach}>
-                {coach}
-              </option>
-            ))}
-          </select>
+    <div className="mb-6 space-y-2">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            type="search"
+            placeholder="Cerca giocatori..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-2.5 text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
-        <div>
-          <label htmlFor="program" className="block text-sm font-medium text-gray-700 mb-1">
-            Programma
-          </label>
-          <select
-            id="program"
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ath-blue/20"
-            value={programFilter}
-            onChange={(e) => setProgramFilter(e.target.value)}
-          >
-            <option value="all">Tutti i programmi</option>
-            {allPrograms.map((program) => (
-              <option key={program.id} value={program.id}>
-                {program.name}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Select value={programFilter} onValueChange={setProgramFilter}>
+            <SelectTrigger className="w-[180px]">
+              <div className="flex gap-2 items-center">
+                <Filter className="h-4 w-4" />
+                <span>Programma</span>
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tutti i programmi</SelectItem>
+              {programs.map((program) => (
+                <SelectItem key={program} value={program}>
+                  {program}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {isFiltersApplied && (
+            <Button variant="ghost" onClick={resetFilters} className="h-10">
+              Reset filtri
+            </Button>
+          )}
         </div>
       </div>
-      
-      {(searchQuery || levelFilter !== "all" || coachFilter !== "all" || programFilter !== "all") && (
-        <div className="flex justify-end">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={resetFilters}
-          >
-            Cancella filtri
-          </Button>
+
+      {isFiltersApplied && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {searchQuery && (
+            <Badge variant="secondary" className="gap-1 pl-2">
+              Ricerca: {searchQuery}
+              <button
+                onClick={() => setSearchQuery("")}
+                className="ml-1 text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {programFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1 pl-2">
+              Programma: {programFilter}
+              <button
+                onClick={() => setProgramFilter("all")}
+                className="ml-1 text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
         </div>
       )}
     </div>
   );
-};
+}
