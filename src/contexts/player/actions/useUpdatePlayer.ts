@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { PlayerActionsProps } from "./types";
 import { Player } from "@/types/player";
@@ -75,14 +76,9 @@ export const useUpdatePlayer = ({
         title: "Programmi non compatibili",
         description: "Il coach selezionato non ha lo stesso programma del giocatore. Conferma per procedere come eccezione.",
         variant: "destructive",
-        action: (
-          <ToastAction 
-            altText="Autorizza o annulla"
-            onClick={() => handleAssignCoach(playerId, coachId, true)}
-          >
-            Autorizza
-          </ToastAction>
-        )
+        action: <ToastAction altText="Autorizza" onClick={() => handleAssignCoach(playerId, coachId, true)}>
+          Autorizza
+        </ToastAction>
       });
     }
   };
