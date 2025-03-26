@@ -1,11 +1,12 @@
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Layers, LayoutGrid } from "lucide-react";
 import { useCourtVision } from "./context/CourtVisionContext";
 
 export function ViewModeToggle() {
   const { isLayoutView, currentSport } = useCourtVision();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const toggleViewMode = () => {
     if (isLayoutView) {
