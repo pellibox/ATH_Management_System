@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Calendar, Users, Layers, Clock, FileText, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateSelector } from './DateSelector';
-import { SendScheduleDialog } from './SendScheduleDialog';
+import { SendScheduleDialog } from './schedule-dialog';
 import { CourtProps, PersonData, ActivityData, ScheduleTemplate } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AvailablePeople } from './AvailablePeople';
