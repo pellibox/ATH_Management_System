@@ -10,32 +10,25 @@ interface TimeSlotProps {
   time: string;
   occupants: PersonData[];
   activities: ActivityData[];
-  onDrop: (courtId: string, time: string, person: PersonData) => void;
-  onActivityDrop: (courtId: string, time: string, activity: ActivityData) => void;
-  onRemovePerson: (personId: string, time: string) => void;
-  onRemoveActivity: (activityId: string, time: string) => void;
+  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
+  onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
+  onRemovePerson: (personId: string, timeSlot?: string) => void;
+  onRemoveActivity: (activityId: string, timeSlot?: string) => void;
 }
 
-// Crea un componente persona trascinabile per la fascia oraria
+// Draggable person component for time slot
 function DraggablePerson({ person, time, onRemove }: { person: PersonData, time: string, onRemove: () => void }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
     item: { 
       ...person, 
-      sourceTimeSlot: time,  // Includi la fascia oraria di origine per tracciare il movimento
+      sourceTimeSlot: time,  // Include source time slot to track movement
       courtId: person.courtId,
       timeSlot: time
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-    end: (item, monitor) => {
-      // Aggiungi un callback per quando il trascinamento termina
-      const didDrop = monitor.didDrop();
-      if (!didDrop) {
-        console.log("Il trascinamento è stato annullato");
-      }
-    }
   }));
 
   return (
@@ -60,25 +53,18 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
   );
 }
 
-// Crea un componente attività trascinabile per la fascia oraria
+// Draggable activity component for time slot
 function DraggableActivity({ activity, time, onRemove }: { activity: ActivityData, time: string, onRemove: () => void }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "activity",
     item: { 
       ...activity, 
-      sourceTimeSlot: time,  // Includi la fascia oraria di origine per tracciare il movimento
+      sourceTimeSlot: time,
       startTime: time 
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-    end: (item, monitor) => {
-      // Aggiungi un callback per quando il trascinamento termina
-      const didDrop = monitor.didDrop();
-      if (!didDrop) {
-        console.log("Il trascinamento è stato annullato");
-      }
-    }
   }));
 
   return (
@@ -118,7 +104,7 @@ export const TimeSlot = memo(function TimeSlot({
   onRemovePerson, 
   onRemoveActivity 
 }: TimeSlotProps) {
-  // Usa callback memorizzati per prestazioni migliori
+  // Use callbacks for better performance
   const handleRemovePerson = useCallback((personId: string) => {
     onRemovePerson(personId, time);
   }, [onRemovePerson, time]);
@@ -127,37 +113,36 @@ export const TimeSlot = memo(function TimeSlot({
     onRemoveActivity(activityId, time);
   }, [onRemoveActivity, time]);
 
-  // Ottimizza la logica di drag & drop
+  // Enhanced drop target handling
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
     drop: (item: any) => {
-      console.log("Trascinamento nella fascia oraria:", time, "Elemento:", item);
+      console.log("Drop in time slot:", time, "Item:", item);
       
       if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
-        // Gestisci il trascinamento della persona
+        // Handle person drop
         const personItem = item as PersonData;
         
-        // Rimuovi il riferimento alla fascia oraria originale se necessario
-        if (personItem.sourceTimeSlot && personItem.sourceTimeSlot !== time) {
-          console.log("Spostamento persona dalla fascia oraria", personItem.sourceTimeSlot, "a", time);
+        // If person is moved from another time slot on the same court, handle that case
+        if (personItem.sourceTimeSlot && personItem.courtId === courtId && personItem.sourceTimeSlot !== time) {
+          console.log("Moving person from time slot", personItem.sourceTimeSlot, "to time slot", time);
           onRemovePerson(personItem.id, personItem.sourceTimeSlot);
         }
         
-        // Aggiorna con la nuova fascia oraria
-        onDrop(courtId, time, {...personItem, timeSlot: time});
-      } else if (item.type === "activity" || 
-                Object.values(ACTIVITY_TYPES).includes(item.type as any)) {
-        // Gestisci il trascinamento dell'attività
+        // Update with the new time slot - the key fix for our issue
+        onDrop(courtId, {...personItem, timeSlot: time}, undefined, time);
+      } else if (item.type === "activity" || Object.values(ACTIVITY_TYPES).includes(item.type as any)) {
+        // Handle activity drop
         const activityItem = item as ActivityData;
         
-        // Rimuovi il riferimento alla fascia oraria originale se necessario
+        // If activity is moved from another time slot, handle that case
         if (activityItem.sourceTimeSlot && activityItem.sourceTimeSlot !== time) {
-          console.log("Spostamento attività dalla fascia oraria", activityItem.sourceTimeSlot, "a", time);
+          console.log("Moving activity from time slot", activityItem.sourceTimeSlot, "to time slot", time);
           onRemoveActivity(activityItem.id, activityItem.sourceTimeSlot);
         }
         
-        // Aggiorna con la nuova fascia oraria
-        onActivityDrop(courtId, time, {...activityItem, startTime: time});
+        // Update with the new time slot
+        onActivityDrop(courtId, {...activityItem, startTime: time}, time);
       }
     },
     collect: (monitor) => ({
@@ -171,7 +156,7 @@ export const TimeSlot = memo(function TimeSlot({
       className={`border-t border-gray-200 p-2 min-h-[80px] relative ${
         isOver ? "bg-ath-red-clay-dark/40" : ""
       }`}
-      data-time={time}  // Aggiungi un attributo data per facilitare il debug
+      data-time={time}
     >
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-medium">{time}</span>

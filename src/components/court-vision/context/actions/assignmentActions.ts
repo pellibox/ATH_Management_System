@@ -21,38 +21,39 @@ export const useAssignmentActions = (
     );
 
     const personDuration = person.durationHours || 1;
-    
     const program = programs.find(p => p.id === person.programId);
     
-    // Fix: Make a deep copy of the person object to avoid reference issues
+    // Create a deep copy of the person object to avoid reference issues
     const personWithCourtInfo = { 
       ...JSON.parse(JSON.stringify(person)), 
       courtId,
       position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
-      timeSlot: timeSlot || person.timeSlot, // Keep the existing timeSlot if not provided
       date: selectedDate.toISOString().split('T')[0],
       durationHours: personDuration,
       programColor: program?.color
     };
 
-    // Important: Only set the timeSlot if explicitly provided in the drop
+    // IMPORTANT: Set the timeSlot if explicitly provided in the drop
     // This ensures players/coaches can be dropped on specific time slots
     if (timeSlot) {
-      console.log(`Setting timeSlot to ${timeSlot}`);
+      console.log(`Setting timeSlot to ${timeSlot} for ${person.name}`);
       personWithCourtInfo.timeSlot = timeSlot;
       
       // Calculate end time slot if duration > 1
-      const timeSlotIndex = timeSlots.indexOf(timeSlot);
-      if (timeSlotIndex >= 0 && personDuration > 1) {
-        const endSlotIndex = Math.min(timeSlotIndex + personDuration - 1, timeSlots.length - 1);
-        personWithCourtInfo.endTimeSlot = timeSlots[endSlotIndex];
+      if (personDuration > 1) {
+        const timeSlotIndex = timeSlots.indexOf(timeSlot);
+        if (timeSlotIndex >= 0) {
+          const endSlotIndex = Math.min(timeSlotIndex + personDuration - 1, timeSlots.length - 1);
+          personWithCourtInfo.endTimeSlot = timeSlots[endSlotIndex];
+          console.log(`Setting endTimeSlot to ${personWithCourtInfo.endTimeSlot}`);
+        }
       }
     }
 
-    // Fix: Create a new courts array and properly handle occupant updates
+    // Create a new courts array and properly handle occupant updates
     let updatedCourts = JSON.parse(JSON.stringify(courts));
 
-    // If moving from one time slot to another on same court, make sure to only remove from the source time slot
+    // If moving within the same court but to a different time slot
     if (person.sourceTimeSlot && person.courtId === courtId && person.sourceTimeSlot !== timeSlot) {
       console.log(`Moving from time slot ${person.sourceTimeSlot} to ${timeSlot} on same court`);
       updatedCourts = updatedCourts.map((court: CourtProps) => {
@@ -87,14 +88,16 @@ export const useAssignmentActions = (
       return court;
     });
 
-    console.log("Updated courts:", updatedCourts);
+    console.log("Updated courts after drop:", updatedCourts);
     setCourts(updatedCourts);
 
+    // Remove from available list if coming from there
     const isFromAvailableList = people.some(p => p.id === person.id);
     if (isFromAvailableList) {
       setPeople(people.filter(p => p.id !== person.id));
     }
 
+    // Show success notification
     toast({
       title: isMovingFromExistingAssignment ? "Persona Spostata" : "Persona Assegnata",
       description: `${person.name} è stata ${isMovingFromExistingAssignment ? "spostata" : "assegnata"} al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${personDuration > 1 ? ` per ${personDuration} ore` : ''}`,

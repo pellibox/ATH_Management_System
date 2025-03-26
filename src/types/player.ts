@@ -24,9 +24,38 @@ export interface Player {
   coach?: string;
   joinDate?: string;
   preferredContactMethod?: 'WhatsApp' | 'Email' | 'Phone';
+  
+  // Enhanced properties for medical info
+  medicalExam?: {
+    date: string;
+    expiryDate: string;
+    type: 'Agonistic' | 'Non-Agonistic';
+    doctor?: string;
+    notes?: string;
+  };
+  
+  // Hours tracking
+  completedHours?: number;
+  trainingHours?: number;
+  extraHours?: number;
+  missedHours?: number;
+  
+  // Documents
+  documents?: {
+    id: string;
+    name: string;
+    type: string;
+    uploadDate: string;
+    fileUrl: string;
+  }[];
+  
+  // Subscription info
+  membershipId?: string;
+  membershipExpiry?: string;
+  paymentStatus?: 'Paid' | 'Pending' | 'Overdue';
 }
 
-// Add mock players data since it's referenced in multiple places
+// Add mock players data with enhanced properties
 export const mockPlayers: Player[] = [
   {
     id: "p1",
@@ -42,7 +71,32 @@ export const mockPlayers: Player[] = [
     joinDate: "2023-01-15",
     preferredContactMethod: "WhatsApp",
     program: "Junior Excellence",
-    sports: ["Tennis", "Swimming"]
+    sports: ["Tennis", "Swimming"],
+    medicalExam: {
+      date: "2023-04-15",
+      expiryDate: "2024-04-15",
+      type: "Non-Agonistic"
+    },
+    completedHours: 32,
+    trainingHours: 28,
+    extraHours: 4,
+    missedHours: 2,
+    documents: [
+      {
+        id: "doc1",
+        name: "Modulo di iscrizione",
+        type: "application/pdf",
+        uploadDate: "2023-01-10",
+        fileUrl: "/documents/modulo-iscrizione-p1.pdf"
+      },
+      {
+        id: "doc2",
+        name: "Documento d'identità",
+        type: "image/jpeg",
+        uploadDate: "2023-01-10",
+        fileUrl: "/documents/id-p1.jpg"
+      }
+    ]
   },
   {
     id: "p2",
@@ -58,7 +112,26 @@ export const mockPlayers: Player[] = [
     joinDate: "2022-09-05",
     preferredContactMethod: "Email",
     program: "Elite Performance",
-    sports: ["Tennis"]
+    sports: ["Tennis"],
+    medicalExam: {
+      date: "2023-08-10",
+      expiryDate: "2024-08-10",
+      type: "Agonistic",
+      doctor: "Dr. Ferrari"
+    },
+    completedHours: 45,
+    trainingHours: 40,
+    extraHours: 5,
+    missedHours: 0,
+    documents: [
+      {
+        id: "doc3",
+        name: "Certificato medico",
+        type: "application/pdf",
+        uploadDate: "2023-08-12",
+        fileUrl: "/documents/cert-med-p2.pdf"
+      }
+    ]
   },
   {
     id: "p3",
@@ -74,7 +147,16 @@ export const mockPlayers: Player[] = [
     joinDate: "2023-06-20",
     preferredContactMethod: "Phone",
     program: "Foundation",
-    sports: ["Tennis", "Football"]
+    sports: ["Tennis", "Football"],
+    medicalExam: {
+      date: "2023-06-15",
+      expiryDate: "2024-06-15",
+      type: "Non-Agonistic"
+    },
+    completedHours: 18,
+    trainingHours: 15,
+    extraHours: 3,
+    missedHours: 1
   },
   {
     id: "p4",
@@ -90,6 +172,39 @@ export const mockPlayers: Player[] = [
     joinDate: "2020-03-10",
     preferredContactMethod: "WhatsApp",
     program: "Pro Circuit",
-    sports: ["Tennis"]
+    sports: ["Tennis"],
+    medicalExam: {
+      date: "2023-01-20",
+      expiryDate: "2024-01-20",
+      type: "Agonistic",
+      doctor: "Dr. Romano"
+    },
+    completedHours: 120,
+    trainingHours: 100,
+    extraHours: 20,
+    missedHours: 5,
+    documents: [
+      {
+        id: "doc4",
+        name: "Contratto",
+        type: "application/pdf",
+        uploadDate: "2023-01-05",
+        fileUrl: "/documents/contract-p4.pdf"
+      },
+      {
+        id: "doc5",
+        name: "Passaporto",
+        type: "image/jpeg",
+        uploadDate: "2023-01-05",
+        fileUrl: "/documents/passport-p4.jpg"
+      },
+      {
+        id: "doc6",
+        name: "Scheda tecnica",
+        type: "application/pdf",
+        uploadDate: "2023-05-15",
+        fileUrl: "/documents/tech-p4.pdf"
+      }
+    ]
   }
 ];
