@@ -4,10 +4,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CourtProps, PersonData, ActivityData } from "./types";
 import { CourtHeader as OriginalCourtHeader } from "./CourtHeader";
 import { CourtSettings } from "./CourtSettings";
-import { CourtControls } from "./CourtControls";
 import { CourtDrop } from "./court/CourtDrop";
 import { getCourtStyles } from "./court/CourtStyleUtils";
-import { CourtLayoutView } from "./court/CourtLayoutView";
 import { CourtScheduleView } from "./court/CourtScheduleView";
 import { CourtFooter } from "./court/CourtFooter";
 import { CourtHeader as NewCourtHeader } from "./court/CourtHeader";
@@ -47,7 +45,6 @@ export function Court({
   isSidebarCollapsed = false
 }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"layout" | "schedule">("layout");
   const [isEditing, setIsEditing] = useState(false);
   const [courtName, setCourtName] = useState(court.name);
 
@@ -85,7 +82,7 @@ export function Court({
         >
           <CourtDrop
             courtId={court.id}
-            viewMode={viewMode}
+            viewMode="schedule"
             onDrop={onDrop}
             onActivityDrop={onActivityDrop}
           >
@@ -96,32 +93,19 @@ export function Court({
               onChangeNumber={handleChangeNumber}
             />
 
-            <CourtControls viewMode={viewMode} setViewMode={setViewMode} />
-
             <div className="flex-1 overflow-hidden">
-              {viewMode === "layout" ? (
-                <CourtLayoutView
-                  courtId={court.id}
-                  courtType={court.type}
-                  occupants={court.occupants}
-                  activities={court.activities}
-                  onRemovePerson={(personId) => onRemovePerson && onRemovePerson(personId)}
-                  onRemoveActivity={(activityId) => onRemoveActivity && onRemoveActivity(activityId)}
-                />
-              ) : (
-                <CourtScheduleView
-                  courtId={court.id}
-                  courtName={court.name}
-                  courtNumber={court.number}
-                  timeSlots={timeSlots}
-                  occupants={court.occupants}
-                  activities={court.activities}
-                  onDrop={onDrop}
-                  onActivityDrop={onActivityDrop}
-                  onRemovePerson={onRemovePerson || (() => {})}
-                  onRemoveActivity={onRemoveActivity || (() => {})}
-                />
-              )}
+              <CourtScheduleView
+                courtId={court.id}
+                courtName={court.name}
+                courtNumber={court.number}
+                timeSlots={timeSlots}
+                occupants={court.occupants}
+                activities={court.activities}
+                onDrop={onDrop}
+                onActivityDrop={onActivityDrop}
+                onRemovePerson={onRemovePerson || (() => {})}
+                onRemoveActivity={onRemoveActivity || (() => {})}
+              />
             </div>
 
             <CourtFooter occupants={court.occupants} />

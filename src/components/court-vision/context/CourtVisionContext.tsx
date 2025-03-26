@@ -31,7 +31,6 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   const initialState = useCourtVisionState();
   
   console.log("CourtVisionProvider initializing with state:", { 
-    isLayoutView: initialState.isLayoutView,
     courtsCount: initialState.courts.length 
   });
 
@@ -125,7 +124,7 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     filteredPlayers,
     filteredCoaches,
     currentSport: initialState.currentSport,
-    isLayoutView: initialState.isLayoutView,
+    isLayoutView: false,
 
     setSelectedDate,
     handleSetCoachAvailability,
@@ -134,7 +133,6 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   };
 
   console.log("CourtVisionProvider rendering with context:", { 
-    isLayoutView: contextValue.isLayoutView,
     filteredCourtsCount: contextValue.filteredCourts.length
   });
 
@@ -154,4 +152,4 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
       )}
     </CourtVisionContext.Provider>
   );
-};
+}

@@ -24,7 +24,7 @@ export interface CourtVisionContextType {
   filteredPlayers: PersonData[];
   filteredCoaches: PersonData[];
   currentSport: string;
-  isLayoutView: boolean;
+  isLayoutView: false; // Always false since we're removing layout view
 
   // Actions
   setSelectedDate: (date: Date) => void;

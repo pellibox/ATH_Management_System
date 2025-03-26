@@ -21,7 +21,6 @@ export function useCourtVisionState(): CourtVisionState {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const currentSport = params.get('sport') || '';
-  const isLayoutView = location.pathname.includes('/layout');
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [templates, setTemplates] = useState([]);
@@ -91,7 +90,7 @@ export function useCourtVisionState(): CourtVisionState {
     filteredPlayers,
     filteredCoaches,
     currentSport,
-    isLayoutView,
+    isLayoutView: false,
     showExtraHoursDialog,
     pendingAssignment
   };
