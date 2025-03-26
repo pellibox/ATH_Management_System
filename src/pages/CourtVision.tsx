@@ -69,17 +69,17 @@ export default function CourtVision() {
   ]);
 
   const [playersList, setPlayersList] = useState<PersonData[]>([
-    { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER, sportType: "tennis" },
-    { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER, sportType: "tennis" },
-    { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER, sportType: "tennis" },
-    { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER, sportType: "padel" },
-    { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER, sportType: "pickleball" },
+    { id: "player1", name: "Alex Smith", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"] },
+    { id: "player2", name: "Emma Johnson", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"] },
+    { id: "player3", name: "Michael Brown", type: PERSON_TYPES.PLAYER, sportTypes: ["tennis"] },
+    { id: "player4", name: "Sophia Davis", type: PERSON_TYPES.PLAYER, sportTypes: ["padel"] },
+    { id: "player5", name: "James Wilson", type: PERSON_TYPES.PLAYER, sportTypes: ["pickleball"] },
   ]);
   
   const [coachesList, setCoachesList] = useState<PersonData[]>([
-    { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH, sportType: "tennis" },
-    { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH, sportType: "padel" },
-    { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH, sportType: "tennis" },
+    { id: "coach1", name: "Coach Anderson", type: PERSON_TYPES.COACH, sportTypes: ["tennis"] },
+    { id: "coach2", name: "Coach Martinez", type: PERSON_TYPES.COACH, sportTypes: ["padel"] },
+    { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH, sportTypes: ["tennis"] },
   ]);
 
   const [programs, setPrograms] = useState<Program[]>(DEFAULT_PROGRAMS);
@@ -88,7 +88,6 @@ export default function CourtVision() {
   const [filteredCoaches, setFilteredCoaches] = useState<PersonData[]>(coachesList);
 
   useEffect(() => {
-    // Filter courts based on sport selection
     if (currentSport) {
       let filteredCourtType = '';
       
@@ -118,13 +117,12 @@ export default function CourtVision() {
       
       setFilteredCourts(filtered);
       
-      // Filter people based on sport type
       setFilteredPlayers(playersList.filter(player => 
-        !player.sportType || player.sportType === currentSport
+        !player.sportTypes || player.sportTypes.includes(currentSport)
       ));
       
       setFilteredCoaches(coachesList.filter(coach => 
-        !coach.sportType || coach.sportType === currentSport
+        !coach.sportTypes || coach.sportTypes.includes(currentSport)
       ));
     } else {
       setFilteredCourts(courts);
@@ -522,3 +520,4 @@ export default function CourtVision() {
     </DndProvider>
   );
 }
+
