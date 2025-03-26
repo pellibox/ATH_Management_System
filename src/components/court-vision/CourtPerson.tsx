@@ -63,7 +63,7 @@ export function CourtPerson({ person, index, total, position, onRemove }: CourtP
           ref={drag}
           className={`absolute z-10 ${personSize} rounded-full flex items-center justify-center font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
             person.type === PERSON_TYPES.PLAYER ? "bg-ath-red-clay text-white" : "bg-ath-black text-white"
-          } ${isDragging ? "opacity-50" : ""}`}
+          } ${isDragging ? "opacity-50" : ""} cursor-grab`}
           style={{
             left: `${calculatedPosition.x * 100}%`,
             top: `${calculatedPosition.y * 100}%`,

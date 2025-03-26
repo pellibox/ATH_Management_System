@@ -1,4 +1,3 @@
-
 import { useState, useCallback, memo } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -18,16 +17,14 @@ interface TimeSlotProps {
   onRemoveActivity: (activityId: string, timeSlot?: string) => void;
 }
 
-// Maximum number of people allowed per time slot
 const MAX_OCCUPANTS_PER_SLOT = 4;
 
-// Draggable person component for time slot
 function DraggablePerson({ person, time, onRemove }: { person: PersonData, time: string, onRemove: () => void }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
     item: { 
       ...person, 
-      sourceTimeSlot: time,  // Include source time slot to track movement
+      sourceTimeSlot: time, 
       courtId: person.courtId,
       timeSlot: time
     },
@@ -36,7 +33,6 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
     }),
   }));
 
-  // Determine background color based on program or default type
   const getBgColor = () => {
     if (person.programColor) {
       return person.programColor;
@@ -47,7 +43,7 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
   return (
     <div 
       ref={drag}
-      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${isDragging ? "opacity-50" : ""} cursor-move relative`}
+      className={`text-xs px-2 py-0.5 rounded-sm flex items-center ${isDragging ? "opacity-50" : ""} cursor-grab relative`}
       style={{
         backgroundColor: getBgColor(),
         color: "white"
@@ -65,7 +61,6 @@ function DraggablePerson({ person, time, onRemove }: { person: PersonData, time:
   );
 }
 
-// Draggable activity component for time slot
 function DraggableActivity({ activity, time, onRemove }: { activity: ActivityData, time: string, onRemove: () => void }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "activity",
@@ -92,7 +87,7 @@ function DraggableActivity({ activity, time, onRemove }: { activity: ActivityDat
           : activity.type === ACTIVITY_TYPES.GAME
           ? "bg-ath-black text-white"
           : "bg-ath-gray-medium text-white"
-      } ${isDragging ? "opacity-50" : ""} cursor-move relative`}
+      } ${isDragging ? "opacity-50" : ""} cursor-grab relative`}
     >
       <Move className="h-3 w-3 mr-1 absolute right-1 opacity-50" />
       {activity.name}
@@ -116,11 +111,9 @@ export const TimeSlot = memo(function TimeSlot({
   onRemovePerson, 
   onRemoveActivity 
 }: TimeSlotProps) {
-  // Define local timeSlots array from the defaults
   const localTimeSlots = DEFAULT_TIME_SLOTS;
   const { toast } = useToast();
   
-  // Use callbacks for better performance
   const handleRemovePerson = useCallback((personId: string) => {
     onRemovePerson(personId, time);
   }, [onRemovePerson, time]);
@@ -129,9 +122,7 @@ export const TimeSlot = memo(function TimeSlot({
     onRemoveActivity(activityId, time);
   }, [onRemoveActivity, time]);
 
-  // Enhanced time slot checking - support for fractional hours
   const isTimeSlotOccupied = (object: PersonData | ActivityData, timeSlot: string): boolean => {
-    // Use type guards to safely check properties
     const isPerson = 'type' in object && (object.type === PERSON_TYPES.PLAYER || object.type === PERSON_TYPES.COACH);
     const isActivity = 'type' in object && object.type.startsWith('activity');
     
@@ -152,38 +143,29 @@ export const TimeSlot = memo(function TimeSlot({
     
     if (startIndex === -1 || currentIndex === -1) return false;
     
-    // For fractional durations like 1.5 hours, calculate actual time slots needed
     const duration = object.durationHours || 1;
-    // For 30-minute slots, multiply by 2 to get number of half-hour slots
     const slotsNeeded = Math.ceil(duration * 2);
     const endIndex = startIndex + slotsNeeded - 1;
     
     return currentIndex >= startIndex && currentIndex <= endIndex;
   };
 
-  // Count people assigned to this exact time slot (not counting overlaps)
   const countExactTimeSlotOccupants = () => {
     return occupants.filter(person => person.timeSlot === time).length;
   };
 
-  // Check if a player is already assigned to another court at this time
   const isPlayerAssignedElsewhere = (playerId: string): boolean => {
-    // This would need to check all courts, but for simplicity we'll just return false
-    // This functionality would need to be implemented at a higher level with access to all courts
     return false;
   };
 
-  // Enhanced drop target handling
   const [{ isOver }, drop] = useDrop(() => ({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
     drop: (item: any) => {
       console.log("Drop in time slot:", time, "Item:", item);
       
       if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
-        // Handle person drop
         const personItem = item as PersonData;
         
-        // Check if coach is unavailable
         if (item.type === PERSON_TYPES.COACH && personItem.isPresent === false) {
           toast({
             title: "Coach Non Disponibile",
@@ -193,7 +175,6 @@ export const TimeSlot = memo(function TimeSlot({
           return;
         }
         
-        // Special check for players who can only be assigned once across all courts
         if (item.type === PERSON_TYPES.PLAYER && isPlayerAssignedElsewhere(personItem.id)) {
           toast({
             title: "Giocatore già assegnato",
@@ -203,7 +184,6 @@ export const TimeSlot = memo(function TimeSlot({
           return;
         }
         
-        // Check if we're exceeding the maximum number of occupants for this time slot
         if (countExactTimeSlotOccupants() >= MAX_OCCUPANTS_PER_SLOT) {
           toast({
             title: "Limite Raggiunto",
@@ -213,25 +193,20 @@ export const TimeSlot = memo(function TimeSlot({
           return;
         }
         
-        // If person is moved from another time slot on the same court, handle that case
         if (personItem.sourceTimeSlot && personItem.courtId === courtId && personItem.sourceTimeSlot !== time) {
           console.log("Moving person from time slot", personItem.sourceTimeSlot, "to time slot", time);
           onRemovePerson(personItem.id, personItem.sourceTimeSlot);
         }
         
-        // Update with the new time slot - the key fix for our issue
         onDrop(courtId, {...personItem, timeSlot: time}, undefined, time);
       } else if (item.type === "activity" || Object.values(ACTIVITY_TYPES).includes(item.type as any)) {
-        // Handle activity drop
         const activityItem = item as ActivityData;
         
-        // If activity is moved from another time slot, handle that case
         if (activityItem.sourceTimeSlot && activityItem.sourceTimeSlot !== time) {
           console.log("Moving activity from time slot", activityItem.sourceTimeSlot, "to time slot", time);
           onRemoveActivity(activityItem.id, activityItem.sourceTimeSlot);
         }
         
-        // Update with the new time slot
         onActivityDrop(courtId, {...activityItem, startTime: time}, time);
       }
     },
@@ -240,7 +215,6 @@ export const TimeSlot = memo(function TimeSlot({
     }),
   }), [courtId, time, onDrop, onActivityDrop, onRemovePerson, onRemoveActivity, countExactTimeSlotOccupants]);
 
-  // Check if this time slot has reached maximum capacity
   const isAtCapacity = countExactTimeSlotOccupants() >= MAX_OCCUPANTS_PER_SLOT;
 
   return (

@@ -23,7 +23,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
     item: person,
-    canDrag: !person.isPresent === false, // Can drag if not explicitly marked as absent
+    canDrag: person.isPresent !== false, // Can drag if not explicitly marked as absent
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -73,7 +73,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
               : "bg-gray-50 hover:bg-gray-100"
           } rounded-md border border-gray-200 ${
             isDragging ? "opacity-50" : ""
-          } transition-colors ${isUnavailable ? "cursor-not-allowed" : "cursor-move"}`}
+          } transition-colors ${isUnavailable ? "cursor-not-allowed" : "cursor-grab"}`}
         >
           <div className="flex items-center space-x-2">
             {/* Avatar with color from primary program */}
