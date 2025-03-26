@@ -14,27 +14,30 @@ interface HoursTabProps {
   playerActivities: any[];
 }
 
+interface ProgramDetails {
+  weeks: number;
+  sessionsPerWeek: number;
+  hoursPerSession: number;
+}
+
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
-  // Calculate program hours based on player's program
-  const [programHours, setProgramHours] = useState(player.program ? 40 : 0);
+  const [programHours, setProgramHours] = useState(0);
   const completedHours = player.completedHours || 0;
   
+  // Define program details map
+  const programDetailsMap: Record<string, ProgramDetails> = {
+    "Junior Excellence": { weeks: 40, sessionsPerWeek: 3, hoursPerSession: 1 },
+    "Elite Performance": { weeks: 40, sessionsPerWeek: 5, hoursPerSession: 1.5 },
+    "Foundation": { weeks: 30, sessionsPerWeek: 2, hoursPerSession: 1 },
+    "Pro Circuit": { weeks: 48, sessionsPerWeek: 6, hoursPerSession: 2 },
+  };
+  
   useEffect(() => {
-    // Update program hours whenever the player's program changes
-    if (player.program) {
-      // In a real app, you would fetch this from a program database
-      // For now, we'll use some hardcoded values based on the program name
-      if (player.program === "Junior Excellence") {
-        setProgramHours(40);
-      } else if (player.program === "Elite Performance") {
-        setProgramHours(60);
-      } else if (player.program === "Foundation") {
-        setProgramHours(30);
-      } else if (player.program === "Pro Circuit") {
-        setProgramHours(80);
-      } else {
-        setProgramHours(40); // Default value
-      }
+    // Calculate program hours based on program details
+    if (player.program && programDetailsMap[player.program]) {
+      const details = programDetailsMap[player.program];
+      const totalHours = details.weeks * details.sessionsPerWeek * details.hoursPerSession;
+      setProgramHours(totalHours);
     } else {
       setProgramHours(0);
     }
@@ -49,6 +52,16 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
         <div>
           <h3 className="text-base font-medium">Ore Programma</h3>
           <p className="text-sm text-gray-500">Monitoraggio delle ore completate rispetto al programma</p>
+          {player.program && programDetailsMap[player.program] && (
+            <div className="mt-1 text-sm text-gray-600">
+              <p>
+                Programma: <span className="font-medium">{player.program}</span> - 
+                {programDetailsMap[player.program].weeks} settimane, 
+                {programDetailsMap[player.program].sessionsPerWeek} sessioni/sett., 
+                {programDetailsMap[player.program].hoursPerSession} ore/sessione
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -58,16 +71,16 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
               <Input
                 type="number"
                 value={player.completedHours || 0}
-                onChange={(e) => handleInputChange('completedHours', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('completedHours', parseFloat(e.target.value) || 0)}
                 className="h-7 w-24"
               />
             ) : (
-              <span className="text-sm font-medium">{completedHours} / {programHours} ore</span>
+              <span className="text-sm font-medium">{completedHours.toFixed(1)} / {programHours.toFixed(1)} ore</span>
             )}
           </div>
           <Progress value={hoursProgress} className="h-2" />
           <div className="flex justify-between text-sm">
-            <span>Ore rimanenti: <span className="font-medium">{remainingHours}</span></span>
+            <span>Ore rimanenti: <span className="font-medium">{remainingHours.toFixed(1)}</span></span>
             <span>Completamento: <span className="font-medium">{Math.round(hoursProgress)}%</span></span>
           </div>
         </div>
@@ -79,11 +92,11 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
               <Input
                 type="number"
                 value={player.trainingHours || 0}
-                onChange={(e) => handleInputChange('trainingHours', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('trainingHours', parseFloat(e.target.value) || 0)}
                 className="h-7 w-full mt-1"
               />
             ) : (
-              <p className="font-medium text-lg">{player.trainingHours || 0}</p>
+              <p className="font-medium text-lg">{(player.trainingHours || 0).toFixed(1)}</p>
             )}
           </div>
           
@@ -93,11 +106,11 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
               <Input
                 type="number"
                 value={player.extraHours || 0}
-                onChange={(e) => handleInputChange('extraHours', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('extraHours', parseFloat(e.target.value) || 0)}
                 className="h-7 w-full mt-1"
               />
             ) : (
-              <p className="font-medium text-lg">{player.extraHours || 0}</p>
+              <p className="font-medium text-lg">{(player.extraHours || 0).toFixed(1)}</p>
             )}
           </div>
           
@@ -107,11 +120,11 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
               <Input
                 type="number"
                 value={player.missedHours || 0}
-                onChange={(e) => handleInputChange('missedHours', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('missedHours', parseFloat(e.target.value) || 0)}
                 className="h-7 w-full mt-1"
               />
             ) : (
-              <p className="font-medium text-lg">{player.missedHours || 0}</p>
+              <p className="font-medium text-lg">{(player.missedHours || 0).toFixed(1)}</p>
             )}
           </div>
         </div>
