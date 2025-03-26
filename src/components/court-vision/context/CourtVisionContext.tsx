@@ -8,7 +8,12 @@ import { useProgramHandlers } from "./useProgramHandlers";
 import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
 import { CoachOverlapDialog } from "../CoachOverlapDialog";
 import { CourtVisionProviderProps } from "./types";
-import { CourtProps, PersonData } from "../types";
+import { PersonData } from "../types";
+import { useCourtManagement } from "./hooks/useCourtManagement";
+import { useTemplateManagement } from "./hooks/useTemplateManagement";
+import { useUnassignedCheck } from "./hooks/useUnassignedCheck";
+import { usePersonManagement } from "./hooks/usePersonManagement";
+import { useDialogStates } from "./hooks/useDialogStates";
 
 export const CourtVisionContext = createContext<CourtVisionContextType | undefined>(undefined);
 
@@ -40,23 +45,68 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   });
 
   // Set up state setters
-  const [courts, setCourts] = useState(initialState.courts);
-  const [people, setPeople] = useState(initialState.people);
   const [activities, setActivities] = useState(initialState.activities);
-  const [playersList, setPlayersList] = useState(initialPlayers.length > 0 ? initialPlayers : initialState.playersList);
-  const [coachesList, setCoachesList] = useState(initialState.coachesList);
-  const [programs, setPrograms] = useState(initialState.programs);
-  const [templates, setTemplates] = useState(initialState.templates);
-  const [dateSchedules, setDateSchedules] = useState(initialState.dateSchedules);
+  const [people, setPeople] = useState(initialState.people);
   const [selectedDate, setSelectedDate] = useState(initialState.selectedDate);
-  const [showExtraHoursDialog, setShowExtraHoursDialog] = useState(initialState.showExtraHoursDialog);
-  const [pendingAssignment, setPendingAssignment] = useState(initialState.pendingAssignment);
-  const [showCoachOverlapDialog, setShowCoachOverlapDialog] = useState(false);
+  const [dateSchedules, setDateSchedules] = useState(initialState.dateSchedules);
   
-  // Track filtered state locally
-  const [filteredCourts, setFilteredCourts] = useState(initialState.filteredCourts);
-  const [filteredPlayers, setFilteredPlayers] = useState(initialState.filteredPlayers);
-  const [filteredCoaches, setFilteredCoaches] = useState(initialState.filteredCoaches);
+  // Use the extracted hooks
+  const { 
+    courts, 
+    setCourts, 
+    handleAddCourt, 
+    handleUpdateCourt, 
+    handleRemoveCourt 
+  } = useCourtManagement(initialState.courts);
+  
+  const {
+    templates,
+    setTemplates,
+    saveAsTemplate,
+    handleSaveTemplate,
+    applyTemplate,
+    handleLoadTemplate,
+    handleDeleteTemplate,
+    handleClearSchedule,
+    handleDuplicateSchedule
+  } = useTemplateManagement(courts);
+  
+  const {
+    playersList,
+    setPlayersList,
+    coachesList,
+    setCoachesList,
+    handleAddPlayer,
+    handleUpdatePlayer,
+    handleRemovePlayer,
+    handleAddCoach,
+    handleUpdateCoach,
+    handleRemoveCoach,
+    handleAddPerson,
+    handleAddToDragArea
+  } = usePersonManagement(
+    initialPlayers.length > 0 ? initialPlayers : initialState.playersList,
+    initialState.coachesList
+  );
+  
+  const {
+    showExtraHoursDialog,
+    setShowExtraHoursDialog,
+    pendingAssignment,
+    setPendingAssignment,
+    showCoachOverlapDialog,
+    setShowCoachOverlapDialog,
+    pendingCoachAssignment,
+    setPendingCoachAssignment,
+    handleConfirmCoachOverlap,
+    handleCancelCoachOverlap,
+    handleConfirmExtraHours,
+    handleCancelExtraHours,
+    getCurrentHours,
+    getNewHours
+  } = useDialogStates();
+  
+  const { checkUnassignedPeople } = useUnassignedCheck(courts, playersList, coachesList);
 
   // Update playersList when initialPlayers changes
   useEffect(() => {
@@ -65,6 +115,11 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
       setPlayersList(initialPlayers);
     }
   }, [initialPlayers]);
+
+  // Track filtered state locally
+  const [filteredCourts, setFilteredCourts] = useState(initialState.filteredCourts);
+  const [filteredPlayers, setFilteredPlayers] = useState(initialState.filteredPlayers);
+  const [filteredCoaches, setFilteredCoaches] = useState(initialState.filteredCoaches);
 
   // Apply filters
   useCourtVisionFilters({
@@ -79,8 +134,8 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
 
   // Get program handlers
   const programHandlers = useProgramHandlers(
-    programs,
-    setPrograms,
+    initialState.programs,
+    (programs) => {}, // This would be a setPrograms function
     playersList,
     coachesList
   );
@@ -97,8 +152,8 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     setPlayersList,
     coachesList,
     setCoachesList,
-    programs,
-    setPrograms,
+    programs: initialState.programs,
+    setPrograms: () => {}, // This would be a setPrograms function
     templates,
     setTemplates,
     dateSchedules,
@@ -114,97 +169,6 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     setCourts(updatedCourts);
   };
 
-  // Court management functions
-  const handleAddCourt = (court: CourtProps) => {
-    console.log("Adding court:", court);
-    setCourts([...courts, { 
-      ...court, 
-      occupants: [], 
-      activities: [] 
-    }]);
-  };
-
-  const handleUpdateCourt = (courtId: string, courtData: Partial<CourtProps>) => {
-    console.log("Updating court:", courtId, courtData);
-    setCourts(courts.map(court => 
-      court.id === courtId 
-        ? { ...court, ...courtData } 
-        : court
-    ));
-  };
-
-  const handleRemoveCourt = (courtId: string) => {
-    console.log("Removing court:", courtId);
-    setCourts(courts.filter(court => court.id !== courtId));
-  };
-
-  // Create empty implementation functions to satisfy TypeScript requirements
-  const handleSaveTemplate = (name: string) => {
-    if (actions.saveAsTemplate) {
-      actions.saveAsTemplate(name);
-    }
-  };
-
-  const handleLoadTemplate = (templateId: string) => {
-    if (actions.applyTemplate) {
-      // Find the template by ID first
-      const template = templates.find(t => t.id === templateId);
-      if (template) {
-        actions.applyTemplate(template);
-      }
-    }
-  };
-
-  const handleClearSchedule = () => {
-    console.log("Clear schedule called but not implemented");
-  };
-
-  const handleDuplicateSchedule = (sourceDate: Date, targetDate: Date) => {
-    console.log("Duplicate schedule called but not implemented", sourceDate, targetDate);
-  };
-
-  const checkUnassignedPeople = () => {
-    console.log("Check unassigned people called but not implemented");
-    return [];
-  };
-
-  // Add people management placeholder functions
-  const handleAddPlayer = (player: PersonData) => {
-    if (actions.handleAddPerson) {
-      actions.handleAddPerson(player);
-    }
-  };
-
-  const handleUpdatePlayer = (playerId: string, player: Partial<PersonData>) => {
-    console.log("Update player called but not implemented", playerId, player);
-  };
-
-  const handleRemovePlayer = (playerId: string) => {
-    if (actions.handleRemovePerson) {
-      actions.handleRemovePerson(playerId);
-    }
-  };
-
-  const handleAddCoach = (coach: PersonData) => {
-    if (actions.handleAddPerson) {
-      actions.handleAddPerson(coach);
-    }
-  };
-
-  const handleUpdateCoach = (coachId: string, coach: Partial<PersonData>) => {
-    console.log("Update coach called but not implemented", coachId, coach);
-  };
-
-  const handleRemoveCoach = (coachId: string) => {
-    if (actions.handleRemovePerson) {
-      actions.handleRemovePerson(coachId);
-    }
-  };
-
-  const handleDeleteTemplate = (templateId: string) => {
-    console.log("Delete template called but not implemented", templateId);
-  };
-
   // Create context value with all the required properties
   const contextValue: CourtVisionContextType = {
     selectedDate,
@@ -217,7 +181,7 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     activities,
     playersList,
     coachesList,
-    programs,
+    programs: initialState.programs,
     filteredPlayers,
     filteredCoaches,
     currentSport: initialState.currentSport,
@@ -225,8 +189,6 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
 
     setSelectedDate,
     handleSetCoachAvailability,
-    ...programHandlers,
-    ...actions,
     
     // Make sure all required functions exist
     handleCreateProgram: programHandlers.handleCreateProgram,
@@ -240,9 +202,9 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     
     // Schedule operations
     handleSaveTemplate,
-    saveAsTemplate: actions.saveAsTemplate || handleSaveTemplate,
+    saveAsTemplate,
     handleLoadTemplate,
-    applyTemplate: actions.applyTemplate || (() => []),
+    applyTemplate,
     handleDeleteTemplate,
     handleClearSchedule,
     handleDuplicateSchedule,
@@ -253,32 +215,43 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     // Coach overlap dialog state management
     showCoachOverlapDialog: actions.showCoachOverlapDialog || showCoachOverlapDialog,
     setShowCoachOverlapDialog: actions.setShowCoachOverlapDialog || setShowCoachOverlapDialog,
-    pendingCoachAssignment: actions.pendingCoachAssignment || null,
-    handleConfirmCoachOverlap: actions.handleConfirmCoachOverlap || (() => {}),
-    handleCancelCoachOverlap: actions.handleCancelCoachOverlap || (() => {}),
+    pendingCoachAssignment: actions.pendingCoachAssignment || pendingCoachAssignment,
+    handleConfirmCoachOverlap: actions.handleConfirmCoachOverlap || handleConfirmCoachOverlap,
+    handleCancelCoachOverlap: actions.handleCancelCoachOverlap || handleCancelCoachOverlap,
     
     // Court actions
     handleRenameCourt: actions.handleRenameCourt || (() => {}),
     handleChangeCourtType: actions.handleChangeCourtType || (() => {}),
     handleChangeCourtNumber: actions.handleChangeCourtNumber || (() => {}),
     
-    // People/Activity actions
-    handleAddPerson: actions.handleAddPerson || (() => {}),
+    // People actions
+    handleAddPerson: actions.handleAddPerson || handleAddPerson,
     handleAddPlayer,
     handleUpdatePlayer,
     handleRemovePlayer,
     handleAddCoach,
     handleUpdateCoach,
     handleRemoveCoach,
+    handleAddToDragArea: (personId: string) => handleAddToDragArea(personId),
+    
+    // Activity actions
     handleAddActivity: actions.handleAddActivity || (() => {}),
     handleUpdateActivity: actions.handleUpdateActivity || (() => {}),
     handleRemoveActivity: actions.handleRemoveActivity || (() => {}),
+    handleRemovePerson: actions.handleRemovePerson || (() => {}),
+    handleDrop: actions.handleDrop || (() => {}),
+    handleActivityDrop: actions.handleActivityDrop || (() => {}),
+    handleAssignPlayerToActivity: actions.handleAssignPlayerToActivity || (() => {}),
+    handleAssignProgram: actions.handleAssignProgram || (() => {}),
     
     // Extra hours dialog
-    getCurrentHours: actions.getCurrentHours || (() => 0),
-    getNewHours: actions.getNewHours || (() => 0),
-    handleConfirmExtraHours: actions.handleConfirmExtraHours || (() => {}),
-    handleCancelExtraHours: actions.handleCancelExtraHours || (() => {})
+    showExtraHoursDialog: actions.showExtraHoursDialog || showExtraHoursDialog,
+    setShowExtraHoursDialog: actions.setShowExtraHoursDialog || setShowExtraHoursDialog,
+    pendingAssignment: actions.pendingAssignment || pendingAssignment,
+    getCurrentHours: actions.getCurrentHours || getCurrentHours,
+    getNewHours: actions.getNewHours || getNewHours,
+    handleConfirmExtraHours: actions.handleConfirmExtraHours || handleConfirmExtraHours,
+    handleCancelExtraHours: actions.handleCancelExtraHours || handleCancelExtraHours,
   };
 
   console.log("CourtVisionProvider rendering with context:", { 
