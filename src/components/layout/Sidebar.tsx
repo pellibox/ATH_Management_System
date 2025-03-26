@@ -60,8 +60,8 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
     <div
       className={`${
         collapsed && !isHovered ? 'w-16' : 'w-64'
-      } bg-white border-r border-gray-200 transition-all duration-300 hidden md:block flex-shrink-0 h-screen sticky top-0`}
-      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      } bg-white border-r border-gray-200 transition-all duration-300 hidden md:block flex-shrink-0 h-screen sticky top-0 z-10`}
+      onMouseEnter={() => !isMobile && collapsed && setIsHovered(true)}
       onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
       {sidebarContent}

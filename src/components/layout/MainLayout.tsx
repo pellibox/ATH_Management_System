@@ -34,7 +34,7 @@ export default function MainLayout() {
       <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
         <Sidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
         
-        <div className={`flex-1 transition-all duration-300 flex flex-col ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-16 lg:ml-64'}`}>
+        <div className={`flex-1 transition-all duration-300 flex flex-col ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
           <Header toggleSidebar={toggleSidebar} sidebarCollapsed={sidebarCollapsed} />
           
           <main className="p-4 md:p-6 flex-1 overflow-x-hidden">

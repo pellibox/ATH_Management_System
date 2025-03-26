@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Calendar, Clock, Edit, Trash, Users } from "lucide-react";
 import { ExtraActivity, ACTIVITY_TYPES } from "@/types/extra-activities";
-import { format } from "date-fns";
+import { ExtraActivityForm } from "./ExtraActivityForm";
 
 interface ActivityDetailsProps {
   activity: ExtraActivity;
@@ -15,9 +15,11 @@ interface ActivityDetailsProps {
   getCoachName: (coachId: string) => string;
   getPlayerName: (playerId: string) => string;
   onDelete: (activityId: string) => void;
+  onEditActivity: (id: string, updatedActivity: Partial<ExtraActivity>) => void;
   onAddParticipant: (activityId: string, participantId: string) => void;
   onRemoveParticipant: (activityId: string, participantId: string) => void;
   playersList: Array<{ id: string; name: string }>;
+  coachesList: Array<{ id: string; name: string }>;
 }
 
 export function ActivityDetails({
@@ -26,9 +28,11 @@ export function ActivityDetails({
   getCoachName,
   getPlayerName,
   onDelete,
+  onEditActivity,
   onAddParticipant,
   onRemoveParticipant,
-  playersList
+  playersList,
+  coachesList
 }: ActivityDetailsProps) {
   return (
     <div key={activity.id} className="rounded-lg border p-4">
@@ -58,9 +62,14 @@ export function ActivityDetails({
           </div>
         </div>
         <div className="flex gap-1">
-          <Button size="icon" variant="ghost">
-            <Edit className="h-4 w-4" />
-          </Button>
+          <ExtraActivityForm
+            activityToEdit={activity}
+            onEditActivity={onEditActivity}
+            coachesList={coachesList}
+            buttonLabel=""
+            buttonIcon={<Edit className="h-4 w-4" />}
+            buttonVariant="ghost"
+          />
           <Button 
             size="icon" 
             variant="ghost" 

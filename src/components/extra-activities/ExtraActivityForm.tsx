@@ -1,20 +1,34 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Edit } from "lucide-react";
 import { ExtraActivity, ACTIVITY_TYPES, generateId } from "@/types/extra-activities";
 import { useToast } from "@/hooks/use-toast";
 
 interface ExtraActivityFormProps {
   onAddActivity: (activity: ExtraActivity) => void;
+  activityToEdit?: ExtraActivity | null;
+  onEditActivity?: (id: string, activity: Partial<ExtraActivity>) => void;
   coachesList: Array<{ id: string; name: string }>;
+  buttonLabel?: string;
+  buttonIcon?: React.ReactNode;
+  buttonVariant?: "default" | "outline" | "secondary" | "ghost";
 }
 
-export function ExtraActivityForm({ onAddActivity, coachesList }: ExtraActivityFormProps) {
+export function ExtraActivityForm({ 
+  onAddActivity, 
+  activityToEdit = null,
+  onEditActivity,
+  coachesList,
+  buttonLabel = "Nuova Attività",
+  buttonIcon = <Plus className="h-4 w-4" />,
+  buttonVariant = "default"
+}: ExtraActivityFormProps) {
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const [newActivity, setNewActivity] = useState<Omit<ExtraActivity, "id">>({
     name: "",
     type: "athletic",
@@ -28,6 +42,39 @@ export function ExtraActivityForm({ onAddActivity, coachesList }: ExtraActivityF
     notes: ""
   });
 
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (activityToEdit) {
+      // If we're editing, populate the form with activity data
+      setNewActivity({
+        name: activityToEdit.name,
+        type: activityToEdit.type,
+        time: activityToEdit.time,
+        duration: activityToEdit.duration,
+        days: [...activityToEdit.days],
+        location: activityToEdit.location,
+        maxParticipants: activityToEdit.maxParticipants,
+        participants: [...activityToEdit.participants],
+        coach: activityToEdit.coach,
+        notes: activityToEdit.notes || ""
+      });
+    } else {
+      // Reset form for new activity
+      setNewActivity({
+        name: "",
+        type: "athletic",
+        time: "16:00",
+        duration: 1,
+        days: [1],
+        location: "",
+        maxParticipants: 8,
+        participants: [],
+        coach: "",
+        notes: ""
+      });
+    }
+  }, [activityToEdit, open]);
+
   // Toggle giorno della settimana per una nuova attività
   const toggleDay = (day: number) => {
     setNewActivity(prev => {
@@ -39,7 +86,7 @@ export function ExtraActivityForm({ onAddActivity, coachesList }: ExtraActivityF
     });
   };
 
-  const handleAddActivity = () => {
+  const handleSaveActivity = () => {
     if (!newActivity.name || !newActivity.location || !newActivity.coach) {
       toast({
         title: "Errore",
@@ -49,44 +96,43 @@ export function ExtraActivityForm({ onAddActivity, coachesList }: ExtraActivityF
       return;
     }
     
-    const newActivityWithId: ExtraActivity = {
-      ...newActivity,
-      id: generateId()
-    };
+    if (activityToEdit && onEditActivity) {
+      // Edit existing activity
+      onEditActivity(activityToEdit.id, newActivity);
+      toast({
+        title: "Attività Aggiornata",
+        description: `${newActivity.name} è stata aggiornata con successo`,
+      });
+    } else {
+      // Add new activity
+      const newActivityWithId: ExtraActivity = {
+        ...newActivity,
+        id: generateId()
+      };
+      
+      onAddActivity(newActivityWithId);
+      
+      toast({
+        title: "Attività Aggiunta",
+        description: `${newActivity.name} è stata aggiunta con successo`,
+      });
+    }
     
-    onAddActivity(newActivityWithId);
-    
-    toast({
-      title: "Attività Aggiunta",
-      description: `${newActivity.name} è stata aggiunta con successo`,
-    });
-    
-    // Reset form
-    setNewActivity({
-      name: "",
-      type: "athletic",
-      time: "16:00",
-      duration: 1,
-      days: [1],
-      location: "",
-      maxParticipants: 8,
-      participants: [],
-      coach: "",
-      notes: ""
-    });
+    // Close dialog and reset form
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors">
-          <Plus className="h-4 w-4" />
-          <span className="text-sm font-medium">Nuova Attività</span>
+        <Button variant={buttonVariant} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ath-blue text-white hover:bg-ath-blue-dark transition-colors">
+          {buttonIcon}
+          <span className="text-sm font-medium">{buttonLabel}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Crea Nuova Attività</DialogTitle>
+          <DialogTitle>{activityToEdit ? "Modifica Attività" : "Crea Nuova Attività"}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
@@ -230,10 +276,10 @@ export function ExtraActivityForm({ onAddActivity, coachesList }: ExtraActivityF
           </div>
         </div>
         <div className="flex justify-end gap-2">
-          <DialogClose asChild>
-            <Button variant="outline">Annulla</Button>
-          </DialogClose>
-          <Button onClick={handleAddActivity}>Aggiungi Attività</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>Annulla</Button>
+          <Button onClick={handleSaveActivity}>
+            {activityToEdit ? "Salva Modifiche" : "Aggiungi Attività"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

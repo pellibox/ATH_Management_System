@@ -1,12 +1,13 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
+import { useCourtVision } from "@/components/court-vision/context/CourtVisionContext";
 import { ExtraActivity } from "@/types/extra-activities";
 import { ExtraActivityForm } from "@/components/extra-activities/ExtraActivityForm";
 import { ActivitiesList } from "@/components/extra-activities/ActivitiesList";
 import { ExtraActivitiesCalendar } from "@/components/extra-activities/ExtraActivitiesCalendar";
 import { DailyActivitiesList } from "@/components/extra-activities/DailyActivitiesList";
+import { ActivityDetails } from "@/components/extra-activities/ActivityDetails";
 
 export default function ExtraActivities() {
   const { toast } = useToast();
@@ -50,6 +51,11 @@ export default function ExtraActivities() {
   // Gestione aggiunta nuova attività
   const handleAddActivity = (newActivity: ExtraActivity) => {
     setActivities([...activities, newActivity]);
+    
+    toast({
+      title: "Attività Aggiunta",
+      description: `${newActivity.name} è stata aggiunta con successo`,
+    });
   };
   
   // Gestione modifica attività
@@ -133,7 +139,8 @@ export default function ExtraActivities() {
         <div className="flex items-center gap-3">
           <ExtraActivityForm 
             onAddActivity={handleAddActivity} 
-            coachesList={coachesList} 
+            coachesList={coachesList}
+            onEditActivity={handleEditActivity}
           />
         </div>
       </div>
@@ -147,16 +154,39 @@ export default function ExtraActivities() {
             setSelectedDate={setSelectedDate}
           />
         
-          <DailyActivitiesList
-            activities={activitiesForSelectedDate}
-            selectedDate={selectedDate}
-            getCoachName={getCoachName}
-            getPlayerName={getPlayerName}
-            onDeleteActivity={handleDeleteActivity}
-            onAddParticipant={handleAddParticipant}
-            onRemoveParticipant={handleRemoveParticipant}
-            playersList={playersList}
-          />
+          <div className="mt-6 space-y-4">
+            <h2 className="text-xl font-semibold">Attività del {selectedDate.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
+            {activitiesForSelectedDate.length > 0 ? (
+              <div className="space-y-4">
+                {activitiesForSelectedDate.map(activity => (
+                  <ActivityDetails
+                    key={activity.id}
+                    activity={activity}
+                    selectedDate={selectedDate}
+                    getCoachName={getCoachName}
+                    getPlayerName={getPlayerName}
+                    onDelete={handleDeleteActivity}
+                    onEditActivity={handleEditActivity}
+                    onAddParticipant={handleAddParticipant}
+                    onRemoveParticipant={handleRemoveParticipant}
+                    playersList={playersList}
+                    coachesList={coachesList}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 rounded-lg p-8 text-center">
+                <p className="text-gray-500">Nessuna attività programmata per questa data</p>
+                <ExtraActivityForm 
+                  onAddActivity={handleAddActivity} 
+                  coachesList={coachesList}
+                  buttonLabel="Aggiungi Attività"
+                  buttonVariant="outline"
+                  onEditActivity={handleEditActivity}
+                />
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="lg:col-span-4">
