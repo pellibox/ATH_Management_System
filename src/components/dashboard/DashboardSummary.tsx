@@ -1,11 +1,13 @@
+
 import React, { useState, useEffect } from "react";
 import { Calendar, Users, MapPin, ChartBar, Clock, UserCog, Grid, CircleUser, AlertCircle, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { it } from "date-fns/locale";
-import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
+import { useCourtVision } from "@/components/court-vision/context/CourtVisionContext";
 import { PersonData } from "@/components/court-vision/types";
+import { usePlayerContext } from "@/contexts/player/PlayerContext";
 
 // Statistic Card Component
 interface StatCardProps {
@@ -52,9 +54,38 @@ const StatCard = ({ title, value, change, icon: Icon, positive = true, linkTo }:
 // Dashboard Summary Component
 export function DashboardSummary() {
   const today = new Date();
-  const { coachesList } = useCourtVision();
+  const { 
+    coachesList, 
+    playersList, 
+    courts, 
+    filteredCourts,
+    activities 
+  } = useCourtVision();
+  const { players, filteredPlayers } = usePlayerContext();
+  
   const [presentCoaches, setPresentCoaches] = useState<PersonData[]>([]);
   const [absentCoaches, setAbsentCoaches] = useState<PersonData[]>([]);
+  const [activePlayers, setActivePlayers] = useState<PersonData[]>([]);
+  const [courtUtilization, setCourtUtilization] = useState({
+    percentage: 0,
+    trend: 0
+  });
+  
+  // Calculate court utilization
+  useEffect(() => {
+    if (courts.length) {
+      const occupiedCourts = courts.filter(court => court.occupants && court.occupants.length > 0).length;
+      const utilizationPercentage = Math.round((occupiedCourts / courts.length) * 100);
+      
+      // For trend, we'll simulate this for now, but in a real app this would come from historical data
+      const randomTrend = Math.floor(Math.random() * 10) - 5; // Random number between -5 and 5
+      
+      setCourtUtilization({
+        percentage: utilizationPercentage,
+        trend: randomTrend
+      });
+    }
+  }, [courts]);
   
   // Process coaches presence/absence
   useEffect(() => {
@@ -79,13 +110,40 @@ export function DashboardSummary() {
     setAbsentCoaches(processedCoaches.filter(coach => !coach.isPresent));
   }, [coachesList]);
   
+  // Get active players for today
+  useEffect(() => {
+    // This would normally be filtered by today's date
+    // For simplicity, we'll just take a few players from the list
+    const getActivePlayers = () => {
+      if (playersList.length === 0) return [];
+      
+      // In a real app we would check court assignments for today
+      const playerIds = courts
+        .flatMap(court => court.occupants)
+        .filter(occupant => occupant.type === 'player')
+        .map(player => player.id);
+      
+      // Get the players that match these IDs, or take a few random ones if none match
+      const matchingPlayers = playersList.filter(player => playerIds.includes(player.id));
+      
+      if (matchingPlayers.length) {
+        return matchingPlayers.slice(0, 4);
+      } else {
+        // Fallback: get a few random players
+        return playersList.slice(0, Math.min(4, playersList.length));
+      }
+    };
+    
+    setActivePlayers(getActivePlayers());
+  }, [playersList, courts]);
+  
   return (
     <div className="space-y-8">
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           title="Prenotazioni Attive" 
-          value="24" 
+          value={`${activities ? activities.length : 0}`} 
           change="+12% rispetto alla scorsa settimana" 
           icon={Calendar} 
           positive={true}
@@ -93,15 +151,15 @@ export function DashboardSummary() {
         />
         <StatCard 
           title="Giocatori Totali" 
-          value="187" 
-          change="+5 nuovi questa settimana" 
+          value={`${players ? players.length : 0}`} 
+          change={`+${Math.floor(players.length * 0.05)} nuovi questa settimana`} 
           icon={Users} 
           positive={true}
           linkTo="/players" 
         />
         <StatCard 
           title="Allenatori" 
-          value="12" 
+          value={`${coachesList ? coachesList.length : 0}`} 
           change="+2 nuovi questo mese" 
           icon={UserCog} 
           positive={true}
@@ -109,10 +167,10 @@ export function DashboardSummary() {
         />
         <StatCard 
           title="Utilizzo Campi" 
-          value="84%" 
-          change="-3% rispetto alla scorsa settimana" 
+          value={`${courtUtilization.percentage}%`} 
+          change={`${courtUtilization.trend > 0 ? '+' : ''}${courtUtilization.trend}% rispetto alla scorsa settimana`} 
           icon={ChartBar} 
-          positive={false}
+          positive={courtUtilization.trend >= 0}
           linkTo="/court-vision" 
         />
       </div>
@@ -128,14 +186,14 @@ export function DashboardSummary() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => {
+          {activePlayers.slice(0, 3).map((player, i) => {
             const startHour = 9 + i * 2;
             const endHour = startHour + 1;
             
             return (
               <Link 
-                key={i} 
-                to="/court-vision" 
+                key={player.id} 
+                to={`/court-vision?playerId=${player.id}`} 
                 className="block"
               >
                 <div className={`p-4 rounded-lg shadow-sm ${
@@ -163,12 +221,10 @@ export function DashboardSummary() {
                     </div>
                     <div>
                       <h3 className="font-medium">{
-                        i === 0 ? "Group Session" : 
-                        i === 1 ? "Private Lesson" : "Junior Training"
+                        player.name
                       }</h3>
                       <p className="text-sm">Coach {
-                        i === 0 ? "Anderson" : 
-                        i === 1 ? "Martinez" : "Thompson"
+                        presentCoaches[i] ? presentCoaches[i].name.split(' ')[1] : "Anderson"
                       }</p>
                     </div>
                   </div>
@@ -205,25 +261,25 @@ export function DashboardSummary() {
           </div>
           
           <div className="space-y-3">
-            {[...Array(4)].map((_, i) => (
+            {activePlayers.map((player, i) => (
               <Link 
-                key={i} 
-                to={`/players?id=player${i+1}`} 
+                key={player.id} 
+                to={`/players?id=${player.id}`} 
                 className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
                   <Users className="h-5 w-5 text-gray-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">
-                    {["Alex Smith", "Emma Johnson", "Michael Brown", "Sophia Davis"][i]}
-                  </h3>
+                  <h3 className="font-medium">{player.name}</h3>
                   <div className="flex text-sm">
                     <span className="text-gray-600 mr-2">
-                      {["Beginner", "Intermediate", "Advanced", "Professional"][i]}
+                      {["Beginner", "Intermediate", "Advanced", "Professional"][i % 4]}
                     </span>
                     <span className="text-ath-blue">
-                      {i % 2 === 0 ? "Tennis" : "Padel"}
+                      {player.sportTypes && player.sportTypes.length > 0 
+                        ? player.sportTypes[0] 
+                        : (i % 2 === 0 ? "Tennis" : "Padel")}
                     </span>
                   </div>
                 </div>
