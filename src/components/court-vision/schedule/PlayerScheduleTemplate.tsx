@@ -60,8 +60,33 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
 
   // Get player program color
   const getPlayerProgramColor = () => {
-    if (player.programColor) return player.programColor;
+    if (player.programColor && typeof player.programColor === 'string') {
+      return player.programColor;
+    }
     return "#3b82f6"; // Default blue
+  };
+
+  // Function to handle court type coloring
+  const getCourtTypeColor = (courtType: string) => {
+    if (courtType.includes("Clay")) return "#e57373";
+    if (courtType.includes("Hard")) return "#64b5f6";
+    if (courtType.includes("Grass")) return "#81c784";
+    if (courtType.includes("Padel")) return "#9575cd";
+    return "#e0e0e0";
+  };
+
+  // Function to get style for player badges
+  const getPersonBadgeStyle = (person: PersonData) => {
+    if (person.programColor && typeof person.programColor === 'string') {
+      return {
+        backgroundColor: `${person.programColor}20`,
+        color: person.programColor,
+        borderColor: person.programColor
+      };
+    }
+    return person.type === "player" ? 
+      { backgroundColor: "#3b82f620", color: "#3b82f6", borderColor: "#3b82f6" } : 
+      { backgroundColor: "#ef444420", color: "#ef4444", borderColor: "#ef4444" };
   };
 
   if (playerAssignments.length === 0) {
@@ -114,11 +139,8 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
                       className="mr-2" 
                       variant="outline"
                       style={{
-                        backgroundColor: 
-                          assignment.courtType === "clay" ? "#e57373" : 
-                          assignment.courtType === "hard" ? "#64b5f6" : 
-                          assignment.courtType === "grass" ? "#81c784" : 
-                          assignment.courtType === "carpet" ? "#9575cd" : "#e0e0e0"
+                        backgroundColor: getCourtTypeColor(assignment.courtType),
+                        color: "white"
                       }}
                     >
                       {assignment.courtType}
@@ -143,11 +165,7 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
                         key={coach.id} 
                         variant="secondary" 
                         className="text-sm"
-                        style={coach.programColor ? {
-                          backgroundColor: `${coach.programColor}30`,
-                          color: coach.programColor,
-                          borderColor: coach.programColor
-                        } : {}}
+                        style={getPersonBadgeStyle(coach)}
                       >
                         {coach.name}
                       </Badge>
@@ -168,11 +186,7 @@ export function PlayerScheduleTemplate({ player, date, courts, timeSlots }: Play
                         key={otherPlayer.id} 
                         variant="outline" 
                         className="text-sm"
-                        style={otherPlayer.programColor ? {
-                          backgroundColor: `${otherPlayer.programColor}20`,
-                          color: otherPlayer.programColor,
-                          borderColor: otherPlayer.programColor
-                        } : {}}
+                        style={getPersonBadgeStyle(otherPlayer)}
                       >
                         {otherPlayer.name}
                       </Badge>

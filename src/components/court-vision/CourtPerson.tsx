@@ -57,30 +57,17 @@ export function CourtPerson({ person, index, total, position, onRemove }: CourtP
   const personSize = getPersonSize();
   
   const getBackgroundColor = () => {
-    if (person.programColor) return person.programColor;
-    
-    if (person.programId || (person.programIds && person.programIds.length > 0)) {
-      return person.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#ef4444";
+    // First check if we have a direct program color
+    if (person.programColor && typeof person.programColor === 'string') {
+      return person.programColor;
     }
     
-    return person.type === PERSON_TYPES.PLAYER ? "bg-ath-blue text-white" : "bg-ath-black text-white";
+    // Default colors based on type
+    return person.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#ef4444";
   };
 
-  const getColorStyle = () => {
-    const color = getBackgroundColor();
-    
-    if (color.startsWith('#')) {
-      return { backgroundColor: color, color: '#ffffff' };
-    }
-    
-    return {};
-  };
-
-  const getColorClass = () => {
-    const color = getBackgroundColor();
-    return color.startsWith('#') 
-      ? "" 
-      : person.type === PERSON_TYPES.PLAYER ? "bg-ath-blue text-white" : "bg-ath-black text-white";
+  const getTextColor = () => {
+    return "#ffffff"; // White text for better contrast
   };
 
   return (
@@ -88,13 +75,15 @@ export function CourtPerson({ person, index, total, position, onRemove }: CourtP
       <ContextMenuTrigger>
         <div
           ref={drag}
-          className={`absolute z-10 ${personSize} rounded-full flex items-center justify-center font-medium shadow-sm transform -translate-x-1/2 -translate-y-1/2 ${
-            getColorClass()
-          } ${isDragging ? "opacity-50" : ""} cursor-grab`}
+          className={`absolute z-10 ${personSize} rounded-full flex items-center justify-center font-medium shadow-md transform -translate-x-1/2 -translate-y-1/2 border ${
+            isDragging ? "opacity-50" : ""
+          } cursor-grab`}
           style={{
             left: `${calculatedPosition.x * 100}%`,
             top: `${calculatedPosition.y * 100}%`,
-            ...getColorStyle()
+            backgroundColor: getBackgroundColor(),
+            color: getTextColor(),
+            borderColor: "rgba(255,255,255,0.3)"
           }}
           title={person.name}
         >

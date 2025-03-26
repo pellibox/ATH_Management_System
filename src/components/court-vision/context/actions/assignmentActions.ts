@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PersonData, ActivityData, CourtProps, Program } from "../../types";
 import { useToast } from "@/hooks/use-toast";
@@ -72,11 +71,10 @@ export const useAssignmentActions = (
   };
 
   const processAssignment = (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => {
-    const isMovingFromExistingAssignment = courts.some(court => 
-      court.occupants.some(p => p.id === person.id && p.timeSlot === person.sourceTimeSlot)
-    );
+    // Check if moving from an existing assignment (with source info)
+    const isMovingFromExistingAssignment = person.sourceTimeSlot || person.courtId;
 
-    const personDuration = person.durationHours || 1;
+    // Try to find matching program from program list
     const program = programs.find(p => p.id === person.programId);
     
     // Create a deep copy of the person object to avoid reference issues
@@ -85,22 +83,25 @@ export const useAssignmentActions = (
       courtId,
       position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
       date: selectedDate.toISOString().split('T')[0],
-      durationHours: personDuration,
-      programColor: program?.color
+      durationHours: person.durationHours || 1,
+      programColor: program?.color || (person.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#ef4444")
     };
 
+    // Keep track of the source time slot and court ID for possible removal later
+    const sourceTimeSlot = person.timeSlot || person.sourceTimeSlot;
+    const sourceCourtId = person.courtId;
+
     // IMPORTANT: Set the timeSlot if explicitly provided in the drop
-    // This ensures players/coaches can be dropped on specific time slots
     if (timeSlot) {
       console.log(`Setting timeSlot to ${timeSlot} for ${person.name}`);
       personWithCourtInfo.timeSlot = timeSlot;
       
       // Calculate end time slot if duration > 1 or has fractional hours (like 1.5)
-      if (personDuration !== 1) {
+      if (personWithCourtInfo.durationHours !== 1) {
         const timeSlotIndex = timeSlots.indexOf(timeSlot);
         if (timeSlotIndex >= 0) {
           // Convert duration to number of slots (considering half-hour slots)
-          const slotsNeeded = calculateSlotsDuration(personDuration);
+          const slotsNeeded = calculateSlotsDuration(personWithCourtInfo.durationHours);
           const endSlotIndex = Math.min(timeSlotIndex + slotsNeeded - 1, timeSlots.length - 1);
           personWithCourtInfo.endTimeSlot = timeSlots[endSlotIndex];
           console.log(`Setting endTimeSlot to ${personWithCourtInfo.endTimeSlot} (spanning ${slotsNeeded} slots)`);
@@ -108,50 +109,45 @@ export const useAssignmentActions = (
       }
     }
 
-    // Create a new courts array and properly handle occupant updates
+    // Create a new courts array
     let updatedCourts = JSON.parse(JSON.stringify(courts));
 
-    // For coaches, we allow multiple assignments across different time slots
-    // For players, we want to move them from any existing assignment
+    // Handle assignments differently based on person type
     if (person.type === PERSON_TYPES.COACH) {
-      // If moving a coach within the same court but to a different time slot
-      if (person.sourceTimeSlot && person.courtId === courtId && person.sourceTimeSlot !== timeSlot) {
-        console.log(`Moving coach from time slot ${person.sourceTimeSlot} to ${timeSlot} on same court`);
+      // For coaches, we only remove them from a specific time slot, not from all
+      if (sourceTimeSlot && sourceCourtId) {
         updatedCourts = updatedCourts.map((court: CourtProps) => {
-          if (court.id === courtId) {
+          if (court.id === sourceCourtId) {
             return {
               ...court,
               occupants: court.occupants.filter((p: PersonData) => 
-                !(p.id === person.id && p.timeSlot === person.sourceTimeSlot)
-              )
-            };
-          }
-          return court;
-        });
-      } 
-      // If we're moving the coach from another time slot assignment, just remove that specific assignment
-      else if (person.sourceTimeSlot && person.courtId) {
-        updatedCourts = updatedCourts.map((court: CourtProps) => {
-          if (court.id === person.courtId) {
-            return {
-              ...court,
-              occupants: court.occupants.filter((p: PersonData) => 
-                !(p.id === person.id && p.timeSlot === person.sourceTimeSlot)
+                !(p.id === person.id && p.timeSlot === sourceTimeSlot)
               )
             };
           }
           return court;
         });
       }
-      // Note: For coaches, we don't remove other time slot assignments
     } else {
-      // For players, remove from any existing courts (only one assignment allowed)
-      updatedCourts = updatedCourts.map((court: CourtProps) => {
-        return {
-          ...court,
-          occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
-        };
-      });
+      // For players, if dropping to a new time slot, remove from old time slot if exists
+      if (timeSlot) {
+        updatedCourts = updatedCourts.map((court: CourtProps) => {
+          return {
+            ...court,
+            occupants: court.occupants.filter((p: PersonData) => 
+              !(p.id === person.id && p.timeSlot === timeSlot)
+            )
+          };
+        });
+      } else {
+        // For layout view (non-time-slot), remove from all time slots
+        updatedCourts = updatedCourts.map((court: CourtProps) => {
+          return {
+            ...court,
+            occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
+          };
+        });
+      }
     }
 
     // Add person to the target court
@@ -168,8 +164,7 @@ export const useAssignmentActions = (
     console.log("Updated courts after drop:", updatedCourts);
     setCourts(updatedCourts);
 
-    // Remove from available list if coming from there
-    // IMPORTANT: Only remove players from available list, keep coaches always available
+    // Remove from available list if coming from there (for players only)
     const isFromAvailableList = people.some(p => p.id === person.id);
     if (isFromAvailableList && person.type === PERSON_TYPES.PLAYER) {
       setPeople(people.filter(p => p.id !== person.id));
@@ -178,7 +173,7 @@ export const useAssignmentActions = (
     // Show success notification
     toast({
       title: isMovingFromExistingAssignment ? "Persona Spostata" : "Persona Assegnata",
-      description: `${person.name} è stata ${isMovingFromExistingAssignment ? "spostata" : "assegnata"} al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}${personDuration > 1 ? ` per ${personDuration} ore` : ''}`,
+      description: `${person.name} è stata ${isMovingFromExistingAssignment ? "spostata" : "assegnata"} al campo ${courts.find(c => c.id === courtId)?.name} #${courts.find(c => c.id === courtId)?.number}${timeSlot ? ` alle ${timeSlot}` : ''}`,
     });
   };
 
