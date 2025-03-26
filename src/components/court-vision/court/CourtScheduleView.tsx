@@ -1,6 +1,6 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TimeSlot } from "../TimeSlot";
+import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
 
