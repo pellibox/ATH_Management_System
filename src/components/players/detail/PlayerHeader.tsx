@@ -34,10 +34,11 @@ export function PlayerHeader({
   
   // Get background color for the player avatar based on the program
   const getAvatarBgColor = () => {
-    if (!player.program) return "bg-gray-500";
+    if ((!player.program && (!player.programs || player.programs.length === 0))) return "bg-gray-500";
     
     // Create a simple hash of the program name to get a deterministic color
-    const hash = player.program.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const programName = player.program || player.programs?.[0] || "";
+    const hash = programName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500", "bg-teal-500"];
     return colors[hash % colors.length];
   };
@@ -81,33 +82,18 @@ export function PlayerHeader({
             </Badge>
           </CardTitle>
           <CardDescription className="mt-1 flex items-center gap-2">
-            {isEditing ? (
-              <div className="flex items-center">
+            {player.programs && player.programs.length > 0 ? (
+              <span className="flex items-center">
                 <Tag className="h-4 w-4 mr-1" />
-                <Select 
-                  value={player.program || "none"}
-                  onValueChange={(value) => handleInputChange('program', value === "none" ? undefined : value)}
-                >
-                  <SelectTrigger className="w-44">
-                    <SelectValue placeholder="Seleziona programma" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {programs.map(program => (
-                      <SelectItem key={program} value={program}>{program}</SelectItem>
-                    ))}
-                    <SelectItem value="none">Nessun programma</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                Programmi: {player.programs.length}
+              </span>
+            ) : player.program ? (
+              <span className="flex items-center">
+                <Tag className="h-4 w-4 mr-1" />
+                Programma: {player.program}
+              </span>
             ) : (
-              player.program ? (
-                <span className="flex items-center">
-                  <Tag className="h-4 w-4 mr-1" />
-                  Programma: {player.program}
-                </span>
-              ) : (
-                <span className="text-gray-500">Nessun programma assegnato</span>
-              )
+              <span className="text-gray-500">Nessun programma assegnato</span>
             )}
           </CardDescription>
         </div>

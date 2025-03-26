@@ -16,7 +16,8 @@ export interface Player {
     seasonal: string;
   };
   program?: string;
-  sports?: string[];
+  programs?: string[];  // New field for multiple programs
+  sports?: string[];    // New field for sports selection
   avatar?: string;
   
   // Add missing properties
