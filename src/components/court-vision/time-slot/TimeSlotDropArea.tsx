@@ -5,7 +5,7 @@ import { PERSON_TYPES } from "../constants";
 import { PersonData, ActivityData } from "../types";
 
 interface TimeSlotDropAreaProps {
-  children: React.ReactNode;
+  children?: React.ReactNode; // Make children optional
   courtId: string;
   time: string;
   onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
