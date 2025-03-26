@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
@@ -13,13 +14,17 @@ import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
 import SidebarSubmenu from './SidebarSubmenu';
 
-const TennisBallIcon = () => (
-  <img 
-    src="/lovable-uploads/c5b8ef71-836a-4093-9cc3-8aa9a53b59f3.png" 
-    alt="Tennis Ball" 
-    className="w-5 h-5 flex-shrink-0"
-  />
-);
+// Create a React forwardRef component to match Lucide icon shape
+const TennisBallIcon = React.forwardRef<SVGSVGElement, React.ComponentPropsWithoutRef<'svg'>>((props, ref) => (
+  <span className="flex items-center justify-center" {...props}>
+    <img 
+      src="/lovable-uploads/c5b8ef71-836a-4093-9cc3-8aa9a53b59f3.png" 
+      alt="Tennis Ball" 
+      className="w-5 h-5 flex-shrink-0"
+    />
+  </span>
+));
+TennisBallIcon.displayName = 'TennisBallIcon';
 
 interface SidebarContentProps {
   collapsed: boolean;
