@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Player } from "@/types/player";
 import { MoreVertical, Edit, Trash2, Mail, SortAsc, SortDesc } from "lucide-react";
@@ -21,7 +20,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ScheduleButton } from "./ScheduleMessage";
 import { ActivityRegistration } from "./ActivityRegistration";
 import { usePlayerContext } from "@/contexts/PlayerContext";
-import { PlayerDetailCard } from "./PlayerDetailCard";
+import { PlayerDetailCard } from "./detail";
 
 export function PlayerList() {
   const { 
