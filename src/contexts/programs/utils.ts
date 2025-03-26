@@ -1,42 +1,42 @@
 
 import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 import { PROGRAM_CATEGORIES } from "./constants";
-import { ProgramDetail } from "@/components/programs/ProgramCard";
+import { ProgramDetail } from "@/components/programs/types";
 
-// Get programs for a specific category
-export function getProgramsByCategory(category: string): ProgramDetail[] {
-  switch(category) {
-    case PROGRAM_CATEGORIES.PERFORMANCE:
+// Get programs for a specific category ID
+export function getProgramsByCategory(categoryId: string): ProgramDetail[] {
+  switch(categoryId) {
+    case "performance":
       return TENNIS_PROGRAMS.PERFORMANCE;
-    case PROGRAM_CATEGORIES.JUNIOR:
+    case "junior":
       return TENNIS_PROGRAMS.JUNIOR;
-    case PROGRAM_CATEGORIES.PERSONAL:
+    case "personal":
       return TENNIS_PROGRAMS.PERSONAL;
-    case PROGRAM_CATEGORIES.ADULT:
+    case "adult":
       return TENNIS_PROGRAMS.ADULT;
-    case PROGRAM_CATEGORIES.COACH:
+    case "coach":
       return TENNIS_PROGRAMS.COACH;
-    case PROGRAM_CATEGORIES.PADEL:
+    case "padel":
       return TENNIS_PROGRAMS.PADEL;
     default:
       return [];
   }
 }
 
-// Get category from program ID
+// Get category ID from program ID
 export function getCategoryFromId(programId: string): string | null {
   if (programId.includes("perf") || programId.includes("elite")) {
-    return PROGRAM_CATEGORIES.PERFORMANCE;
+    return "performance";
   } else if (programId.includes("junior") || programId.includes("sat") || programId.includes("sit")) {
-    return PROGRAM_CATEGORIES.JUNIOR;
+    return "junior";
   } else if (programId.includes("personal") || programId.includes("lezioni")) {
-    return PROGRAM_CATEGORIES.PERSONAL;
+    return "personal";
   } else if (programId.includes("adult") || programId.includes("university")) {
-    return PROGRAM_CATEGORIES.ADULT;
+    return "adult";
   } else if (programId.includes("coach") || programId.includes("club")) {
-    return PROGRAM_CATEGORIES.COACH;
+    return "coach";
   } else if (programId.includes("padel")) {
-    return PROGRAM_CATEGORIES.PADEL;
+    return "padel";
   }
   return null;
 }

@@ -1,9 +1,10 @@
 
 import { Button } from "@/components/ui/button";
 import { getCategoryTitle } from "@/contexts/programs/constants";
+import { ProgramCategoriesMap } from "@/contexts/programs/types";
 
 interface ProgramFiltersProps {
-  categories: Record<string, string>;
+  categories: ProgramCategoriesMap;
   activeFilter: string;
   setFilter: (filter: string) => void;
 }
@@ -25,9 +26,9 @@ export const ProgramFilters = ({ categories, activeFilter, setFilter }: ProgramF
       {Object.entries(categories).map(([key, value]) => (
         <button
           key={key}
-          onClick={() => setFilter(value)}
+          onClick={() => setFilter(value.id)}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
-            activeFilter === value
+            activeFilter === value.id
               ? "bg-ath-blue-light text-ath-blue"
               : "text-gray-600 hover:bg-gray-100"
           }`}

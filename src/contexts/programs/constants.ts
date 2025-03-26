@@ -1,6 +1,8 @@
 
+import { ProgramCategoriesMap } from "./types";
+
 // Program categories for filtering
-export const PROGRAM_CATEGORIES = {
+export const PROGRAM_CATEGORIES: ProgramCategoriesMap = {
   PERFORMANCE: {
     id: "performance",
     title: "Agonisti Performance ed Elite",
@@ -47,7 +49,7 @@ export const PROGRAM_CATEGORIES = {
 
 // Helper to get human-readable category titles
 export function getCategoryTitle(category: string): string {
-  const titles = {
+  const titles: Record<string, string> = {
     PERFORMANCE: "Agonisti Performance ed Elite",
     JUNIOR: "Junior Program",
     PERSONAL: "Personal Coaching e Lezioni Private",
@@ -60,7 +62,7 @@ export function getCategoryTitle(category: string): string {
 }
 
 // Category section descriptions
-export const CATEGORY_DESCRIPTIONS = {
+export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   PERFORMANCE: "Percorsi ad alto contenuto tecnico e fisico, pensati per chi compete a livello FITP, Tennis Europe o ITF. Programmi di 48 settimane per un percorso verso il proprio massimo potenziale.",
   JUNIOR: "Percorsi dedicati allo sviluppo motorio e tecnico dai 4 ai 12 anni. Programmi di 30 settimane.",
   PERSONAL: "Il Personal Coaching include maestro e sparring dedicati con analisi VICKI™, mentre le Lezioni Private offrono sessioni personalizzate con un maestro certificato. Entrambi i programmi disponibili su prenotazione.",
@@ -70,7 +72,7 @@ export const CATEGORY_DESCRIPTIONS = {
 };
 
 // Category border colors
-export const CATEGORY_COLORS = {
+export const CATEGORY_COLORS: Record<string, string> = {
   PERFORMANCE: "#8B4513",
   JUNIOR: "#2E8B57",
   PERSONAL: "#4682B4",
