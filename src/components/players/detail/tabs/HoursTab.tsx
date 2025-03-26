@@ -1,4 +1,3 @@
-
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -41,15 +40,18 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
       const category = PROGRAM_CATEGORIES[categoryKey];
       
-      category.programs.forEach(program => {
-        programs.push({
-          name: program.name,
-          category: categoryKey,
-          sport: program.sport || "Tennis",
-          weeklyHours: program.weeklyHours || 0,
-          totalWeeks: program.totalWeeks || 0
+      // Check if category.programs exists before iterating
+      if (category && category.programs && Array.isArray(category.programs)) {
+        category.programs.forEach(program => {
+          programs.push({
+            name: program.name,
+            category: categoryKey,
+            sport: program.sport || "Tennis",
+            weeklyHours: program.weeklyHours || 0,
+            totalWeeks: program.totalWeeks || 0
+          });
         });
-      });
+      }
     });
     
     setAvailablePrograms(programs);

@@ -11,6 +11,7 @@ export interface ProgramDetail {
   vicki?: boolean | string;
   nextStart?: string;
   enrollmentOpen?: boolean;
+  sport?: string; // Add sport field to match what's used in HoursTab
 }
 
 export interface ProgramCardProps {
