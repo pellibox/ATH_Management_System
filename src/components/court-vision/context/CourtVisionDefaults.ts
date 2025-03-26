@@ -1,6 +1,6 @@
 
 import { PersonData, ActivityData, CourtProps, Program } from "../types";
-import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES, DEFAULT_PROGRAMS } from "../constants";
+import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES, DEFAULT_PROGRAMS as PROGRAM_DEFAULTS } from "../constants";
 
 export const DEFAULT_TIME_SLOTS: string[] = [
   "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", 
@@ -47,9 +47,4 @@ export const DEFAULT_COACHES: PersonData[] = [
   { id: "coach3", name: "Coach Thompson", type: PERSON_TYPES.COACH, sportTypes: ["tennis"] },
 ];
 
-export const DEFAULT_PROGRAMS: Program[] = [
-  { id: "program1", name: "Tennis Academy", color: "#3b82f6" },
-  { id: "program2", name: "Padel Club", color: "#10b981" },
-  { id: "program3", name: "Junior Development", color: "#f59e0b" },
-  { id: "program4", name: "High Performance", color: "#ef4444" },
-];
+export const DEFAULT_PROGRAMS = PROGRAM_DEFAULTS;

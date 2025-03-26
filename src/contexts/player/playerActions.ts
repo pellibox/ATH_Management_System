@@ -122,12 +122,24 @@ export const usePlayerActions = ({
   // Set up an editing player for objectives tab
   const handleEditPlayerObjectives = (player: Player) => {
     setEditingPlayer(player);
-    setObjectives(player.objectives || {
-      daily: "",
-      weekly: "",
-      monthly: "",
+    
+    // Ensure all required properties are present with fallback to empty strings
+    const playerObjectives = player.objectives || {
+      daily: "", 
+      weekly: "", 
+      monthly: "", 
       seasonal: ""
-    });
+    };
+    
+    // Create a complete objectives object with all required properties
+    const completeObjectives = {
+      daily: playerObjectives.daily || "",
+      weekly: playerObjectives.weekly || "",
+      monthly: playerObjectives.monthly || "",
+      seasonal: playerObjectives.seasonal || ""
+    };
+    
+    setObjectives(completeObjectives);
   };
 
   // Handle registering player for activities
