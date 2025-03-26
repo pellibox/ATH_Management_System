@@ -4,6 +4,7 @@ import { Plus, Search, TagIcon, Clock, Edit, Trash, Brain, HeartPulse, Target, Z
 import { ACTIVITY_TYPES } from "@/components/court-vision/constants";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Activity = {
   id: string;
@@ -28,6 +29,7 @@ export default function Activities() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("all");
   
   const [activities, setActivities] = useState<Activity[]>([
     { id: "activity1", name: "Singles Match", type: ACTIVITY_TYPES.MATCH, duration: "1h" },
@@ -46,6 +48,14 @@ export default function Activities() {
   
   const filteredActivities = activities
     .filter(activity => {
+      if (activeTab === "all") return true;
+      if (activeTab === "fitness") return activity.type === ACTIVITY_SUBTYPES.FITNESS;
+      if (activeTab === "mental") return activity.type === ACTIVITY_SUBTYPES.MENTAL;
+      if (activeTab === "medical") return activity.type === ACTIVITY_SUBTYPES.MEDICAL;
+      if (activeTab === "strategy") return activity.type === ACTIVITY_SUBTYPES.STRATEGY;
+      if (activeTab === "technique") return activity.type === ACTIVITY_SUBTYPES.TECHNIQUE;
+      if (activeTab === "biomechanics") return activity.type === ACTIVITY_SUBTYPES.BIOMECHANICS;
+      
       if (filter === "all") return true;
       return activity.type === filter;
     })
@@ -129,6 +139,38 @@ export default function Activities() {
         </div>
       </div>
       
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="bg-white shadow-sm rounded-lg p-1 overflow-x-auto flex flex-nowrap">
+          <TabsTrigger value="all" className="px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap">
+            Tutte le Attività
+          </TabsTrigger>
+          <TabsTrigger value="fitness" className="px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap">
+            <Dumbbell className="h-3.5 w-3.5 mr-1.5" />
+            Preparazione Atletica
+          </TabsTrigger>
+          <TabsTrigger value="mental" className="px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap">
+            <Brain className="h-3.5 w-3.5 mr-1.5" />
+            Mental Coaching
+          </TabsTrigger>
+          <TabsTrigger value="medical" className="px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap">
+            <HeartPulse className="h-3.5 w-3.5 mr-1.5" />
+            Medical Assessment
+          </TabsTrigger>
+          <TabsTrigger value="strategy" className="px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap">
+            <Target className="h-3.5 w-3.5 mr-1.5" />
+            Strategia e Tattica
+          </TabsTrigger>
+          <TabsTrigger value="technique" className="px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap">
+            <Zap className="h-3.5 w-3.5 mr-1.5" />
+            Tecnica
+          </TabsTrigger>
+          <TabsTrigger value="biomechanics" className="px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap">
+            <Lightbulb className="h-3.5 w-3.5 mr-1.5" />
+            Biomechanical Analysis
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
       <div className="mb-6 bg-white shadow-sm rounded-lg p-1 inline-flex items-center overflow-x-auto">
         <button
           onClick={() => setFilter("all")}
@@ -169,26 +211,6 @@ export default function Activities() {
           }`}
         >
           Esercizi con Cesto
-        </button>
-        <button
-          onClick={() => setFilter(ACTIVITY_SUBTYPES.FITNESS)}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
-            filter === ACTIVITY_SUBTYPES.FITNESS
-              ? "bg-ath-blue-light text-ath-blue"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          Preparazione Atletica
-        </button>
-        <button
-          onClick={() => setFilter(ACTIVITY_SUBTYPES.MENTAL)}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap ${
-            filter === ACTIVITY_SUBTYPES.MENTAL
-              ? "bg-ath-blue-light text-ath-blue"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          Mental Coaching
         </button>
       </div>
       
@@ -240,6 +262,7 @@ export default function Activities() {
               onClick={() => {
                 setFilter("all");
                 setSearchQuery("");
+                setActiveTab("all");
               }}
               className="mt-2 text-ath-blue hover:text-ath-blue-dark"
             >

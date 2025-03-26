@@ -3,8 +3,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
   Calendar, Settings, Users, Activity, Layout, 
-  Dumbbell, User, Award, BookOpen, Lightbulb,
-  Brain, HeartPulse, Target, Zap
+  Dumbbell, User, Award, BookOpen
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
@@ -109,37 +108,7 @@ export default function SidebarContent({
                 label: 'Attività', 
                 path: '/activities',
                 icon: Activity 
-              },
-              { 
-                label: 'Preparazione Atletica', 
-                path: '/activities/fitness',
-                icon: Dumbbell 
-              },
-              { 
-                label: 'Mental Coaching', 
-                path: '/activities/mental',
-                icon: Brain 
-              },
-              { 
-                label: 'Medical Assessment', 
-                path: '/activities/medical',
-                icon: HeartPulse 
-              },
-              { 
-                label: 'Strategia e Tattica', 
-                path: '/activities/strategy',
-                icon: Target 
-              },
-              { 
-                label: 'Tecnica', 
-                path: '/activities/technique',
-                icon: Zap 
-              },
-              { 
-                label: 'Biomechanical Analysis', 
-                path: '/activities/biomechanics',
-                icon: Lightbulb 
-              },
+              }
             ]}
           />
 
