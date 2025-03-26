@@ -69,6 +69,11 @@ export function ActivityDetails({
             buttonLabel=""
             buttonIcon={<Edit className="h-4 w-4" />}
             buttonVariant="ghost"
+            onAddActivity={(newActivity) => {
+              // This function is required by the ExtraActivityForm props
+              // but not used when editing, so we provide a no-op implementation
+              console.log("Add activity in edit mode should not be called", newActivity);
+            }}
           />
           <Button 
             size="icon" 

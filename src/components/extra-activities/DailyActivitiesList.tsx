@@ -11,9 +11,11 @@ interface DailyActivitiesListProps {
   getCoachName: (coachId: string) => string;
   getPlayerName: (playerId: string) => string;
   onDeleteActivity: (activityId: string) => void;
+  onEditActivity: (id: string, updatedActivity: Partial<ExtraActivity>) => void;
   onAddParticipant: (activityId: string, participantId: string) => void;
   onRemoveParticipant: (activityId: string, participantId: string) => void;
   playersList: Array<{ id: string; name: string }>;
+  coachesList: Array<{ id: string; name: string }>;
 }
 
 export function DailyActivitiesList({
@@ -22,9 +24,11 @@ export function DailyActivitiesList({
   getCoachName,
   getPlayerName,
   onDeleteActivity,
+  onEditActivity,
   onAddParticipant,
   onRemoveParticipant,
-  playersList
+  playersList,
+  coachesList
 }: DailyActivitiesListProps) {
   
   if (activities.length === 0) {
@@ -49,9 +53,11 @@ export function DailyActivitiesList({
               getCoachName={getCoachName}
               getPlayerName={getPlayerName}
               onDelete={onDeleteActivity}
+              onEditActivity={onEditActivity}
               onAddParticipant={onAddParticipant}
               onRemoveParticipant={onRemoveParticipant}
               playersList={playersList}
+              coachesList={coachesList}
             />
           ))}
         </div>
