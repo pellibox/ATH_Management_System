@@ -9,7 +9,8 @@ import {
   Activity,
   BookOpen,
   Users,
-  UserCog
+  UserCog,
+  LucideIcon
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import SidebarLink from './SidebarLink';
