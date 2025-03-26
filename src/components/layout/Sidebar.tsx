@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SidebarContent from './sidebar/SidebarContent';
 import SidebarMobile from './sidebar/SidebarMobile';
+import { useLocation } from 'react-router-dom';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -11,13 +12,28 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
   const isMobile = useIsMobile();
-  const [open, setOpen] = React.useState(false);
-  const [courtsOpen, setCourtsOpen] = React.useState(false);
-  const [peopleOpen, setPeopleOpen] = React.useState(false);
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const [courtsOpen, setCourtsOpen] = useState(false);
+  const [peopleOpen, setPeopleOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  }, [location.pathname, location.search, isMobile]);
+
+  // Close sidebar dropdowns when route changes
+  useEffect(() => {
+    setCourtsOpen(false);
+    setPeopleOpen(false);
+  }, [location.pathname, location.search]);
 
   const sidebarContent = (
     <SidebarContent 
-      collapsed={collapsed} 
+      collapsed={collapsed && !isHovered} 
       toggleSidebar={toggleSidebar}
       courtsOpen={courtsOpen}
       setCourtsOpen={setCourtsOpen}
@@ -35,12 +51,14 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
     );
   }
 
-  // For desktop, we render the sidebar directly
+  // For desktop, we render the sidebar directly with hover functionality
   return (
     <div
       className={`${
-        collapsed ? 'w-16' : 'w-64'
+        collapsed && !isHovered ? 'w-16' : 'w-64'
       } bg-white border-r border-gray-200 transition-all duration-300 hidden md:block flex-shrink-0 h-screen sticky top-0`}
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
       {sidebarContent}
     </div>

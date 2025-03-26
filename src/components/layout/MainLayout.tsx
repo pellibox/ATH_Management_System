@@ -17,6 +17,13 @@ export default function MainLayout() {
     setSidebarCollapsed(!sidebarCollapsed);
   };
   
+  // Auto-collapse sidebar on mobile when navigation occurs
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarCollapsed(true);
+    }
+  }, [location.pathname, isMobile]);
+  
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo(0, 0);

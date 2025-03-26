@@ -18,6 +18,7 @@ export default function SidebarMobile({ open, setOpen, children }: SidebarMobile
         size="icon"
         className="md:hidden fixed top-4 left-4 z-50"
         onClick={() => setOpen(true)}
+        aria-label="Open menu"
       >
         <Menu className="h-5 w-5" />
       </Button>
