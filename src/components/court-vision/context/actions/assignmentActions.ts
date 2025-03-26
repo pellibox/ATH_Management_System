@@ -1,17 +1,6 @@
-
 import { useState } from "react";
 import { PersonData, ActivityData, CourtProps, Program } from "../../types";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter,
-  DialogClose
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { PERSON_TYPES } from "../../constants";
 
 export const useAssignmentActions = (
@@ -242,42 +231,29 @@ export const useAssignmentActions = (
     });
   };
 
-  // Component for the extra hours confirmation dialog
-  const ExtraHoursConfirmationDialog = () => {
-    if (!pendingAssignment) return null;
-    
-    const currentHours = getPlayerDailyHours(pendingAssignment.person.id);
-    const newHours = currentHours + (pendingAssignment.person.durationHours || 1);
-    
-    return (
-      <Dialog open={showExtraHoursDialog} onOpenChange={setShowExtraHoursDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Conferma Ore Extra</DialogTitle>
-            <DialogDescription>
-              {pendingAssignment.person.name} ha già {currentHours} ore assegnate oggi.
-              Questa assegnazione porterà il totale a {newHours} ore.
-              Vuoi procedere con l'assegnazione?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex items-center justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowExtraHoursDialog(false)}>
-              Annulla
-            </Button>
-            <Button onClick={() => {
-              setShowExtraHoursDialog(false);
-              if (pendingAssignment) {
-                const { courtId, person, position, timeSlot } = pendingAssignment;
-                processAssignment(courtId, person, position, timeSlot);
-              }
-              setPendingAssignment(null);
-            }}>
-              Conferma
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
+  const handleConfirmExtraHours = () => {
+    if (pendingAssignment) {
+      const { courtId, person, position, timeSlot } = pendingAssignment;
+      processAssignment(courtId, person, position, timeSlot);
+      setPendingAssignment(null);
+      setShowExtraHoursDialog(false);
+    }
+  };
+
+  const handleCancelExtraHours = () => {
+    setPendingAssignment(null);
+    setShowExtraHoursDialog(false);
+  };
+
+  const getCurrentHours = (): number => {
+    if (!pendingAssignment) return 0;
+    return getPlayerDailyHours(pendingAssignment.person.id);
+  };
+
+  const getNewHours = (): number => {
+    if (!pendingAssignment) return 0;
+    const currentHours = getCurrentHours();
+    return currentHours + (pendingAssignment.person.durationHours || 1);
   };
 
   return {
@@ -286,6 +262,12 @@ export const useAssignmentActions = (
     handleRemovePerson,
     handleRemoveActivity,
     handleAddToDragArea,
-    ExtraHoursConfirmationDialog
+    showExtraHoursDialog,
+    setShowExtraHoursDialog,
+    pendingAssignment,
+    getCurrentHours,
+    getNewHours,
+    handleConfirmExtraHours,
+    handleCancelExtraHours
   };
 };

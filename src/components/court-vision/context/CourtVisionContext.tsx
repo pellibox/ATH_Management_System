@@ -21,6 +21,7 @@ import {
 } from "./CourtVisionDefaults";
 import { useCourtVisionActions } from "./CourtVisionActions";
 import { useCourtVisionFilters } from "./CourtVisionFilters";
+import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
 
 export const CourtVisionContext = createContext<CourtVisionContextType | undefined>(undefined);
 
@@ -154,8 +155,16 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
   return (
     <CourtVisionContext.Provider value={contextValue}>
       {children}
-      {actions.handleDrop && actions.ExtraHoursConfirmationDialog && (
-        <actions.ExtraHoursConfirmationDialog />
+      {actions.showExtraHoursDialog && (
+        <ExtraHoursConfirmationDialog
+          isOpen={actions.showExtraHoursDialog}
+          onOpenChange={actions.setShowExtraHoursDialog}
+          pendingAssignment={actions.pendingAssignment}
+          currentHours={actions.getCurrentHours()}
+          newHours={actions.getNewHours()}
+          onConfirm={actions.handleConfirmExtraHours}
+          onCancel={actions.handleCancelExtraHours}
+        />
       )}
     </CourtVisionContext.Provider>
   );

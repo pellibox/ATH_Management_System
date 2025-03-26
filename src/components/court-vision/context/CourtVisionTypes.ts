@@ -44,4 +44,13 @@ export interface CourtVisionContextType {
   handleChangeCourtType: (courtId: string, type: string) => void;
   handleChangeCourtNumber: (courtId: string, number: number) => void;
   handleAssignProgram: (personId: string, programId: string) => void;
+  
+  // Dialog state and handlers
+  showExtraHoursDialog: boolean;
+  setShowExtraHoursDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  pendingAssignment: { courtId: string; person: PersonData; position?: { x: number, y: number }; timeSlot?: string; } | null;
+  getCurrentHours: () => number;
+  getNewHours: () => number;
+  handleConfirmExtraHours: () => void;
+  handleCancelExtraHours: () => void;
 }
