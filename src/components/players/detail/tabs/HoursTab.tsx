@@ -1,4 +1,3 @@
-
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -37,30 +36,32 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       totalWeeks: number 
     }[] = [];
     
-    console.log("PROGRAM_CATEGORIES:", PROGRAM_CATEGORIES);
+    // Lista dei programmi da escludere
+    const EXCLUDED_PROGRAMS = [
+      "Tennis Academy", 
+      "Padel Club", 
+      "Junior Development", 
+      "High Performance"
+    ];
     
     // Combine all program categories into a structured array
     Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
-      console.log("Category key:", categoryKey);
       const category = PROGRAM_CATEGORIES[categoryKey];
-      console.log("Category:", category);
       
       // Check if category.programs exists before iterating
       if (category && category.programs && Array.isArray(category.programs)) {
         category.programs.forEach(program => {
-          programs.push({
-            name: program.name,
-            category: categoryKey,
-            sport: program.sport || "Tennis",
-            weeklyHours: program.weeklyHours || 0,
-            totalWeeks: program.totalWeeks || 0
-          });
+          // Escludiamo i programmi nella lista di esclusione
+          if (!EXCLUDED_PROGRAMS.includes(program.name)) {
+            programs.push({
+              name: program.name,
+              category: categoryKey,
+              sport: program.sport || "Tennis",
+              weeklyHours: program.weeklyHours || 0,
+              totalWeeks: program.totalWeeks || 0
+            });
+          }
         });
-      } else if (categoryKey && typeof categoryKey === 'string') {
-        // If programs don't exist in the format expected, try to handle
-        // category as a string pointing to programs in TENNIS_PROGRAMS
-        // This is a fallback for a potential structure mismatch
-        console.log("Trying alternative structure for:", categoryKey);
       }
     });
     

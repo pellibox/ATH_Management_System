@@ -5,12 +5,20 @@ import { ProgramDetail } from "@/components/programs/types";
 import { getCategoryFromId } from "./utils";
 import { PROGRAM_CATEGORIES } from "./constants";
 
-// Programs to exclude
-const EXCLUDED_PROGRAMS = [
+// Programmi da escludere - definiamo una costante per mantenerla consistente
+export const EXCLUDED_PROGRAMS = [
   "tennis-academy", 
   "padel-club", 
   "junior-development", 
   "high-performance"
+];
+
+// Nomi dei programmi da escludere per il match testuale
+export const EXCLUDED_PROGRAM_NAMES = [
+  "Tennis Academy", 
+  "Padel Club", 
+  "Junior Development", 
+  "High Performance"
 ];
 
 export function useProgramsState() {
@@ -32,9 +40,10 @@ export function useProgramsState() {
       ...TENNIS_PROGRAMS.PADEL
     ];
     
-    // Filter out excluded programs
+    // Filter out excluded programs by ID
     const filteredPrograms = programs.filter(program => 
-      !EXCLUDED_PROGRAMS.includes(program.id)
+      !EXCLUDED_PROGRAMS.includes(program.id) && 
+      !EXCLUDED_PROGRAM_NAMES.includes(program.name)
     );
     
     // Add default values for enrollmentOpen if not present
@@ -52,8 +61,15 @@ export function useProgramsState() {
     // Populate PROGRAM_CATEGORIES.X.programs with filtered programs
     Object.keys(PROGRAM_CATEGORIES).forEach(key => {
       PROGRAM_CATEGORIES[key].programs = (TENNIS_PROGRAMS[key] || [])
-        .filter(program => !EXCLUDED_PROGRAMS.includes(program.id));
+        .filter(program => 
+          !EXCLUDED_PROGRAMS.includes(program.id) && 
+          !EXCLUDED_PROGRAM_NAMES.includes(program.name)
+        );
     });
+    
+    // Debug per vedere quali programmi sono disponibili
+    console.log("Programmi disponibili:", programsWithDefaults);
+    console.log("Programmi in PROGRAM_CATEGORIES:", PROGRAM_CATEGORIES);
     
     setAllPrograms(programsWithDefaults);
     setFilteredPrograms(programsWithDefaults);

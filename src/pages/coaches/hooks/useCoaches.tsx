@@ -2,12 +2,18 @@
 import { useState } from "react";
 import { PersonData, Program } from "@/components/court-vision/types";
 import { CoachAvailabilityEvent } from "@/contexts/programs/types";
+import { EXCLUDED_PROGRAMS } from "@/contexts/programs/useProgramsState";
 
 export function useCoaches(
   coachesList: PersonData[],
   playersList: PersonData[],
   programs: Program[]
 ) {
+  // Filtriamo i programmi per rimuovere quelli esclusi
+  const filteredPrograms = programs.filter(program => 
+    !EXCLUDED_PROGRAMS.includes(program.id)
+  );
+
   const [coaches, setCoaches] = useState<PersonData[]>(coachesList);
   const [searchQuery, setSearchQuery] = useState("");
   const [sportTypeFilter, setSportTypeFilter] = useState<string>("all");
@@ -41,14 +47,24 @@ export function useCoaches(
     
     // Program filter - now checks if any of the coach's programs match
     const coachProgramIds = coach.programIds || (coach.programId ? [coach.programId] : []);
+    
+    // Filtra anche i programIds dell'allenatore per rimuovere quelli esclusi
+    const validCoachProgramIds = coachProgramIds.filter(id => !EXCLUDED_PROGRAMS.includes(id));
+    
     const matchesProgram = programFilter === "all" || 
-      coachProgramIds.includes(programFilter);
+      validCoachProgramIds.includes(programFilter);
     
     return matchesSearch && matchesSportType && matchesProgram;
   });
 
   // Handle assigning a program to a coach (now supporting multiple programs)
   const handleAssignProgram = (coachId: string, programId: string) => {
+    // Non permettere l'assegnazione di programmi esclusi
+    if (EXCLUDED_PROGRAMS.includes(programId)) {
+      console.log(`Programma ${programId} è escluso e non può essere assegnato`);
+      return;
+    }
+    
     setCoaches(prevCoaches => 
       prevCoaches.map(coach => {
         if (coach.id === coachId) {

@@ -29,6 +29,19 @@ export function CoachFilters({
   allSportTypes,
   programs
 }: CoachFiltersProps) {
+  // Lista dei programmi da escludere
+  const EXCLUDED_PROGRAMS = [
+    "tennis-academy", 
+    "padel-club", 
+    "junior-development", 
+    "high-performance"
+  ];
+
+  // Filtriamo i programmi per escludere quelli nella lista
+  const filteredPrograms = programs.filter(program => 
+    !EXCLUDED_PROGRAMS.includes(program.id)
+  );
+
   const resetFilters = () => {
     setSearchQuery("");
     setSportTypeFilter("all");
@@ -62,7 +75,7 @@ export function CoachFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tutti i Programmi</SelectItem>
-              {programs.map(program => (
+              {filteredPrograms.map(program => (
                 <SelectItem key={program.id} value={program.id}>
                   <div className="flex items-center">
                     <div 

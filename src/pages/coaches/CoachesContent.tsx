@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Check, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +11,7 @@ import { PERSON_TYPES } from "@/components/court-vision/constants";
 import { useCoaches } from "./hooks/useCoaches";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CoachAvailabilityCalendar } from "./components/CoachAvailabilityCalendar";
+import { EXCLUDED_PROGRAMS } from "@/contexts/programs/useProgramsState";
 
 export function CoachesContent() {
   const { toast } = useToast();
@@ -21,6 +21,10 @@ export function CoachesContent() {
     playersList,
     handleAddPerson,
   } = useCourtVision();
+  
+  const filteredPrograms = programs.filter(program => 
+    !EXCLUDED_PROGRAMS.includes(program.id)
+  );
   
   const [activeTab, setActiveTab] = useState<"list" | "calendar">("list");
   const [selectedCoach, setSelectedCoach] = useState<PersonData | null>(null);
@@ -46,7 +50,7 @@ export function CoachesContent() {
     setSelectedDate,
     currentView,
     setCurrentView
-  } = useCoaches(coachesList, playersList, programs);
+  } = useCoaches(coachesList, playersList, filteredPrograms);
 
   const [newCoach, setNewCoach] = useState<{
     name: string;
@@ -60,12 +64,10 @@ export function CoachesContent() {
     sportTypes: [],
   });
   
-  // Update local state when coachesList changes
   useEffect(() => {
     setCoaches(coachesList);
   }, [coachesList, setCoaches]);
 
-  // Handle adding a new coach
   const handleAddCoach = () => {
     if (!newCoach.name) return;
     
@@ -77,7 +79,6 @@ export function CoachesContent() {
       sportTypes: newCoach.sportTypes,
     });
     
-    // Reset form
     setNewCoach({
       name: "",
       email: "",
@@ -91,7 +92,6 @@ export function CoachesContent() {
     });
   };
 
-  // Handle selecting/deselecting a sport type
   const toggleSportType = (sport: string) => {
     setNewCoach(prev => {
       const sportTypes = prev.sportTypes.includes(sport)
@@ -151,12 +151,12 @@ export function CoachesContent() {
             setProgramFilter={setProgramFilter}
             setSearchQuery={setSearchQuery}
             allSportTypes={allSportTypes}
-            programs={programs}
+            programs={filteredPrograms}
           />
           
           <CoachesList 
             filteredCoaches={filteredCoaches}
-            programs={programs}
+            programs={filteredPrograms}
             handleAssignProgram={handleAssignProgram}
             handleSendSchedule={handleSendSchedule}
             onSelectCoach={(coach) => {
