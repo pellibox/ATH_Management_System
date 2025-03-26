@@ -11,6 +11,7 @@ interface CourtPersonProps {
   onRemove?: () => void;
   className?: string;
   isSpanning?: boolean;
+  position?: { x: number, y: number }; // Add this prop to fix the error
 }
 
 export function CourtPerson({ 
@@ -19,7 +20,8 @@ export function CourtPerson({
   total = 1, 
   onRemove,
   className = "",
-  isSpanning = false
+  isSpanning = false,
+  position // Add this to the destructuring
 }: CourtPersonProps) {
   const isCoach = person.type === "coach";
   
