@@ -13,7 +13,7 @@ import { getProgramColor } from "../utils/programUtils";
 interface PlayerRowProps {
   player: Player;
   onEdit?: (player: Player) => void;
-  onDelete?: (id: string, name: string) => void;
+  onDelete?: (id: string) => void;
   onMessage?: (player: Player) => void;
   onViewDetails?: (player: Player) => void;
   onRegisterActivity?: (playerId: string) => void;
@@ -48,7 +48,8 @@ export function PlayerRow({
 
   // Use passed callback functions if provided, otherwise use context functions
   const handleEdit = onEdit || setEditingPlayer;
-  const handleDelete = onDelete || ((id: string) => handleDeletePlayer(id, player.name));
+  // Fixed handleDelete to not pass name parameter
+  const handleDelete = onDelete || ((id: string) => handleDeletePlayer(id));
   const handleMessage = onMessage || ((player: Player) => {
     setMessagePlayer(player);
     setMessageContent("");
@@ -97,7 +98,7 @@ export function PlayerRow({
       <TableCell className="text-right">
         <PlayerActionMenu 
           player={player}
-          onDelete={() => handleDelete(player.id, player.name)}
+          onDelete={() => handleDelete(player.id)}
           onEdit={() => handleEdit(player)}
           onMessage={() => handleMessage(player)}
           onRegisterActivity={() => handleRegisterActivity(player.id)}

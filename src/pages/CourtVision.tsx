@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { ViewModeToggle } from "@/components/court-vision/ViewModeToggle";
@@ -13,6 +13,11 @@ import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 export default function CourtVision() {
   // Get shared players data
   const { sharedPlayers } = useSharedPlayers();
+  
+  // Ensure we log when sharedPlayers change
+  useEffect(() => {
+    console.log("CourtVision: sharedPlayers updated", sharedPlayers);
+  }, [sharedPlayers]);
   
   return (
     <DndProvider backend={HTML5Backend}>

@@ -77,6 +77,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setObjectives
   });
 
+  // Add missing functions to match the interface
+  const handleEditPlayer = (player: Player) => {
+    setEditingPlayer(player);
+  };
+
   // Context value
   const contextValue: PlayerContextType = {
     // State
@@ -115,8 +120,16 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSelectedActivities,
     resetFilters,
     
-    // Actions
-    ...playerActions
+    // Actions from playerActions
+    ...playerActions,
+    
+    // Add any missing actions that are required by the interface
+    handleEditPlayer,
+    handleSetObjectives: (playerId: string, playerObjectives: any) => {
+      if (!editingPlayer) return;
+      
+      playerActions.handleSetObjectives(playerObjectives);
+    }
   };
 
   return (

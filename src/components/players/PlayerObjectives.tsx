@@ -43,6 +43,12 @@ export function PlayerObjectives() {
     setMessageContent(messageContent);
   };
 
+  const handleSaveObjectives = () => {
+    if (!editingPlayer) return;
+    // Adding the playerId parameter to match the expected function signature
+    handleSetObjectives(editingPlayer.id, objectives);
+  };
+
   if (!editingPlayer) return null;
 
   return (
@@ -98,7 +104,7 @@ export function PlayerObjectives() {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={() => handleSetObjectives(objectives)}>Save Objectives</Button>
+          <Button onClick={handleSaveObjectives}>Save Objectives</Button>
         </div>
       </div>
     </div>

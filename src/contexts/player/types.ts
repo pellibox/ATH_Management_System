@@ -52,4 +52,5 @@ export interface PlayerContextType {
   handleSendMessage: (id: string) => void;
   handleSetObjectives: (playerID: string, objectives: any) => void;
   handleRegisterActivity: (player: Player, activityIds: string[]) => void;
+  handleRegisterForActivities: (playerId: string) => void;
 }

@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePlayerContext } from "@/contexts/PlayerContext";
+import React from "react";
 
 export function ScheduleMessage() {
   const { 
@@ -21,6 +22,13 @@ export function ScheduleMessage() {
 
   const handleClose = () => {
     setMessagePlayer(null);
+  };
+
+  // Fixed handleSendClick to wrap the handleSendMessage call with proper event handling
+  const handleSendClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (messagePlayer) {
+      handleSendMessage(messagePlayer.id);
+    }
   };
 
   return (
@@ -79,7 +87,7 @@ export function ScheduleMessage() {
           <div>
             <span className="text-sm text-gray-500">Will be sent via: {messagePlayer.preferredContactMethod || "WhatsApp"}</span>
           </div>
-          <Button onClick={handleSendMessage} className="flex gap-2">
+          <Button onClick={handleSendClick} className="flex gap-2">
             <Send className="h-4 w-4" />
             Send Schedule
           </Button>

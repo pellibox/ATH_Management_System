@@ -140,7 +140,7 @@ export function ListView({ players }: ListViewProps) {
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-red-600"
-                            onClick={() => handleDeletePlayer(player.id, player.name)}
+                            onClick={() => handleDeletePlayer(player.id)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Elimina

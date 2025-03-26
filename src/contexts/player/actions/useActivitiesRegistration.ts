@@ -50,6 +50,15 @@ export const useActivitiesRegistration = ({
     setSelectedActivities([]);
   };
 
-  // Return just the activity registration functionality
-  return { handleRegisterForActivities };
+  // Return both function names for compatibility
+  return { 
+    handleRegisterForActivities,
+    handleRegisterActivity: (player: Player, activityIds: string[]) => {
+      // This is a wrapper function to match the expected interface
+      if (activityIds.length > 0) {
+        setSelectedActivities(activityIds);
+        handleRegisterForActivities(player.id);
+      }
+    }
+  };
 };

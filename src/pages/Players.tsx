@@ -25,11 +25,12 @@ function PlayersContent() {
   } = usePlayerContext();
   
   // Get shared player context
-  const { addPlayer, updatePlayer, removePlayer } = useSharedPlayers();
+  const { addPlayer, updatePlayer } = useSharedPlayers();
   
   // Sync players with shared context when they change
   useEffect(() => {
     const syncPlayersWithSharedContext = () => {
+      console.log("PlayersContent: Syncing players with shared context", players);
       players.forEach(player => {
         // This is a simple approach - in a real app, you'd need more sophisticated syncing
         updatePlayer(player);
