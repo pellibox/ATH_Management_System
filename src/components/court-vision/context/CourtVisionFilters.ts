@@ -64,5 +64,5 @@ export const useCourtVisionFilters = ({
       setFilteredPlayers(playersList);
       setFilteredCoaches(coachesList);
     }
-  }, [currentSport, courts, playersList, coachesList]);
+  }, [currentSport, courts, playersList, coachesList, setFilteredCourts, setFilteredPlayers, setFilteredCoaches]);
 };

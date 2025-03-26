@@ -7,6 +7,7 @@ import { useCourtVisionFilters } from "./CourtVisionFilters";
 import { useProgramHandlers } from "./useProgramHandlers";
 import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
 import { CourtVisionProviderProps } from "./types";
+import { CourtProps, PersonData } from "../types";
 
 export const CourtVisionContext = createContext<CourtVisionContextType | undefined>(undefined);
 
@@ -20,30 +21,35 @@ export const useCourtVision = () => {
 
 export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ children }) => {
   // Get state from hook
-  const state = useCourtVisionState();
+  const initialState = useCourtVisionState();
   
   // Set up state setters
-  const [courts, setCourts] = useState(state.courts);
-  const [people, setPeople] = useState(state.people);
-  const [activities, setActivities] = useState(state.activities);
-  const [playersList, setPlayersList] = useState(state.playersList);
-  const [coachesList, setCoachesList] = useState(state.coachesList);
-  const [programs, setPrograms] = useState(state.programs);
-  const [templates, setTemplates] = useState(state.templates);
-  const [dateSchedules, setDateSchedules] = useState(state.dateSchedules);
-  const [selectedDate, setSelectedDate] = useState(state.selectedDate);
-  const [showExtraHoursDialog, setShowExtraHoursDialog] = useState(state.showExtraHoursDialog);
-  const [pendingAssignment, setPendingAssignment] = useState(state.pendingAssignment);
+  const [courts, setCourts] = useState(initialState.courts);
+  const [people, setPeople] = useState(initialState.people);
+  const [activities, setActivities] = useState(initialState.activities);
+  const [playersList, setPlayersList] = useState(initialState.playersList);
+  const [coachesList, setCoachesList] = useState(initialState.coachesList);
+  const [programs, setPrograms] = useState(initialState.programs);
+  const [templates, setTemplates] = useState(initialState.templates);
+  const [dateSchedules, setDateSchedules] = useState(initialState.dateSchedules);
+  const [selectedDate, setSelectedDate] = useState(initialState.selectedDate);
+  const [showExtraHoursDialog, setShowExtraHoursDialog] = useState(initialState.showExtraHoursDialog);
+  const [pendingAssignment, setPendingAssignment] = useState(initialState.pendingAssignment);
+  
+  // Track filtered state locally
+  const [filteredCourts, setFilteredCourts] = useState(initialState.filteredCourts);
+  const [filteredPlayers, setFilteredPlayers] = useState(initialState.filteredPlayers);
+  const [filteredCoaches, setFilteredCoaches] = useState(initialState.filteredCoaches);
 
   // Apply filters
   useCourtVisionFilters({
     courts,
-    currentSport: state.currentSport,
+    currentSport: initialState.currentSport,
     playersList,
     coachesList,
-    setFilteredCourts: (courts) => state.filteredCourts = courts,
-    setFilteredPlayers: (players) => state.filteredPlayers = players,
-    setFilteredCoaches: (coaches) => state.filteredCoaches = coaches
+    setFilteredCourts,
+    setFilteredPlayers,
+    setFilteredCoaches
   });
 
   // Get program handlers
@@ -74,7 +80,7 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     setDateSchedules,
     selectedDate,
     setSelectedDate,
-    timeSlots: state.timeSlots
+    timeSlots: initialState.timeSlots
   });
 
   // Handle coach availability
@@ -88,18 +94,18 @@ export const CourtVisionProvider: React.FC<CourtVisionProviderProps> = ({ childr
     selectedDate,
     templates,
     dateSchedules,
-    timeSlots: state.timeSlots,
+    timeSlots: initialState.timeSlots,
     courts,
-    filteredCourts: state.filteredCourts,
+    filteredCourts,
     people,
     activities,
     playersList,
     coachesList,
     programs,
-    filteredPlayers: state.filteredPlayers,
-    filteredCoaches: state.filteredCoaches,
-    currentSport: state.currentSport,
-    isLayoutView: state.isLayoutView,
+    filteredPlayers,
+    filteredCoaches,
+    currentSport: initialState.currentSport,
+    isLayoutView: initialState.isLayoutView,
 
     setSelectedDate,
     handleSetCoachAvailability,
