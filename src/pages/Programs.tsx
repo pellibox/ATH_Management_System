@@ -15,6 +15,7 @@ export default function Programs() {
     setSearchQuery,
     expandedProgram,
     filteredPrograms,
+    allPrograms,
     toggleExpand,
     resetFilters,
     updateProgram

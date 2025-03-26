@@ -1,3 +1,4 @@
+
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -7,7 +8,15 @@ import { Player } from "@/types/player";
 import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel } from "@/components/ui/select";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue,
+  SelectGroup,
+  SelectLabel
+} from "@/components/ui/select";
 import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
 import { calculateCustomProgramHours } from "@/types/player/programs";
 import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
@@ -22,31 +31,39 @@ interface HoursTabProps {
 export function HoursTab({ player, isEditing, handleInputChange, playerActivities }: HoursTabProps) {
   const [programHours, setProgramHours] = useState(0);
   const [remainingHours, setRemainingHours] = useState(0);
-  const [availablePrograms, setAvailablePrograms] = useState<{ name: string; category: string; sport: string; weeklyHours: number; totalWeeks: number }[]>([]);
-  const [filteredPrograms, setFilteredPrograms] = useState<{ name: string; category: string; sport: string; weeklyHours: number; totalWeeks: number }[]>([]);
+  const [availablePrograms, setAvailablePrograms] = useState<{ 
+    name: string; 
+    category: string; 
+    categoryLabel: string;
+    sport: string; 
+    weeklyHours: number; 
+    totalWeeks: number 
+  }[]>([]);
+  const [filteredPrograms, setFilteredPrograms] = useState<typeof availablePrograms>([]);
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>(player.programs || []);
   const [selectedSports, setSelectedSports] = useState<string[]>(player.sports || []);
   
   const sports = ["Tennis", "Padel"];
   
+  // Carica tutti i programmi disponibili da PROGRAM_CATEGORIES
   useEffect(() => {
     const programs: { 
       name: string; 
-      category: string; 
+      category: string;
+      categoryLabel: string;
       sport: string; 
       weeklyHours: number; 
       totalWeeks: number 
     }[] = [];
     
-    Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
-      const category = PROGRAM_CATEGORIES[categoryKey];
-      
+    Object.entries(PROGRAM_CATEGORIES).forEach(([categoryKey, category]) => {
       if (category && category.programs && Array.isArray(category.programs)) {
         category.programs.forEach(program => {
           if (!EXCLUDED_PROGRAM_NAMES.includes(program.name)) {
             programs.push({
               name: program.name,
-              category: categoryKey,
+              category: categoryKey.toLowerCase(),
+              categoryLabel: category.title,
               sport: program.sport || "Tennis",
               weeklyHours: program.weeklyHours || 0,
               totalWeeks: program.totalWeeks || 0
@@ -56,10 +73,12 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       }
     });
     
+    console.log("Programmi disponibili:", programs);
     setAvailablePrograms(programs);
     setFilteredPrograms(programs);
   }, []);
   
+  // Filtra i programmi in base agli sport selezionati
   useEffect(() => {
     if (selectedSports.length > 0) {
       const filtered = availablePrograms.filter(program => 
@@ -71,11 +90,13 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     }
   }, [selectedSports, availablePrograms]);
   
+  // Aggiorna programmi e sport dai dati del giocatore
   useEffect(() => {
     setSelectedPrograms(player.programs || []);
     setSelectedSports(player.sports || []);
   }, [player.programs, player.sports]);
   
+  // Calcola le ore totali dei programmi selezionati
   useEffect(() => {
     let totalProgramHours = 0;
     
@@ -147,13 +168,17 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     handleInputChange('programs', updatedPrograms);
   };
   
+  // Raggruppa i programmi per categoria per la visualizzazione nel select
   const programsByCategory = filteredPrograms.reduce((acc, program) => {
     if (!acc[program.category]) {
-      acc[program.category] = [];
+      acc[program.category] = {
+        label: program.categoryLabel,
+        programs: []
+      };
     }
-    acc[program.category].push(program);
+    acc[program.category].programs.push(program);
     return acc;
-  }, {} as Record<string, typeof filteredPrograms>);
+  }, {} as Record<string, { label: string, programs: typeof filteredPrograms }>);
 
   return (
     <CardContent className="p-4 pt-2">
@@ -189,25 +214,22 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                     <label className="text-sm font-medium">Programmi disponibili</label>
                     {Object.keys(programsByCategory).length > 0 ? (
                       <Select
-                        value=""
                         onValueChange={(value) => handleProgramSelect(value, true)}
                       >
                         <SelectTrigger className="bg-white">
                           <SelectValue placeholder="Seleziona un programma" />
                         </SelectTrigger>
                         <SelectContent className="bg-white">
-                          {Object.entries(programsByCategory).map(([category, programs]) => (
-                            <SelectLabel key={category} className="font-bold">
-                              {category.charAt(0).toUpperCase() + category.slice(1)}
-                            </SelectLabel>
+                          {Object.entries(programsByCategory).map(([category, { label, programs }]) => (
+                            <SelectGroup key={category}>
+                              <SelectLabel>{label}</SelectLabel>
+                              {programs.map(program => (
+                                <SelectItem key={program.name} value={program.name}>
+                                  {program.name} ({program.sport})
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
                           ))}
-                          {Object.entries(programsByCategory).flatMap(([category, programs]) =>
-                            programs.map(program => (
-                              <SelectItem key={program.name} value={program.name} className="pl-6">
-                                {program.name} ({program.sport})
-                              </SelectItem>
-                            ))
-                          )}
                         </SelectContent>
                       </Select>
                     ) : (

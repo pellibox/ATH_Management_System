@@ -60,11 +60,13 @@ export function useProgramsState() {
     
     // Populate PROGRAM_CATEGORIES.X.programs with filtered programs
     Object.keys(PROGRAM_CATEGORIES).forEach(key => {
-      PROGRAM_CATEGORIES[key].programs = (TENNIS_PROGRAMS[key] || [])
-        .filter(program => 
-          !EXCLUDED_PROGRAMS.includes(program.id) && 
-          !EXCLUDED_PROGRAM_NAMES.includes(program.name)
-        );
+      if (TENNIS_PROGRAMS[key]) {
+        PROGRAM_CATEGORIES[key].programs = TENNIS_PROGRAMS[key]
+          .filter(program => 
+            !EXCLUDED_PROGRAMS.includes(program.id) && 
+            !EXCLUDED_PROGRAM_NAMES.includes(program.name)
+          );
+      }
     });
     
     // Debug per vedere quali programmi sono disponibili
