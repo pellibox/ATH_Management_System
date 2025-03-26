@@ -1,5 +1,5 @@
-
 import { Suspense, lazy } from "react";
+import { Circle } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +8,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import { SharedPlayerProvider } from "./contexts/shared/SharedPlayerContext";
 
-// Use React.lazy for route-based code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const Courts = lazy(() => import("./pages/Courts"));
@@ -26,11 +25,21 @@ const Activities = lazy(() => import("./pages/Activities"));
 const ExtraActivities = lazy(() => import("./pages/ExtraActivities"));
 const Coaches = lazy(() => import("./pages/Coaches"));
 
-// Create Loading component for Suspense
 const LoadingFallback = () => (
   <div className="flex justify-center items-center h-screen">
     <div className="text-center">
-      <div className="w-12 h-12 border-4 border-t-ath-blue rounded-full animate-spin mx-auto"></div>
+      <Circle 
+        className="mx-auto animate-spin text-ath-clay" 
+        size={48} 
+        strokeWidth={2} 
+        fill="none"
+        style={{
+          animation: 'spin 1.5s linear infinite',
+          stroke: 'var(--ath-clay)',
+          strokeDasharray: '50 50',
+          strokeLinecap: 'round'
+        }}
+      />
       <p className="mt-4 text-gray-600">Caricamento...</p>
     </div>
   </div>

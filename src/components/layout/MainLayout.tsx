@@ -1,6 +1,7 @@
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { Circle } from "lucide-react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -61,7 +62,18 @@ export default function MainLayout() {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-ath-blue rounded-full animate-spin mx-auto"></div>
+          <Circle 
+            className="mx-auto animate-spin text-ath-clay" 
+            size={48} 
+            strokeWidth={2} 
+            fill="none"
+            style={{
+              animation: 'spin 1.5s linear infinite',
+              stroke: 'var(--ath-clay)',
+              strokeDasharray: '50 50', // Creates a dashed line effect
+              strokeLinecap: 'round'
+            }}
+          />
           <p className="mt-4 text-gray-600">Caricamento layout...</p>
         </div>
       </div>
