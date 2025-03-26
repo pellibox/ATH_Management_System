@@ -100,7 +100,7 @@ export default function SidebarContent({
           <SidebarSubmenu
             icon={Activity}
             label="Programmi e Attività"
-            isActive={isLinkActive('/activities') || isLinkActive('/programs')}
+            isActive={isLinkActive('/activities') || isLinkActive('/programs') || isLinkActive('/tournaments') || isLinkActive('/extra-activities')}
             collapsed={collapsed}
             open={activitiesOpen}
             onOpenChange={setActivitiesOpen}
@@ -115,6 +115,16 @@ export default function SidebarContent({
                 label: 'Attività', 
                 path: '/activities',
                 icon: Activity 
+              },
+              { 
+                label: 'Tornei', 
+                path: '/tournaments',
+                icon: Activity 
+              },
+              { 
+                label: 'Attività Extra', 
+                path: '/extra-activities',
+                icon: Activity 
               }
             ]}
           />
@@ -124,6 +134,22 @@ export default function SidebarContent({
             icon={CalendarDays}
             label="Calendar" 
             isActive={isLinkActive('/calendar')} 
+            collapsed={collapsed} 
+          />
+          
+          <SidebarLink 
+            to="/reports" 
+            icon={Activity}
+            label="Reports" 
+            isActive={isLinkActive('/reports')} 
+            collapsed={collapsed} 
+          />
+          
+          <SidebarLink 
+            to="/videos" 
+            icon={Activity}
+            label="Videos" 
+            isActive={isLinkActive('/videos')} 
             collapsed={collapsed} 
           />
 
