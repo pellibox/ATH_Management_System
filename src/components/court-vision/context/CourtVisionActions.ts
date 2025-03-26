@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format, addDays, startOfWeek, addWeeks } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -65,13 +64,19 @@ export const useCourtVisionActions = ({
       ...JSON.parse(JSON.stringify(person)), 
       courtId,
       position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
-      timeSlot,
+      timeSlot: timeSlot || person.timeSlot, // Keep the existing timeSlot if not provided
       date: selectedDate.toISOString().split('T')[0],
       durationHours: personDuration,
       programColor: program?.color
     };
 
+    // Important: Only set the timeSlot if explicitly provided in the drop
+    // This ensures players/coaches can be dropped on specific time slots
     if (timeSlot) {
+      console.log(`Setting timeSlot to ${timeSlot}`);
+      personWithCourtInfo.timeSlot = timeSlot;
+      
+      // Calculate end time slot if duration > 1
       const timeSlotIndex = timeSlots.indexOf(timeSlot);
       if (timeSlotIndex >= 0 && personDuration > 1) {
         const endSlotIndex = Math.min(timeSlotIndex + personDuration - 1, timeSlots.length - 1);
@@ -82,13 +87,29 @@ export const useCourtVisionActions = ({
     // Fix: Create a new courts array and properly handle occupant updates
     let updatedCourts = JSON.parse(JSON.stringify(courts));
 
-    // Remove person from any existing courts
-    updatedCourts = updatedCourts.map((court: CourtProps) => {
-      return {
-        ...court,
-        occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
-      };
-    });
+    // If moving from one time slot to another on same court, make sure to only remove from the source time slot
+    if (person.sourceTimeSlot && person.courtId === courtId && person.sourceTimeSlot !== timeSlot) {
+      console.log(`Moving from time slot ${person.sourceTimeSlot} to ${timeSlot} on same court`);
+      updatedCourts = updatedCourts.map((court: CourtProps) => {
+        if (court.id === courtId) {
+          return {
+            ...court,
+            occupants: court.occupants.filter((p: PersonData) => 
+              !(p.id === person.id && p.timeSlot === person.sourceTimeSlot)
+            )
+          };
+        }
+        return court;
+      });
+    } else {
+      // Otherwise, remove person from any existing courts
+      updatedCourts = updatedCourts.map((court: CourtProps) => {
+        return {
+          ...court,
+          occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
+        };
+      });
+    }
 
     // Add person to the target court
     updatedCourts = updatedCourts.map((court: CourtProps) => {
@@ -135,10 +156,25 @@ export const useCourtVisionActions = ({
   };
 
   const handleRemovePerson = (personId: string, timeSlot?: string) => {
-    const updatedCourts = courts.map(court => ({
-      ...court,
-      occupants: court.occupants.filter(person => person.id !== personId || person.timeSlot !== timeSlot)
-    }));
+    console.log("handleRemovePerson:", { personId, timeSlot });
+    
+    let updatedCourts;
+    
+    if (timeSlot) {
+      // Remove person only from specific time slot
+      updatedCourts = courts.map(court => ({
+        ...court,
+        occupants: court.occupants.filter(person => 
+          !(person.id === personId && person.timeSlot === timeSlot)
+        )
+      }));
+    } else {
+      // Remove person from all time slots
+      updatedCourts = courts.map(court => ({
+        ...court,
+        occupants: court.occupants.filter(person => person.id !== personId)
+      }));
+    }
     
     setCourts(updatedCourts);
     

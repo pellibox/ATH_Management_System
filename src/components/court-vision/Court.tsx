@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useDrop } from "react-dnd";
 import { COURT_TYPES, PERSON_TYPES, ACTIVITY_TYPES } from "./constants";
@@ -68,16 +67,33 @@ export function Court({
           if (viewMode === "layout") {
             onDrop(court.id, item as PersonData, position);
           } else {
-            onDrop(court.id, item as PersonData);
+            // In schedule view, we don't set position
+            // Time slot is handled by the TimeSlot component's drop
+            console.log("Court component: schedule view drop - no direct action needed");
           }
         } else if (item.type === "activity") {
-          onActivityDrop(court.id, item as ActivityData);
+          if (viewMode === "layout") {
+            onActivityDrop(court.id, item as ActivityData);
+          } else {
+            // In schedule view, time slot is handled by the TimeSlot component's drop
+            console.log("Court component: schedule view activity drop - no direct action needed");
+          }
         }
       } else {
         if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
-          onDrop(court.id, item as PersonData);
+          if (viewMode === "layout") {
+            onDrop(court.id, item as PersonData);
+          } else {
+            // This will be handled by TimeSlot component
+            console.log("Court component: schedule view drop without position - no direct action needed");
+          }
         } else if (item.type === "activity") {
-          onActivityDrop(court.id, item as ActivityData);
+          if (viewMode === "layout") {
+            onActivityDrop(court.id, item as ActivityData);
+          } else {
+            // This will be handled by TimeSlot component
+            console.log("Court component: schedule view activity drop without position - no direct action needed");
+          }
         }
       }
     },
@@ -411,11 +427,11 @@ export function Court({
                   occupants={getOccupantsForTimeSlot(time)}
                   activities={getActivitiesForTimeSlot(time)}
                   onDrop={(courtId, time, person) => {
-                    console.log("Dropping at time:", time);
+                    console.log("Dropping at time:", time, person);
                     onDrop(courtId, person, undefined, time);
                   }}
                   onActivityDrop={(courtId, time, activity) => {
-                    console.log("Dropping activity at time:", time);
+                    console.log("Dropping activity at time:", time, activity);
                     onActivityDrop(courtId, activity, time);
                   }}
                   onRemovePerson={(personId, time) => onRemovePerson && onRemovePerson(personId, time)}

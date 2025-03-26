@@ -144,7 +144,7 @@ export const TimeSlot = memo(function TimeSlot({
         }
         
         // Aggiorna con la nuova fascia oraria
-        onDrop(courtId, time, personItem);
+        onDrop(courtId, time, {...personItem, timeSlot: time});
       } else if (item.type === "activity" || 
                 Object.values(ACTIVITY_TYPES).includes(item.type as any)) {
         // Gestisci il trascinamento dell'attività
@@ -157,7 +157,7 @@ export const TimeSlot = memo(function TimeSlot({
         }
         
         // Aggiorna con la nuova fascia oraria
-        onActivityDrop(courtId, time, activityItem);
+        onActivityDrop(courtId, time, {...activityItem, startTime: time});
       }
     },
     collect: (monitor) => ({

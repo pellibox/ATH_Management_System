@@ -46,8 +46,14 @@ export default function CourtGrid({
                 key={court.id}
                 court={court}
                 timeSlots={timeSlots}
-                onDrop={onDrop}
-                onActivityDrop={onActivityDrop}
+                onDrop={(courtId, person, position, timeSlot) => {
+                  console.log("CourtGrid onDrop", { courtId, person, position, timeSlot });
+                  onDrop(courtId, person, position, timeSlot);
+                }}
+                onActivityDrop={(courtId, activity, timeSlot) => {
+                  console.log("CourtGrid onActivityDrop", { courtId, activity, timeSlot });
+                  onActivityDrop(courtId, activity, timeSlot);
+                }}
                 onRemovePerson={onRemovePerson}
                 onRemoveActivity={onRemoveActivity}
                 onRename={onRenameCourt}
