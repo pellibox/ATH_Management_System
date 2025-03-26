@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { ActionsProps } from "./types";
 import { useCourtActions } from "./courtActions";
-import { useAssignmentActions } from "./assignmentActions";
+import { useAssignmentActions } from "./assignment";
 import { usePeopleActivityActions } from "./peopleActivityActions";
 import { useScheduleActions } from "./scheduleActions";
 
@@ -33,7 +33,7 @@ export const useCourtVisionActions = (props: ActionsProps) => {
   const courtActions = useCourtActions(courts, setCourts);
   
   // Assignment actions
-  const assignmentActions = useAssignmentActions(
+  const assignmentActions = useAssignmentActions({
     courts,
     setCourts,
     people,
@@ -41,7 +41,7 @@ export const useCourtVisionActions = (props: ActionsProps) => {
     programs,
     selectedDate,
     timeSlots
-  );
+  });
   
   // People and activity actions
   const peopleActivityActions = usePeopleActivityActions(
