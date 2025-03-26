@@ -20,7 +20,7 @@ export default function SidebarLink({ to, icon: Icon, label, isActive, collapsed
         className={cn(
           "flex items-center py-2 px-3 rounded-md text-sm transition-colors relative group",
           isActive 
-            ? "bg-ath-blue text-white font-medium" 
+            ? "bg-ath-red-clay text-white font-medium" 
             : "text-gray-600 hover:bg-gray-100"
         )}
       >
