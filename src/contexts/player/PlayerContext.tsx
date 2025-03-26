@@ -4,6 +4,11 @@ import { Player, mockPlayers } from "@/types/player";
 import { defaultObjectives, defaultNewPlayer, mockExtraActivities } from "./initialState";
 import { usePlayerActions } from "./actions";
 
+// Add the missing interface
+interface PlayerProviderProps {
+  children: React.ReactNode;
+}
+
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
@@ -66,13 +71,15 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setObjectives
   });
 
+  // Fix the handleDeletePlayer function to match expected signature
   const handleDeletePlayer = (id: string) => {
     const player = players.find(p => p.id === id);
     if (player) {
-      playerActions.handleDeletePlayer(id, player.name);
+      playerActions.handleDeletePlayer(id);
     }
   };
 
+  // Fix the handleEditPlayer function to match expected signature
   const handleEditPlayer = (id: string) => {
     const player = players.find(p => p.id === id);
     if (player) {
@@ -80,6 +87,7 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     }
   };
 
+  // Fix the handleSetObjectives function to match expected signature
   const handleSetObjectives = (playerID: string, objectives: any) => {
     console.log("Setting objectives for player", playerID, objectives);
     const updatedPlayers = players.map(player => 
@@ -90,9 +98,10 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setPlayers(updatedPlayers);
   };
 
+  // This stays unchanged
   const handleRegisterForActivities = (playerId: string, name: string) => {
     console.log("Registering player for activities", playerId, name);
-    playerActions.handleRegisterForActivities(playerId, name);
+    playerActions.handleRegisterForActivities(playerId);
   };
 
   const contextValue: PlayerContextType = {

@@ -4,18 +4,24 @@ import { PlayerActionsProps } from "./types";
 
 export const useDeletePlayer = ({ 
   players, 
-  setPlayers 
+  setPlayers,
+  setEditingPlayer 
 }: PlayerActionsProps) => {
   const { toast } = useToast();
 
-  // Handle deleting a player
-  const handleDeletePlayer = (id: string, name: string) => {
-    setPlayers(players.filter(player => player.id !== id));
+  // Update to use a single parameter to match the interface
+  const handleDeletePlayer = (id: string) => {
+    const playerToDelete = players.find(p => p.id === id);
+    if (!playerToDelete) return;
+    
+    const playerName = playerToDelete.name;
+    
+    setPlayers(players.filter(p => p.id !== id));
+    setEditingPlayer(null);
     
     toast({
-      title: "Player Deleted",
-      description: `${name} has been removed from the database.`,
-      variant: "destructive",
+      title: "Giocatore Rimosso",
+      description: `${playerName} è stato rimosso con successo`
     });
   };
 

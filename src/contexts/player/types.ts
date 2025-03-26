@@ -48,9 +48,10 @@ export interface PlayerContextType {
   handleAddPlayer: (player: Player) => void;
   handleUpdatePlayer: (player: Player) => void;
   handleDeletePlayer: (id: string) => void;
-  handleEditPlayer: (player: Player) => void;
+  handleEditPlayer: (id: string) => void;
   handleSendMessage: (id: string) => void;
   handleSetObjectives: (playerID: string, objectives: any) => void;
   handleRegisterActivity: (player: Player, activityIds: string[]) => void;
-  handleRegisterForActivities: (playerId: string) => void;
+  // Update this signature to match implementation
+  handleRegisterForActivities: (playerId: string, name?: string) => void;
 }

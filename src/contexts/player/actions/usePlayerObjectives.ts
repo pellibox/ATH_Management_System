@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { Player } from "@/types/player";
 import { PlayerActionsProps } from "./types";
@@ -12,12 +11,13 @@ export const usePlayerObjectives = ({
 }: PlayerActionsProps) => {
   const { toast } = useToast();
 
-  // Handle setting player objectives
-  const handleSetObjectives = (updatedObjectives: Player["objectives"]) => {
-    if (!editingPlayer) return;
+  // Update this to take playerID and objectives as separate parameters
+  const handleSetObjectives = (playerID: string, updatedObjectives: any) => {
+    const playerToUpdate = players.find(player => player.id === playerID);
+    if (!playerToUpdate) return;
     
     const updatedPlayer = {
-      ...editingPlayer,
+      ...playerToUpdate,
       objectives: updatedObjectives
     };
     

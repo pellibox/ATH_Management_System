@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
@@ -45,7 +44,7 @@ export function PlayerObjectives() {
 
   const handleSaveObjectives = () => {
     if (!editingPlayer) return;
-    // Adding the playerId parameter to match the expected function signature
+    // Use the correct signature: handleSetObjectives(playerID, objectives)
     handleSetObjectives(editingPlayer.id, objectives);
   };
 
