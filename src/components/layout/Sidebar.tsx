@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Calendar, Settings, Users, Activity, Layout, ChevronRight, ChevronDown,
-  Menu, X, Dumbbell
+  Menu, X, Dumbbell, User
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -146,6 +146,18 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
                 </CollapsibleContent>
               )}
             </Collapsible>
+          </li>
+
+          <li>
+            <Link
+              to="/players"
+              className={`flex items-center py-2 px-4 rounded-md ${
+                isLinkActive('/players') ? 'bg-ath-blue text-white' : 'text-gray-700 hover:bg-gray-100'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              <User className="h-5 w-5" />
+              {!collapsed && <span className="ml-3">Players</span>}
+            </Link>
           </li>
 
           <li>

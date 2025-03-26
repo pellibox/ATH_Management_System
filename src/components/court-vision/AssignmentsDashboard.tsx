@@ -25,10 +25,10 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
           {courts.map(court => (
             <div key={court.id} className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-medium">
+                <h3 className="font-medium truncate">
                   {court.name} #{court.number}
                 </h3>
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded truncate ml-2">
                   {court.type}
                 </span>
               </div>
@@ -40,7 +40,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
                     {court.occupants.map(person => (
                       <span 
                         key={person.id} 
-                        className="text-xs px-2 py-1 rounded bg-ath-blue-light text-ath-blue">
+                        className="text-xs px-2 py-1 rounded bg-ath-blue-light text-ath-blue truncate max-w-full">
                         {person.name}
                       </span>
                     ))}
@@ -55,7 +55,7 @@ export function AssignmentsDashboard({ courts, selectedDate }: AssignmentsDashbo
                     {court.activities.map(activity => (
                       <span 
                         key={activity.id} 
-                        className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700">
+                        className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 truncate max-w-full">
                         {activity.name}
                       </span>
                     ))}
