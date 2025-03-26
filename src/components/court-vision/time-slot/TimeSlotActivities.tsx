@@ -22,7 +22,7 @@ export function TimeSlotActivities({
     <div className="mt-5">
       {activities.map((activity) => (
         <CourtActivity
-          key={activity.id}
+          key={`${activity.id}-${time}`}
           activity={activity}
           onRemove={() => onRemoveActivity(activity.id, time)}
         />

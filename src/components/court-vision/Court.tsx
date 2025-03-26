@@ -81,7 +81,7 @@ export function Court({
         <div
           id={`court-${court.id}`}
           className={`relative rounded-lg border-2 ${getCourtStyles(court.type)} 
-            transition-all ${courtHeight} ${courtWidth} flex flex-col cursor-pointer animate-fade-in mx-auto`}
+            transition-all ${courtHeight} ${courtWidth} flex flex-col cursor-pointer animate-fade-in mx-auto overflow-hidden`}
         >
           <CourtDrop
             courtId={court.id}
@@ -98,29 +98,31 @@ export function Court({
 
             <CourtControls viewMode={viewMode} setViewMode={setViewMode} />
 
-            {viewMode === "layout" ? (
-              <CourtLayoutView
-                courtId={court.id}
-                courtType={court.type}
-                occupants={court.occupants}
-                activities={court.activities}
-                onRemovePerson={(personId) => onRemovePerson && onRemovePerson(personId)}
-                onRemoveActivity={(activityId) => onRemoveActivity && onRemoveActivity(activityId)}
-              />
-            ) : (
-              <CourtScheduleView
-                courtId={court.id}
-                courtName={court.name}
-                courtNumber={court.number}
-                timeSlots={timeSlots}
-                occupants={court.occupants}
-                activities={court.activities}
-                onDrop={onDrop}
-                onActivityDrop={onActivityDrop}
-                onRemovePerson={onRemovePerson || (() => {})}
-                onRemoveActivity={onRemoveActivity || (() => {})}
-              />
-            )}
+            <div className="flex-1 overflow-hidden">
+              {viewMode === "layout" ? (
+                <CourtLayoutView
+                  courtId={court.id}
+                  courtType={court.type}
+                  occupants={court.occupants}
+                  activities={court.activities}
+                  onRemovePerson={(personId) => onRemovePerson && onRemovePerson(personId)}
+                  onRemoveActivity={(activityId) => onRemoveActivity && onRemoveActivity(activityId)}
+                />
+              ) : (
+                <CourtScheduleView
+                  courtId={court.id}
+                  courtName={court.name}
+                  courtNumber={court.number}
+                  timeSlots={timeSlots}
+                  occupants={court.occupants}
+                  activities={court.activities}
+                  onDrop={onDrop}
+                  onActivityDrop={onActivityDrop}
+                  onRemovePerson={onRemovePerson || (() => {})}
+                  onRemoveActivity={onRemoveActivity || (() => {})}
+                />
+              )}
+            </div>
 
             <CourtFooter occupants={court.occupants} />
           </CourtDrop>

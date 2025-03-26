@@ -22,7 +22,7 @@ export function TimeSlotOccupants({
     <div className="relative h-full w-full min-h-[60px] mt-5">
       {occupants.map((person, index) => (
         <CourtPerson
-          key={`${person.id}-${index}`}
+          key={`${person.id}-${index}-${time}`}
           person={person}
           index={index}
           total={occupants.length}
