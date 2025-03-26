@@ -39,15 +39,6 @@ export default function Sidebar({ collapsed, toggleSidebar }: SidebarProps) {
     }
   }, [location.pathname]);
 
-  // Close sidebar dropdowns when route changes if mobile
-  useEffect(() => {
-    if (isMobile) {
-      setCourtsOpen(false);
-      setPeopleOpen(false);
-      setActivitiesOpen(false);
-    }
-  }, [location.pathname, location.search, isMobile]);
-
   const handleMouseEnter = () => {
     if (!isMobile && collapsed) {
       setIsHovered(true);

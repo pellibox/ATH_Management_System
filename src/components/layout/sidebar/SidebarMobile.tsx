@@ -2,7 +2,7 @@
 import React from 'react';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface SidebarMobileProps {
   open: boolean;
@@ -24,7 +24,7 @@ export default function SidebarMobile({ open, setOpen, children }: SidebarMobile
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="left" className="p-0 w-64 max-w-[85vw]">
           {children}
         </SheetContent>
       </Sheet>

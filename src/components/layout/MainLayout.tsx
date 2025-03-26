@@ -21,8 +21,10 @@ export default function MainLayout() {
   
   // Auto-collapse sidebar on mobile when navigation occurs
   useEffect(() => {
-    setSidebarCollapsed(true); // Always collapse on navigation
-  }, [location.pathname]);
+    if (isMobile) {
+      setSidebarCollapsed(true); // Always collapse on mobile
+    }
+  }, [location.pathname, isMobile]);
   
   // Initialize component
   useEffect(() => {
