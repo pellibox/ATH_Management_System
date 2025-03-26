@@ -1,17 +1,17 @@
 
 import { useDrag } from "react-dnd";
-import { User, UserCog, Trash2, Users, AlertCircle, Tag } from "lucide-react";
 import { 
   ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { PersonData, Program } from "./types";
-import { PERSON_TYPES } from "./constants";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { getProgramColor } from "@/components/players/utils/programUtils";
+import { getPersonProgramColor, getAssignedPrograms, isPersonUnavailable } from "./utils/personUtils";
+import { PersonAvatar } from "./person-card/PersonAvatar";
+import { ProgramBadges } from "./person-card/ProgramBadges";
+import { AbsenceIndicator } from "./person-card/AbsenceIndicator";
+import { CardActions } from "./person-card/CardActions";
+import { PersonContextMenu } from "./person-card/PersonContextMenu";
 
 interface PersonCardProps {
   person: PersonData;
@@ -47,28 +47,17 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
     }
   };
   
-  // Determine program color
-  const programColor = person.programId 
-    ? getProgramColor(person.programId)
-    : (person.programIds && person.programIds.length > 0 
-      ? getProgramColor(person.programIds[0]) 
-      : "#e0e0e0");
+  // Get program color for the card border
+  const programColor = getPersonProgramColor(person);
 
-  // Find all assigned programs
-  const assignedPrograms = person.programIds 
-    ? programs.filter(p => person.programIds?.includes(p.id))
-    : person.programId 
-      ? [programs.find(p => p.id === person.programId)] 
-      : [];
+  // Get assigned programs
+  const validPrograms = getAssignedPrograms(person, programs);
       
-  // Filter out undefined programs
-  const validPrograms = assignedPrograms.filter(Boolean) as Program[];
-
   // Determine if person has assigned programs
   const hasProgram = validPrograms.length > 0;
   
   // Determine if the coach is unavailable
-  const isUnavailable = person.isPresent === false;
+  const isUnavailable = isPersonUnavailable(person);
 
   return (
     <ContextMenu>
@@ -89,22 +78,11 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
         >
           <div className="flex items-center space-x-2">
             {/* Avatar with color from primary program */}
-            <div 
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
-                person.type === PERSON_TYPES.PLAYER 
-                  ? hasProgram 
-                    ? "bg-gradient-to-r from-ath-blue to-ath-blue-light" 
-                    : "bg-ath-blue" 
-                  : "bg-ath-red-clay"
-              }`}
-              style={validPrograms[0]?.color ? { backgroundColor: validPrograms[0]?.color } : {}}
-            >
-              {person.type === PERSON_TYPES.PLAYER ? (
-                <User className="w-4 h-4" />
-              ) : (
-                <UserCog className="w-4 h-4" />
-              )}
-            </div>
+            <PersonAvatar 
+              person={person} 
+              hasProgram={hasProgram} 
+              programColor={validPrograms[0]?.color} 
+            />
             
             <div className="flex flex-col">
               <span className="text-sm font-medium truncate max-w-[150px]">{person.name}</span>
@@ -117,88 +95,31 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
               )}
               
               {/* Program badges */}
-              {validPrograms.length > 0 && (
-                <div className="flex flex-wrap mt-1 gap-1">
-                  {validPrograms.map(program => (
-                    <Badge 
-                      key={program.id} 
-                      variant="outline" 
-                      className="text-xs px-1.5 py-0"
-                      style={{ 
-                        backgroundColor: program.color,
-                        color: 'white',
-                        fontSize: '0.65rem'
-                      }}
-                    >
-                      {program.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              <ProgramBadges programs={validPrograms} />
               
               {/* Absence reason */}
-              {isUnavailable && (
-                <div className="flex items-center mt-1 text-xs text-red-500">
-                  <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                  <span className="truncate max-w-[140px]">
-                    {person.absenceReason || "Non disponibile"}
-                  </span>
-                </div>
-              )}
+              <AbsenceIndicator person={person} />
             </div>
           </div>
           
-          <div className="flex">
-            {onAddToDragArea && (
-              <button
-                onClick={handleAddToDragArea}
-                className={`text-gray-400 ${isUnavailable ? "hover:text-red-400" : "hover:text-gray-600"} transition-colors p-1`}
-              >
-                <Users className="w-4 h-4" />
-              </button>
-            )}
-            
-            {onRemove && (
-              <button
-                onClick={onRemove}
-                className="text-gray-400 hover:text-red-500 transition-colors p-1"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          {/* Card actions */}
+          <CardActions 
+            onAddToDragArea={onAddToDragArea ? handleAddToDragArea : undefined}
+            onRemove={onRemove}
+            person={person}
+            isUnavailable={isUnavailable}
+          />
         </div>
       </ContextMenuTrigger>
       
-      <ContextMenuContent>
-        {person.type === PERSON_TYPES.COACH && onAddToDragArea && !isUnavailable && (
-          <ContextMenuItem onClick={handleAddToDragArea}>
-            <Users className="w-4 h-4 mr-2" />
-            <span>Aggiungi all'area di trascinamento</span>
-          </ContextMenuItem>
-        )}
-        
-        {isUnavailable && (
-          <ContextMenuItem className="text-red-500" disabled>
-            <AlertCircle className="w-4 h-4 mr-2" />
-            <span>{person.absenceReason || "Non disponibile"}</span>
-          </ContextMenuItem>
-        )}
-        
-        {validPrograms.length > 0 && (
-          <ContextMenuItem disabled>
-            <Tag className="w-4 h-4 mr-2" />
-            <span>Programmi: {validPrograms.map(p => p.name).join(', ')}</span>
-          </ContextMenuItem>
-        )}
-        
-        {onRemove && (
-          <ContextMenuItem onClick={onRemove} className="text-red-500">
-            <Trash2 className="w-4 h-4 mr-2" />
-            <span>Rimuovi</span>
-          </ContextMenuItem>
-        )}
-      </ContextMenuContent>
+      {/* Context menu */}
+      <PersonContextMenu 
+        person={person}
+        validPrograms={validPrograms}
+        onAddToDragArea={onAddToDragArea ? handleAddToDragArea : undefined}
+        onRemove={onRemove}
+        isUnavailable={isUnavailable}
+      />
     </ContextMenu>
   );
 }
