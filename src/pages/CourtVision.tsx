@@ -1,14 +1,12 @@
-
 import React, { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { CourtVisionProvider } from "@/components/court-vision/CourtVisionContext";
 import { ViewModeToggle } from "@/components/court-vision/ViewModeToggle";
 import CourtVisionHeader from "@/components/court-vision/CourtVisionHeader";
 import CourtTypeLegend from "@/components/court-vision/CourtTypeLegend";
 import CourtGrid from "@/components/court-vision/CourtGrid";
 import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashboard";
-import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
+import { useCourtVision } from "@/components/court-vision/context/CourtVisionContext";
 import { AvailablePeople } from "@/components/court-vision/AvailablePeople";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, UserCog, Filter, PlaySquare } from "lucide-react";
@@ -180,30 +178,28 @@ function CourtVisionContent() {
 export default function CourtVision() {
   return (
     <DndProvider backend={HTML5Backend}>
-      <CourtVisionProvider>
-        <div className="mx-auto py-4 relative flex flex-col h-screen">
-          <div className="mb-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Visione Campo</h1>
-            <ViewModeToggle />
+      <div className="mx-auto py-4 relative flex flex-col h-screen">
+        <div className="mb-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Visione Campo</h1>
+          <ViewModeToggle />
+        </div>
+        
+        <CourtVisionHeader />
+        
+        {/* Main content area with sidebar layout */}
+        <div className="flex flex-1 gap-4 overflow-hidden">
+          {/* Left sidebar for players, coaches and activities */}
+          <div className="w-80 flex-shrink-0 overflow-y-auto pb-4 flex flex-col">
+            <PeopleList />
+            <ActivitiesPanel />
           </div>
           
-          <CourtVisionHeader />
-          
-          {/* Main content area with sidebar layout */}
-          <div className="flex flex-1 gap-4 overflow-hidden">
-            {/* Left sidebar for players, coaches and activities */}
-            <div className="w-80 flex-shrink-0 overflow-y-auto pb-4 flex flex-col">
-              <PeopleList />
-              <ActivitiesPanel />
-            </div>
-            
-            {/* Main content area */}
-            <div className="flex-1 overflow-y-auto pb-20">
-              <CourtVisionContent />
-            </div>
+          {/* Main content area */}
+          <div className="flex-1 overflow-y-auto pb-20">
+            <CourtVisionContent />
           </div>
         </div>
-      </CourtVisionProvider>
+      </div>
     </DndProvider>
   );
 }

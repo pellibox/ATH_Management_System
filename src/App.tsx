@@ -21,6 +21,7 @@ import Integrations from "./pages/Integrations";
 import Activities from "./pages/Activities";
 import ExtraActivities from "./pages/ExtraActivities";
 import Coaches from "./pages/Coaches";
+import { CourtVisionProvider } from "./components/court-vision/context/CourtVisionContext";
 import "./App.css";
 import "./index.css";
 
@@ -33,30 +34,32 @@ function App() {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="flex flex-col min-h-screen">
-            <Routes>
-              <Route element={<MainLayout />}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="calendar" element={<Calendar />} />
-                <Route path="courts" element={<Courts />} />
-                <Route path="court-vision" element={<CourtVision />} />
-                <Route path="court-vision/layout" element={<CourtVision />} />
-                <Route path="staff" element={<Staff />} />
-                <Route path="players" element={<Players />} />
-                <Route path="coaches" element={<Coaches />} />
-                <Route path="programs" element={<Programs />} />
-                <Route path="tournaments" element={<Tournaments />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="videos" element={<Videos />} />
-                <Route path="activities" element={<Activities />} />
-                <Route path="extra-activities" element={<ExtraActivities />} />
-                <Route path="integrations" element={<Integrations />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </div>
+          <CourtVisionProvider>
+            <div className="flex flex-col min-h-screen">
+              <Routes>
+                <Route element={<MainLayout />}>
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="calendar" element={<Calendar />} />
+                  <Route path="courts" element={<Courts />} />
+                  <Route path="court-vision" element={<CourtVision />} />
+                  <Route path="court-vision/layout" element={<CourtVision />} />
+                  <Route path="staff" element={<Staff />} />
+                  <Route path="players" element={<Players />} />
+                  <Route path="coaches" element={<Coaches />} />
+                  <Route path="programs" element={<Programs />} />
+                  <Route path="tournaments" element={<Tournaments />} />
+                  <Route path="reports" element={<Reports />} />
+                  <Route path="videos" element={<Videos />} />
+                  <Route path="activities" element={<Activities />} />
+                  <Route path="extra-activities" element={<ExtraActivities />} />
+                  <Route path="integrations" element={<Integrations />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </div>
+          </CourtVisionProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
