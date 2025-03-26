@@ -10,6 +10,7 @@ interface PersonProps {
 }
 
 export function Person({ person, onRemove, onAddToDragArea, programs = [] }: PersonProps) {
+  // Simple wrapper component that passes props to PersonCard
   return (
     <PersonCard
       person={person}

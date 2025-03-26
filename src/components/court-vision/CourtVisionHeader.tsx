@@ -1,66 +1,37 @@
 
 import { useState } from 'react';
-import { Calendar, Users, Layers, Clock, FileText, Filter, X } from 'lucide-react';
+import { Calendar, Layers, Clock, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateSelector } from './DateSelector';
 import { SendScheduleDialog } from './schedule-dialog';
-import { CourtProps, PersonData, ActivityData, ScheduleTemplate } from './types';
+import { ScheduleTemplate } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AvailablePeople } from './AvailablePeople';
 import { AvailableActivities } from './AvailableActivities';
 import { ScheduleTemplates } from './ScheduleTemplates';
-import { Button } from '@/components/ui/button';
-import { DialogClose } from '@/components/ui/dialog';
-import { PeopleManagement } from './PeopleManagement';
+import { useCourtVision } from './context/CourtVisionContext';
 
-interface CourtVisionHeaderProps {
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
-  courts: CourtProps[];
-  people: PersonData[];
-  activities: ActivityData[];
-  templates: ScheduleTemplate[];
-  playersList: PersonData[];
-  coachesList: PersonData[];
-  timeSlots: string[];
-  programs?: any[];
-  onApplyTemplate: (template: ScheduleTemplate) => void;
-  onSaveTemplate: (name: string) => void;
-  onCopyToNextDay: () => void;
-  onCopyToWeek: () => void;
-  onCheckUnassigned: (scheduleType: "day" | "week" | "month") => PersonData[];
-  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
-  onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
-  onAddPerson: (person: {name: string, type: string, email?: string, phone?: string, sportTypes?: string[]}) => void;
-  onAddActivity: (activity: {name: string, type: string, duration: string}) => void;
-  onAddToDragArea: (person: PersonData) => void;
-  onAssignProgram: (personId: string, programId: string) => void;
-}
-
-export default function CourtVisionHeader({
-  selectedDate,
-  onDateChange,
-  courts,
-  people,
-  activities,
-  templates,
-  playersList,
-  coachesList,
-  timeSlots,
-  programs = [],
-  onApplyTemplate,
-  onSaveTemplate,
-  onCopyToNextDay,
-  onCopyToWeek,
-  onCheckUnassigned,
-  onDrop,
-  onActivityDrop,
-  onAddPerson,
-  onAddActivity,
-  onAddToDragArea,
-  onAssignProgram
-}: CourtVisionHeaderProps) {
-  const [activeTab, setActiveTab] = useState<"assignments" | "people" | "activities" | "templates">("assignments");
+export default function CourtVisionHeader() {
+  const { 
+    selectedDate,
+    setSelectedDate,
+    courts,
+    people,
+    activities,
+    templates,
+    playersList,
+    coachesList,
+    timeSlots,
+    programs,
+    applyTemplate,
+    saveAsTemplate,
+    copyToNextDay,
+    copyToWeek,
+    checkUnassignedPeople,
+    handleActivityDrop,
+    handleAddActivity
+  } = useCourtVision();
+  
+  const [activeTab, setActiveTab] = useState<"assignments" | "activities" | "templates">("assignments");
   
   // Get today's assignments from courts
   const getTodaysAssignments = () => {
@@ -86,20 +57,20 @@ export default function CourtVisionHeader({
         <div className="flex-1 max-w-md w-full">
           <DateSelector 
             selectedDate={selectedDate} 
-            onDateChange={onDateChange} 
+            onDateChange={setSelectedDate} 
           />
         </div>
         <div className="flex flex-wrap gap-2">
           <button 
             className="inline-flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-white py-1.5 px-3 rounded text-sm font-medium transition-colors"
-            onClick={onCopyToNextDay}
+            onClick={copyToNextDay}
           >
             <Calendar className="h-3.5 w-3.5" />
             <span>Copia Giorno</span>
           </button>
           <button 
             className="inline-flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-white py-1.5 px-3 rounded text-sm font-medium transition-colors"
-            onClick={onCopyToWeek}
+            onClick={copyToWeek}
           >
             <Calendar className="h-3.5 w-3.5" />
             <span>Copia Settimana</span>
@@ -109,7 +80,7 @@ export default function CourtVisionHeader({
             selectedDate={selectedDate}
             playersList={playersList}
             coachesList={coachesList}
-            onCheckUnassigned={onCheckUnassigned}
+            onCheckUnassigned={checkUnassignedPeople}
           />
         </div>
       </div>
@@ -119,10 +90,6 @@ export default function CourtVisionHeader({
           <TabsTrigger value="assignments" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Layers className="h-4 w-4 mr-2" />
             <span>Assegnazioni di Oggi{totalAssignments > 0 ? ` (${totalAssignments})` : ''}</span>
-          </TabsTrigger>
-          <TabsTrigger value="people" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Users className="h-4 w-4 mr-2" />
-            <span>Persone Disponibili</span>
           </TabsTrigger>
           <TabsTrigger value="activities" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Clock className="h-4 w-4 mr-2" />
@@ -137,7 +104,6 @@ export default function CourtVisionHeader({
         <TabsContent value="assignments" className="mt-0">
           <div className="px-4 py-3 bg-gray-50 rounded-lg text-sm">
             <p className="font-medium flex items-center gap-1">
-              <Filter className="h-4 w-4 text-gray-500" />
               <span>Assegnazioni per {format(selectedDate, 'EEEE d MMMM yyyy')}</span>
             </p>
             <p className="text-gray-600 mt-1">
@@ -166,44 +132,20 @@ export default function CourtVisionHeader({
             )}
           </div>
         </TabsContent>
-        
-        <TabsContent value="people" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AvailablePeople 
-              people={people}
-              programs={programs}
-              onAddPerson={onAddPerson}
-              onDrop={onDrop}
-              onAddToDragArea={onAddToDragArea}
-              playersList={playersList}
-              coachesList={coachesList}
-            />
-            
-            <PeopleManagement
-              playersList={playersList}
-              coachesList={coachesList}
-              programs={programs || []}
-              onAddPerson={onAddPerson}
-              onRemovePerson={() => {}} 
-              onAddToDragArea={onAddToDragArea}
-              onAssignProgram={onAssignProgram}
-            />
-          </div>
-        </TabsContent>
-        
+                
         <TabsContent value="activities" className="mt-0">
           <AvailableActivities 
             activities={activities}
-            onAddActivity={onAddActivity}
-            onActivityDrop={onActivityDrop}
+            onAddActivity={handleAddActivity}
+            onActivityDrop={handleActivityDrop}
           />
         </TabsContent>
         
         <TabsContent value="templates" className="mt-0">
           <ScheduleTemplates 
             templates={templates} 
-            onApplyTemplate={onApplyTemplate}
-            onSaveTemplate={onSaveTemplate}
+            onApplyTemplate={applyTemplate}
+            onSaveTemplate={saveAsTemplate}
           />
         </TabsContent>
       </Tabs>

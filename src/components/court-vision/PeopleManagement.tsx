@@ -1,15 +1,13 @@
 
 import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Users, UserCog, AlertCircle, Tag, Search } from "lucide-react";
+import { User, Users, UserCog, Search, AlertCircle } from "lucide-react";
 import { PersonData, Program } from "./types";
-import { PERSON_TYPES } from "./constants";
 import { useToast } from "@/hooks/use-toast";
 import { PersonCard } from "./PersonCard";
-import { AddPersonForm } from "./AddPersonForm";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { CoachAvailabilityActions } from "./CoachAvailabilityActions";
 
 export interface PeopleManagementProps {
   playersList: PersonData[];
@@ -98,24 +96,20 @@ export function PeopleManagement({
       return;
     }
     
-    // Make a copy to avoid reference issues
-    const personCopy = { ...person };
-    onAddToDragArea(personCopy);
+    onAddToDragArea(person);
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-soft p-4">
+    <div className="bg-white rounded-xl shadow-sm p-4">
       <h2 className="font-medium mb-3 flex items-center">
         <UserCog className="h-4 w-4 mr-2" /> Database Persone
       </h2>
       
-      <AddPersonForm onAddPerson={onAddPerson} />
-      
-      <div className="mt-4 mb-3">
+      <div className="mb-3">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input 
-            placeholder="Cerca..." 
+            placeholder="Cerca per nome o email..." 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-8 text-sm" 
@@ -166,14 +160,14 @@ export function PeopleManagement({
       <Tabs defaultValue="players" onValueChange={setSelectedTab} value={selectedTab}>
         <TabsList className="grid w-full grid-cols-2 mb-3">
           <TabsTrigger value="players" className="text-xs">
-            <User className="h-3 w-3 mr-1" /> <span className="truncate">Giocatori ({filteredPlayers.length})</span>
+            <User className="h-3 w-3 mr-1" /> <span>Giocatori ({filteredPlayers.length})</span>
           </TabsTrigger>
           <TabsTrigger value="coaches" className="text-xs">
-            <UserCog className="h-3 w-3 mr-1" /> <span className="truncate">Allenatori ({filteredCoaches.length})</span>
+            <UserCog className="h-3 w-3 mr-1" /> <span>Allenatori ({filteredCoaches.length})</span>
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="players" className="max-h-[180px] overflow-y-auto mt-0">
+        <TabsContent value="players" className="max-h-[300px] overflow-y-auto mt-0">
           {filteredPlayers.length > 0 ? (
             filteredPlayers.map((player) => (
               <PersonCard
@@ -181,7 +175,6 @@ export function PeopleManagement({
                 person={player} 
                 programs={programs}
                 onAddToDragArea={handleAddPersonToDragArea}
-                onRemove={() => onRemovePerson(player.id)}
               />
             ))
           ) : (
@@ -195,17 +188,21 @@ export function PeopleManagement({
           )}
         </TabsContent>
         
-        <TabsContent value="coaches" className="max-h-[180px] overflow-y-auto mt-0">
+        <TabsContent value="coaches" className="max-h-[300px] overflow-y-auto mt-0">
           {filteredCoaches.length > 0 ? (
             filteredCoaches.map((coach) => (
-              <PersonCard
-                key={coach.id} 
-                person={coach}
-                programs={programs}
-                onAddToDragArea={handleAddPersonToDragArea}
-                // Coaches can be removed from the database
-                onRemove={() => onRemovePerson(coach.id)}
-              />
+              <div key={coach.id} className="mb-2">
+                <PersonCard
+                  person={coach}
+                  programs={programs}
+                  onAddToDragArea={handleAddPersonToDragArea}
+                />
+                {selectedTab === "coaches" && (
+                  <div className="mt-1 ml-10">
+                    <CoachAvailabilityActions coach={coach} />
+                  </div>
+                )}
+              </div>
             ))
           ) : (
             <div className="text-sm text-gray-500 italic p-4 text-center bg-gray-50 rounded-md">
@@ -222,34 +219,6 @@ export function PeopleManagement({
           )}
         </TabsContent>
       </Tabs>
-      
-      {/* Program legend at the bottom */}
-      {programs.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-2 flex items-center">
-            <Tag className="h-3 w-3 mr-1" /> Legenda programmi:
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {programs.map(program => (
-              <Badge 
-                key={program.id} 
-                variant="outline" 
-                className="text-xs px-1.5 py-0.5"
-                style={{ 
-                  backgroundColor: program.color,
-                  color: 'white',
-                  opacity: 0.8
-                }}
-              >
-                {program.name}
-              </Badge>
-            ))}
-            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-200 text-gray-700">
-              Senza programma
-            </Badge>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
