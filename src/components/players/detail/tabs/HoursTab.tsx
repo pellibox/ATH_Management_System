@@ -7,7 +7,7 @@ import { Player } from "@/types/player";
 import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel } from "@/components/ui/select";
 import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
 import { calculateCustomProgramHours } from "@/types/player/programs";
 import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
@@ -29,7 +29,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
   
   const sports = ["Tennis", "Padel"];
   
-  // Load all available programs
   useEffect(() => {
     const programs: { 
       name: string; 
@@ -39,14 +38,11 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       totalWeeks: number 
     }[] = [];
     
-    // Combine all program categories into a structured array
     Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
       const category = PROGRAM_CATEGORIES[categoryKey];
       
-      // Check if category.programs exists before iterating
       if (category && category.programs && Array.isArray(category.programs)) {
         category.programs.forEach(program => {
-          // Escludiamo i programmi nella lista di esclusione
           if (!EXCLUDED_PROGRAM_NAMES.includes(program.name)) {
             programs.push({
               name: program.name,
@@ -64,7 +60,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     setFilteredPrograms(programs);
   }, []);
   
-  // Update filtered programs when player sports change
   useEffect(() => {
     if (selectedSports.length > 0) {
       const filtered = availablePrograms.filter(program => 
@@ -76,19 +71,16 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     }
   }, [selectedSports, availablePrograms]);
   
-  // Update selected programs when player.programs changes
   useEffect(() => {
     setSelectedPrograms(player.programs || []);
     setSelectedSports(player.sports || []);
   }, [player.programs, player.sports]);
   
-  // Calculate total program hours
   useEffect(() => {
     let totalProgramHours = 0;
     
     if (selectedPrograms && selectedPrograms.length > 0) {
       selectedPrograms.forEach(programName => {
-        // Find the program in available programs
         const foundProgram = availablePrograms.find(p => p.name === programName);
         
         if (foundProgram) {
@@ -102,7 +94,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       });
     }
     
-    // Calculate remaining hours by subtracting completed hours
     const completedHours = player.completedHours || 0;
     setProgramHours(totalProgramHours);
     setRemainingHours(totalProgramHours - completedHours);
@@ -110,7 +101,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
 
   const hoursProgress = programHours > 0 ? ((programHours - remainingHours) / programHours) * 100 : 0;
 
-  // Get program details for the selected program
   const getProgramDetails = (programName: string) => {
     const program = availablePrograms.find(p => p.name === programName);
     if (program) {
@@ -127,7 +117,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     return null;
   };
   
-  // Handle sport selection changes
   const handleSportSelect = (sport: string, isSelected: boolean) => {
     let updatedSports: string[] = [...selectedSports];
     
@@ -143,7 +132,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     handleInputChange('sports', updatedSports);
   };
   
-  // Handle program selection changes
   const handleProgramSelect = (programName: string, isSelected: boolean) => {
     let updatedPrograms: string[] = [...selectedPrograms];
     
@@ -159,7 +147,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     handleInputChange('programs', updatedPrograms);
   };
   
-  // Group programs by category
   const programsByCategory = filteredPrograms.reduce((acc, program) => {
     if (!acc[program.category]) {
       acc[program.category] = [];
@@ -210,9 +197,9 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
                         </SelectTrigger>
                         <SelectContent className="bg-white">
                           {Object.entries(programsByCategory).map(([category, programs]) => (
-                            <SelectItem key={category} value="" disabled className="font-bold">
+                            <SelectLabel key={category} className="font-bold">
                               {category.charAt(0).toUpperCase() + category.slice(1)}
-                            </SelectItem>
+                            </SelectLabel>
                           ))}
                           {Object.entries(programsByCategory).flatMap(([category, programs]) =>
                             programs.map(program => (
