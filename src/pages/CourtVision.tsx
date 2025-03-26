@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { CourtVisionProvider } from "@/components/court-vision/CourtVisionContext";
@@ -9,6 +9,7 @@ import CourtTypeLegend from "@/components/court-vision/CourtTypeLegend";
 import CourtGrid from "@/components/court-vision/CourtGrid";
 import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashboard";
 import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
+import { ProgramFilters } from "@/components/programs/ProgramFilters";
 
 // Main content component that renders based on view type
 function CourtVisionContent() {
@@ -62,6 +63,7 @@ function HeaderWithContext() {
     filteredPlayers,
     filteredCoaches,
     timeSlots,
+    programs,
     applyTemplate,
     saveAsTemplate,
     copyToNextDay,
@@ -71,7 +73,8 @@ function HeaderWithContext() {
     handleActivityDrop,
     handleAddPerson,
     handleAddActivity,
-    handleAddToDragArea
+    handleAddToDragArea,
+    handleAssignProgram
   } = useCourtVision();
   
   return (
@@ -85,6 +88,7 @@ function HeaderWithContext() {
       playersList={filteredPlayers}
       coachesList={filteredCoaches}
       timeSlots={timeSlots}
+      programs={programs}
       onApplyTemplate={applyTemplate}
       onSaveTemplate={saveAsTemplate}
       onCopyToNextDay={copyToNextDay}
@@ -95,12 +99,15 @@ function HeaderWithContext() {
       onAddPerson={handleAddPerson}
       onAddActivity={handleAddActivity}
       onAddToDragArea={handleAddToDragArea}
+      onAssignProgram={handleAssignProgram}
     />
   );
 }
 
 // Main Court Vision component
 export default function CourtVision() {
+  const [activeFilter, setActiveFilter] = useState("all");
+  
   return (
     <DndProvider backend={HTML5Backend}>
       <CourtVisionProvider>
@@ -112,6 +119,7 @@ export default function CourtVision() {
           
           <div className="sticky top-0 z-30 bg-white pb-4">
             <HeaderWithContext />
+            <ProgramFilters activeFilter={activeFilter} setFilter={setActiveFilter} />
             <CourtTypeLegend />
           </div>
           

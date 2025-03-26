@@ -1,15 +1,16 @@
 
 import { useState } from "react";
-import { Users, User, UserCog } from "lucide-react";
+import { Users, User, UserCog, Plus } from "lucide-react";
 import { Person } from "./Person";
 import { PersonData, Program } from "./types";
 import { PERSON_TYPES } from "./constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 export interface AvailablePeopleProps {
   people: PersonData[];
   programs?: Program[];
-  onAddPerson?: (person: {name: string, type: string}) => void;
+  onAddPerson?: (person: {name: string, type: string, email?: string, phone?: string, sportTypes?: string[]}) => void;
   onRemovePerson?: (id: string) => void;
   onDrop?: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
   onAddToDragArea?: (person: PersonData) => void;
@@ -72,7 +73,8 @@ export function AvailablePeople({
               <Person
                 key={person.id}
                 person={person}
-                onRemove={onRemovePerson ? () => onRemovePerson(person.id) : undefined}
+                // Coaches can't be removed from available list
+                onRemove={undefined}
               />
             ))
           ) : (

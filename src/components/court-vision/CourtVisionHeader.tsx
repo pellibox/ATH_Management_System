@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Calendar, Users, Layers, Clock, FileText, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,6 +11,7 @@ import { AvailableActivities } from './AvailableActivities';
 import { ScheduleTemplates } from './ScheduleTemplates';
 import { Button } from '@/components/ui/button';
 import { DialogClose } from '@/components/ui/dialog';
+import { PeopleManagement } from './PeopleManagement';
 
 interface CourtVisionHeaderProps {
   selectedDate: Date;
@@ -28,9 +30,11 @@ interface CourtVisionHeaderProps {
   onCheckUnassigned: (scheduleType: "day" | "week" | "month") => PersonData[];
   onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
   onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
-  onAddPerson: (person: {name: string, type: string}) => void;
+  onAddPerson: (person: {name: string, type: string, email?: string, phone?: string, sportTypes?: string[]}) => void;
   onAddActivity: (activity: {name: string, type: string, duration: string}) => void;
   onAddToDragArea: (person: PersonData) => void;
+  onAssignProgram: (personId: string, programId: string) => void;
+  programs?: any[];
 }
 
 export default function CourtVisionHeader({
@@ -52,9 +56,29 @@ export default function CourtVisionHeader({
   onActivityDrop,
   onAddPerson,
   onAddActivity,
-  onAddToDragArea
+  onAddToDragArea,
+  onAssignProgram,
+  programs = []
 }: CourtVisionHeaderProps) {
   const [activeTab, setActiveTab] = useState<"assignments" | "people" | "activities" | "templates">("assignments");
+  
+  // Get today's assignments from courts
+  const getTodaysAssignments = () => {
+    let playerCount = 0;
+    let coachCount = 0;
+    let activityCount = 0;
+    
+    courts.forEach(court => {
+      playerCount += court.occupants.filter(p => p.type === "player").length;
+      coachCount += court.occupants.filter(p => p.type === "coach").length;
+      activityCount += court.activities.length;
+    });
+    
+    return { playerCount, coachCount, activityCount };
+  };
+  
+  const { playerCount, coachCount, activityCount } = getTodaysAssignments();
+  const totalAssignments = playerCount + coachCount + activityCount;
   
   return (
     <div className="bg-white rounded-xl shadow-md p-4 mb-6">
@@ -94,7 +118,7 @@ export default function CourtVisionHeader({
         <TabsList className="mb-4 w-full justify-start bg-gray-100 p-0.5">
           <TabsTrigger value="assignments" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Layers className="h-4 w-4 mr-2" />
-            <span>Assegnazioni di Oggi</span>
+            <span>Assegnazioni di Oggi{totalAssignments > 0 ? ` (${totalAssignments})` : ''}</span>
           </TabsTrigger>
           <TabsTrigger value="people" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Users className="h-4 w-4 mr-2" />
@@ -120,18 +144,50 @@ export default function CourtVisionHeader({
               Visualizza e gestisci le assegnazioni di campi, persone e attività per la data selezionata.
               Trascina le persone e le attività sui campi per assegnarle.
             </p>
+            
+            {totalAssignments > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {playerCount > 0 && (
+                  <span className="text-xs bg-ath-blue-light text-ath-blue px-2 py-1 rounded-full">
+                    {playerCount} Giocatori
+                  </span>
+                )}
+                {coachCount > 0 && (
+                  <span className="text-xs bg-ath-red-clay-light text-ath-red-clay px-2 py-1 rounded-full">
+                    {coachCount} Allenatori
+                  </span>
+                )}
+                {activityCount > 0 && (
+                  <span className="text-xs bg-ath-gray-light text-ath-gray px-2 py-1 rounded-full">
+                    {activityCount} Attività
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </TabsContent>
         
         <TabsContent value="people" className="mt-0">
-          <AvailablePeople 
-            people={people}
-            onAddPerson={onAddPerson}
-            onDrop={onDrop}
-            onAddToDragArea={onAddToDragArea}
-            playersList={playersList}
-            coachesList={coachesList}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AvailablePeople 
+              people={people}
+              onAddPerson={onAddPerson}
+              onDrop={onDrop}
+              onAddToDragArea={onAddToDragArea}
+              playersList={playersList}
+              coachesList={coachesList}
+            />
+            
+            <PeopleManagement
+              playersList={playersList}
+              coachesList={coachesList}
+              programs={programs || []}
+              onAddPerson={onAddPerson}
+              onRemovePerson={() => {}} 
+              onAddToDragArea={onAddToDragArea}
+              onAssignProgram={onAssignProgram}
+            />
+          </div>
         </TabsContent>
         
         <TabsContent value="activities" className="mt-0">

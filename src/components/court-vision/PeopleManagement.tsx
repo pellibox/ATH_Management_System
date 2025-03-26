@@ -62,27 +62,42 @@ export function PeopleManagement({
         </TabsList>
         
         <TabsContent value="players" className="max-h-[180px] overflow-y-auto mt-0">
-          {playersList.map((player) => (
-            <DraggablePerson 
-              key={player.id} 
-              person={player} 
-              programs={programs}
-              onAddToDragArea={handleAddPlayerToDragArea}
-              onAssignProgram={onAssignProgram}
-            />
-          ))}
+          {playersList.length > 0 ? (
+            playersList.map((player) => (
+              <DraggablePerson 
+                key={player.id} 
+                person={player} 
+                programs={programs}
+                onAddToDragArea={handleAddPlayerToDragArea}
+                onAssignProgram={onAssignProgram}
+                onRemovePerson={onRemovePerson}
+              />
+            ))
+          ) : (
+            <div className="text-sm text-gray-500 italic p-2">
+              Non ci sono giocatori nel database
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="coaches" className="max-h-[180px] overflow-y-auto mt-0">
-          {coachesList.map((coach) => (
-            <DraggablePerson 
-              key={coach.id} 
-              person={coach}
-              programs={programs}
-              onAddToDragArea={onAddToDragArea}
-              onAssignProgram={onAssignProgram}
-            />
-          ))}
+          {coachesList.length > 0 ? (
+            coachesList.map((coach) => (
+              <DraggablePerson 
+                key={coach.id} 
+                person={coach}
+                programs={programs}
+                onAddToDragArea={onAddToDragArea}
+                onAssignProgram={onAssignProgram}
+                // Coaches cannot be removed
+                onRemovePerson={undefined}
+              />
+            ))
+          ) : (
+            <div className="text-sm text-gray-500 italic p-2">
+              Non ci sono allenatori nel database
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
