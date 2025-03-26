@@ -11,7 +11,8 @@ import { AssignmentsDashboard } from "@/components/court-vision/AssignmentsDashb
 import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
 import { AvailablePeople } from "@/components/court-vision/AvailablePeople";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, UserCog } from "lucide-react";
+import { User, UserCog, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // People management component that shows players and coaches tabs
 function PeopleList() {
@@ -26,6 +27,8 @@ function PeopleList() {
   } = useCourtVision();
   
   const [activeTab, setActiveTab] = useState("players");
+  const [programFilter, setProgramFilter] = useState("all");
+  const [availabilityFilter, setAvailabilityFilter] = useState("all");
   
   return (
     <div className="bg-white rounded-lg shadow-sm p-3">
@@ -39,6 +42,46 @@ function PeopleList() {
           </TabsTrigger>
         </TabsList>
         
+        <div className="mb-3 flex items-center space-x-2">
+          <div className="flex-1">
+            <Select value={programFilter} onValueChange={(value) => setProgramFilter(value)}>
+              <SelectTrigger className="w-full h-8 text-xs">
+                <SelectValue placeholder="Filtra per programma" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectItem value="all">Tutti i programmi</SelectItem>
+                <SelectItem value="none">Senza programma</SelectItem>
+                {programs.map(program => (
+                  <SelectItem key={program.id} value={program.id}>
+                    <div className="flex items-center">
+                      <div 
+                        className="h-2 w-2 rounded-full mr-1" 
+                        style={{ backgroundColor: program.color }}
+                      ></div>
+                      {program.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {activeTab === "coaches" && (
+            <div className="flex-1">
+              <Select value={availabilityFilter} onValueChange={(value) => setAvailabilityFilter(value)}>
+                <SelectTrigger className="w-full h-8 text-xs">
+                  <SelectValue placeholder="Filtra per disponibilità" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="all">Tutti</SelectItem>
+                  <SelectItem value="available">Disponibili</SelectItem>
+                  <SelectItem value="unavailable">Non disponibili</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+        
         <TabsContent value="players" className="mt-0">
           <AvailablePeople
             people={people}
@@ -47,6 +90,7 @@ function PeopleList() {
             onAddToDragArea={handleAddToDragArea}
             playersList={playersList}
             coachesList={coachesList}
+            programFilter={programFilter}
           />
         </TabsContent>
         
@@ -58,6 +102,8 @@ function PeopleList() {
             onAddToDragArea={handleAddToDragArea}
             playersList={[]}
             coachesList={coachesList}
+            programFilter={programFilter}
+            availabilityFilter={availabilityFilter}
           />
         </TabsContent>
       </Tabs>

@@ -61,12 +61,9 @@ export function PlayerFilters() {
         <div className="flex flex-col sm:flex-row gap-2">
           <Select value={programFilter} onValueChange={setProgramFilter}>
             <SelectTrigger className="w-[180px]">
-              <div className="flex gap-2 items-center">
-                <Filter className="h-4 w-4" />
-                <span>Programma</span>
-              </div>
+              <SelectValue placeholder="Seleziona programma" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="all">Tutti i programmi</SelectItem>
               {programs.map((program) => (
                 <SelectItem key={program} value={program}>

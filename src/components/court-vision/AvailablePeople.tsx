@@ -16,6 +16,8 @@ export interface AvailablePeopleProps {
   onAddToDragArea?: (person: PersonData) => void;
   playersList?: PersonData[];
   coachesList?: PersonData[];
+  programFilter?: string;
+  availabilityFilter?: string;
 }
 
 export function AvailablePeople({ 
@@ -26,10 +28,10 @@ export function AvailablePeople({
   onDrop,
   onAddToDragArea,
   playersList = [],
-  coachesList = []
+  coachesList = [],
+  programFilter = "all",
+  availabilityFilter = "all"
 }: AvailablePeopleProps) {
-  const [programFilter, setProgramFilter] = useState("all");
-  const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const { toast } = useToast();
   
   // Determine which list to show based on provided props
@@ -93,46 +95,6 @@ export function AvailablePeople({
   
   return (
     <div className="overflow-hidden">
-      <div className="mb-3 flex items-center space-x-2">
-        <div className="flex-1">
-          <Select value={programFilter} onValueChange={setProgramFilter}>
-            <SelectTrigger className="w-full h-8 text-xs">
-              <SelectValue placeholder="Filtra per programma" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tutti i programmi</SelectItem>
-              <SelectItem value="none">Senza programma</SelectItem>
-              {programs.map(program => (
-                <SelectItem key={program.id} value={program.id}>
-                  <div className="flex items-center">
-                    <div 
-                      className="h-2 w-2 rounded-full mr-1" 
-                      style={{ backgroundColor: program.color }}
-                    ></div>
-                    {program.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {showCoaches && (
-          <div className="flex-1">
-            <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-              <SelectTrigger className="w-full h-8 text-xs">
-                <SelectValue placeholder="Filtra per disponibilità" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tutti</SelectItem>
-                <SelectItem value="available">Disponibili</SelectItem>
-                <SelectItem value="unavailable">Non disponibili</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-      </div>
-      
       <div className="max-h-[400px] overflow-y-auto">
         {peopleToShow.length > 0 ? (
           peopleToShow.map((person) => (
