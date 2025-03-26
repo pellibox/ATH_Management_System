@@ -10,7 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export default function MainLayout() {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // Default to collapsed
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -21,10 +21,8 @@ export default function MainLayout() {
   
   // Auto-collapse sidebar on mobile when navigation occurs
   useEffect(() => {
-    if (isMobile) {
-      setSidebarCollapsed(true);
-    }
-  }, [location.pathname, isMobile]);
+    setSidebarCollapsed(true); // Always collapse on navigation
+  }, [location.pathname]);
   
   // Initialize component
   useEffect(() => {

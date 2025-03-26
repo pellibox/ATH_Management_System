@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface SidebarLinkProps {
   to: string;
@@ -13,52 +13,32 @@ interface SidebarLinkProps {
 }
 
 export default function SidebarLink({ to, icon: Icon, label, isActive, collapsed }: SidebarLinkProps) {
-  const location = useLocation();
-  
-  const linkContent = (
-    <>
-      <Icon className={`h-5 w-5 ${isActive ? 'text-ath-blue' : 'text-gray-500'}`} />
-      {!collapsed && (
-        <span className={`ml-3 transition-opacity ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
-          {label}
-        </span>
-      )}
-    </>
-  );
-  
-  return collapsed ? (
-    <TooltipProvider>
-      <Tooltip delayDuration={200}>
-        <TooltipTrigger asChild>
-          <li>
-            <Link
-              to={to}
-              className={`flex items-center px-3 py-2 rounded-md transition-colors ${
-                isActive 
-                  ? 'bg-ath-blue-light text-ath-blue' 
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {linkContent}
-            </Link>
-          </li>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          <p>{label}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  ) : (
+  return (
     <li>
       <Link
         to={to}
-        className={`flex items-center px-3 py-2 rounded-md transition-colors ${
+        className={cn(
+          "flex items-center py-2 px-3 rounded-md text-sm transition-colors relative group",
           isActive 
-            ? 'bg-ath-blue-light text-ath-blue' 
-            : 'text-gray-700 hover:bg-gray-100'
-        }`}
+            ? "bg-ath-blue text-white font-medium" 
+            : "text-gray-600 hover:bg-gray-100"
+        )}
       >
-        {linkContent}
+        <Icon className={cn(
+          "h-5 w-5 flex-shrink-0",
+          isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700",
+          collapsed ? "mx-auto" : "mr-2"
+        )} />
+        
+        {!collapsed && (
+          <span className="truncate">{label}</span>
+        )}
+        
+        {collapsed && (
+          <span className="absolute left-full ml-2 rounded bg-gray-900 px-2 py-1 text-xs text-white invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            {label}
+          </span>
+        )}
       </Link>
     </li>
   );
