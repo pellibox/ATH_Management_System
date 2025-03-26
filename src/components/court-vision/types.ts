@@ -1,4 +1,3 @@
-
 export interface PersonData {
   id: string;
   name: string;
@@ -23,6 +22,7 @@ export interface PersonData {
   preferredContactMethod?: string; // Contact preference
   activityHistory?: ActivityHistoryEntry[]; // Track activities player has participated in
   endTimeSlot?: string; // End time slot for spanning multiple slots
+  date?: string; // ISO date string for the assignment day
 }
 
 export interface ActivityHistoryEntry {

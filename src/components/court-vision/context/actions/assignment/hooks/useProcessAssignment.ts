@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { PersonData } from "../../../../types";
 import { 
@@ -41,8 +42,9 @@ export const useProcessAssignment = (
       timeSlots
     );
     
-    // Override the date with the selected date
-    personWithCourtInfo.date = selectedDate.toISOString().split('T')[0];
+    // Set the date explicitly to the selected date's ISO string date part
+    const dateString = selectedDate.toISOString().split('T')[0];
+    personWithCourtInfo.date = dateString;
 
     // Remove from source if needed
     let updatedCourts = removePersonFromSource(
