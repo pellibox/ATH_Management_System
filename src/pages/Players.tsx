@@ -1,16 +1,14 @@
 
-import { useState } from "react";
-import { EnhancedPlayerList } from "@/components/players/EnhancedPlayerList";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PlayerForm } from "@/components/players/PlayerForm";
-import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 import { Plus, Users } from "lucide-react";
 import { PlayerProvider } from "@/contexts/PlayerContext";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { PlayerFilters } from "@/components/players/PlayerFilters";
 import { PlayerList } from "@/components/players/PlayerList";
 import { ScheduleMessage } from "@/components/players/ScheduleMessage";
+import { PlayerForm } from "@/components/players/PlayerForm";
+import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 
 function PlayersContent() {
   const { editingPlayer, messagePlayer, handleAddPlayer, handleUpdatePlayer } = usePlayerContext();
@@ -36,7 +34,10 @@ function PlayersContent() {
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
-            <PlayerForm buttonText="Aggiungi Giocatore" handleSave={handleAddPlayer} />
+            <PlayerForm
+              buttonText="Aggiungi Giocatore"
+              handleSave={handleAddPlayer}
+            />
           </DialogContent>
         </Dialog>
       </div>

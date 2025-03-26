@@ -11,14 +11,15 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { usePlayerContext } from "@/contexts/PlayerContext";
+import { Player } from "@/types/player";
 
 interface PlayerFormProps {
   buttonText: string;
-  handleSave: () => void;
+  handleSave: (playerData?: Omit<Player, "id">) => void;
 }
 
 export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
-  const { editingPlayer, newPlayer, setNewPlayer, handleAddPlayer } = usePlayerContext();
+  const { editingPlayer, newPlayer, setNewPlayer } = usePlayerContext();
   const [formData, setFormData] = useState(editingPlayer || newPlayer);
 
   // Update form data when editing player changes
@@ -32,7 +33,7 @@ export function PlayerForm({ buttonText, handleSave }: PlayerFormProps) {
       handleSave();
     } else {
       // For adding new player
-      handleAddPlayer(formData);
+      handleSave(formData);
     }
   };
 
