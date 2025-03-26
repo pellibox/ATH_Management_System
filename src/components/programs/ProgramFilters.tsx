@@ -1,5 +1,6 @@
 
 import { Button } from "@/components/ui/button";
+import { getCategoryTitle } from "@/contexts/programs/constants";
 
 interface ProgramFiltersProps {
   categories: Record<string, string>;
