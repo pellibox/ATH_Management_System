@@ -1,9 +1,12 @@
 
 import { Player } from "@/types/player";
+import { PersonData } from "@/components/court-vision/types";
 
 // Calculate daily limit based on program
-export const calculateDailyLimit = (player: Player): number => {
-  if (!player.program) return 2;
+export const calculateDailyLimit = (player: Player | PersonData): number => {
+  if (!player.program && !player.programId) return 2;
+  
+  const programId = player.program || player.programId;
   
   // Program-specific daily limits
   const programLimits: Record<string, number> = {
@@ -19,12 +22,14 @@ export const calculateDailyLimit = (player: Player): number => {
     "Elite": 8
   };
   
-  return programLimits[player.program] || 2;
+  return programLimits[programId as string] || 2;
 };
 
 // Calculate default duration based on program
-export const calculateDefaultDuration = (player: Player): number => {
-  if (!player.program) return 1;
+export const calculateDefaultDuration = (player: Player | PersonData): number => {
+  if (!player.program && !player.programId) return 1;
+  
+  const programId = player.program || player.programId;
   
   // Program-specific durations
   const programDurations: Record<string, number> = {
@@ -40,5 +45,5 @@ export const calculateDefaultDuration = (player: Player): number => {
     "Elite": 2
   };
   
-  return programDurations[player.program] || 1;
+  return programDurations[programId as string] || 1;
 };

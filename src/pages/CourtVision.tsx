@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export default function CourtVision() {
   const { sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
   
-  // Ensure shared players list is clean (no duplicates) when this page loads
+  // Ensure shared players list is clean when this page loads
   useEffect(() => {
     // Clean up any potential duplicates when Court Vision page loads
     if (sharedPlayers.length > 0) {
@@ -24,12 +24,17 @@ export default function CourtVision() {
   useEffect(() => {
     // Only show notification when players are loaded
     if (sharedPlayers.length > 0) {
+      // Count how many players have a program
+      const playersWithProgram = sharedPlayers.filter(p => 
+        p.programId || (p.programIds && p.programIds.length > 0)
+      ).length;
+      
       toast.info("Dati dei giocatori caricati", {
-        description: `${sharedPlayers.length} giocatori disponibili`,
+        description: `${playersWithProgram} giocatori con programma disponibili`,
         id: "player-sync-toast", // Use an ID to prevent duplicate toasts
       });
     }
-  }, [sharedPlayers.length]);
+  }, [sharedPlayers]);
   
   return (
     <DndProvider backend={HTML5Backend}>

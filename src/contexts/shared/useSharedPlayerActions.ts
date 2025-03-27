@@ -40,7 +40,7 @@ export function useSharedPlayerActions() {
     });
   }, [removeDuplicates]);
 
-  // Update an existing player
+  // Update an existing player - IMPORTANT: Court Vision should only update hours
   const updatePlayer = useCallback((player: Player) => {
     // Implement throttling to prevent excessive updates
     const now = Date.now();
@@ -65,11 +65,11 @@ export function useSharedPlayerActions() {
         // Keep Court Vision specifics like position, courtId, etc.
         const preservedPerson = {
           ...updatedPerson,
+          // Preserve court assignment data
           position: existingPlayer.position,
           courtId: existingPlayer.courtId,
           timeSlot: existingPlayer.timeSlot,
           endTimeSlot: existingPlayer.endTimeSlot,
-          // Preserve any other Court Vision specific data
         };
         
         const updated = prevPlayers.map((p) => 

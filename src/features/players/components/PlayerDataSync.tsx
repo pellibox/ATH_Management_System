@@ -47,9 +47,6 @@ export const PlayerDataSync = memo(() => {
   const syncTimeoutRef = useRef<number | null>(null);
   const lastSyncTimeRef = useRef<number>(0);
   
-  // Store previous player IDs to detect deletions
-  const prevPlayerIdsRef = useRef<Set<string>>(new Set());
-  
   // Set available programs from TENNIS_PROGRAMS
   useEffect(() => {
     const programs = getAvailablePrograms();
@@ -96,9 +93,6 @@ export const PlayerDataSync = memo(() => {
     // Skip if we don't have players
     if (players.length === 0) return;
     
-    // Keep track of current player IDs
-    const currentPlayerIds = new Set(players.map(p => p.id));
-    
     // Prevent excessive syncs
     const now = Date.now();
     if (now - lastSyncTimeRef.current < SYNC_THROTTLE_MS) {
@@ -113,30 +107,9 @@ export const PlayerDataSync = memo(() => {
         // Primary sync: update all active players to shared context
         // Only send player data TO Court Vision (one-way sync)
         players.forEach(player => {
-          // Preserve programs, status, etc.
+          // Send player data to shared context - Court Vision will only use players with a program
           updatePlayer(player);
         });
-        
-        // Check for deleted players (were in previous set but not in current set)
-        if (prevPlayerIdsRef.current.size > 0) {
-          prevPlayerIdsRef.current.forEach(playerId => {
-            if (!currentPlayerIds.has(playerId)) {
-              console.log(`PlayerDataSync: Player ${playerId} was deleted, removing from shared context`);
-              // Player was deleted from Players section, update with inactive status
-              updatePlayer({
-                id: playerId,
-                name: "Deleted Player",
-                status: 'inactive',
-                email: "",
-                phone: "",
-                level: ""
-              });
-            }
-          });
-        }
-        
-        // Update the previous player IDs ref for next comparison
-        prevPlayerIdsRef.current = currentPlayerIds;
         
         lastSyncTimeRef.current = Date.now();
         
@@ -162,27 +135,6 @@ export const PlayerDataSync = memo(() => {
     players.forEach(player => {
       updatePlayer(player);
     });
-    
-    // Check for deleted players
-    if (prevPlayerIdsRef.current.size > 0) {
-      prevPlayerIdsRef.current.forEach(playerId => {
-        if (!currentPlayerIds.has(playerId)) {
-          console.log(`PlayerDataSync: Player ${playerId} was deleted, removing from shared context`);
-          // Player was deleted from Players section, update with inactive status
-          updatePlayer({
-            id: playerId,
-            name: "Deleted Player",
-            status: 'inactive',
-            email: "",
-            phone: "",
-            level: ""
-          });
-        }
-      });
-    }
-    
-    // Update the previous player IDs ref for next comparison
-    prevPlayerIdsRef.current = currentPlayerIds;
     
     lastSyncTimeRef.current = now;
     

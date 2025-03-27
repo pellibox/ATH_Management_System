@@ -25,7 +25,7 @@ export const convertPlayerToPerson = (player: Player): PersonData => {
     // Program-based metrics
     dailyLimit: calculateDailyLimit(player),
     durationHours: calculateDefaultDuration(player),
-    // Status - always convert to confirmed unless explicitly inactive
+    // Status - pass through from player
     status: player.status === 'inactive' ? "pending" : "confirmed"
   };
 };
@@ -40,12 +40,7 @@ export const convertPersonToPlayer = (person: PersonData): Player => {
     level: "",
     // Add the required status property
     status: 'active', // Default to active to satisfy the type requirement
-    // We don't sync program or status back to avoid overwriting Player data
-    // program: person.programId,
-    // programs: person.programIds,
-    // sports: person.sportTypes,
-    // status: person.status === "pending" ? 'inactive' : 'active',
-    // Only sync hours data
+    // Only sync hours data because Court Vision can only update hours
     completedHours: person.completedHours,
     trainingHours: person.trainingHours,
     extraHours: person.extraHours,
