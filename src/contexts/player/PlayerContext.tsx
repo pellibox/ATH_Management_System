@@ -1,18 +1,15 @@
+
 import React, { createContext, useContext, useState } from "react";
-import { PlayerContextType } from "./types";
-import { Player, mockPlayers } from "@/types/player";
+import { PlayerContextType, PlayerProviderProps } from "./types";
+import { Player } from "@/types/player";
 import { defaultObjectives, defaultNewPlayer, mockExtraActivities } from "./initialState";
 import { usePlayerActions } from "./actions";
 import { ExtraActivity } from "@/types/extra-activities";
 
-interface PlayerProviderProps {
-  children: React.ReactNode;
-}
-
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
-  const [players, setPlayers] = useState(mockPlayers);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [coachFilter, setCoachFilter] = useState<string>("all");
@@ -42,7 +39,7 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
       player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       player.email.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesLevel = levelFilter === "all"  || player.level === levelFilter;
+    const matchesLevel = levelFilter === "all" || player.level === levelFilter;
     
     const matchesCoach = coachFilter === "all" || player.coach === coachFilter;
     
@@ -88,11 +85,11 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     }
   };
 
-  const handleSetObjectives = (playerID: string, objectives: any) => {
-    console.log("Setting objectives for player", playerID, objectives);
+  const handleSetObjectives = (playerID: string, updatedObjectives: any) => {
+    console.log("Setting objectives for player", playerID, updatedObjectives);
     const updatedPlayers = players.map(player => 
       player.id === playerID 
-        ? { ...player, objectives: objectives } 
+        ? { ...player, objectives: updatedObjectives } 
         : player
     );
     setPlayers(updatedPlayers);
@@ -100,7 +97,11 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
 
   const handleRegisterForActivities = (playerId: string) => {
     console.log("Registering player for activities", playerId);
-    playerActions.handleRegisterForActivities(playerId);
+    // Logic for registering a player for activities
+    const player = players.find(p => p.id === playerId);
+    if (player && selectedActivities.length > 0) {
+      // Implementation would go here
+    }
   };
 
   const [availablePrograms, setAvailablePrograms] = useState<string[]>([
@@ -113,17 +114,14 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setPlayers,
     filteredPlayers,
     searchQuery,
-    setSearchQuery: (query: string) => setSearchQuery(query),
+    setSearchQuery,
     programFilter,
-    setProgramFilter: (program: string) => setProgramFilter(program),
+    setProgramFilter,
     resetFilters,
     scheduleType,
     setScheduleType,
     newPlayer,
-    setNewPlayer: (player: Player) => setNewPlayer({ 
-      ...player, 
-      id: player.id || "new-temp-id"
-    }),
+    setNewPlayer,
     
     filterTerm,
     setFilterTerm,
@@ -141,24 +139,22 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setMessagePlayer,
     setMessageContent,
     setSelectedActivities,
-    handleDeletePlayer,
-    handleRegisterForActivities,
-    handleSetObjectives,
     
     handleAddPlayer: playerActions.handleAddPlayer,
     handleUpdatePlayer: playerActions.handleUpdatePlayer,
-    handleSendMessage: (playerId: string) => {
+    handleDeletePlayer,
+    handleSendMessage: () => {
       if (messagePlayer) {
         const contactMethod = messagePlayer.preferredContactMethod || "WhatsApp";
-        if (contactMethod === "WhatsApp" || contactMethod === "Email" || contactMethod === "SMS") {
-          playerActions.handleSendMessage(contactMethod);
-        } else {
-          playerActions.handleSendMessage("WhatsApp");
-        }
+        playerActions.handleSendMessage(contactMethod);
       }
     },
-    handleRegisterActivity: playerActions.handleRegisterActivity,
-    handleUpdateObjectives: playerActions.handleUpdateObjectives
+    handleRegisterActivity: (player: Player, activityIds: string[]) => {
+      console.log("Registering activities for player", player.id, activityIds);
+      // Implementation would go here
+    },
+    handleRegisterForActivities,
+    handleSetObjectives
   };
 
   return (

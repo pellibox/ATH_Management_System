@@ -2,12 +2,17 @@
 import React from "react";
 import { Player } from "@/types/player";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { usePlayerContext } from "@/contexts/PlayerContext";
+import { formatDate } from "@/lib/utils";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { ProgramBadge } from "./ProgramBadge";
 import { PlayerActionMenu } from "./PlayerActionMenu";
-import { DialogTrigger } from "@/components/ui/dialog";
-import { MoreHorizontal } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 import { getProgramColor } from "../utils/programUtils";
 
 interface PlayerRowProps {
@@ -17,6 +22,8 @@ interface PlayerRowProps {
   onMessage?: (player: Player) => void;
   onViewDetails?: (player: Player) => void;
   onRegisterActivity?: (playerId: string) => void;
+  onChangeProgram?: (player: Player, program: string) => void;
+  availablePrograms?: string[];
 }
 
 export function PlayerRow({ 
@@ -25,16 +32,10 @@ export function PlayerRow({
   onDelete,
   onMessage,
   onViewDetails,
-  onRegisterActivity
+  onRegisterActivity,
+  onChangeProgram,
+  availablePrograms = []
 }: PlayerRowProps) {
-  const { 
-    handleDeletePlayer, 
-    setEditingPlayer, 
-    setMessagePlayer, 
-    setMessageContent, 
-    setSelectedActivities 
-  } = usePlayerContext();
-
   const getStatusClass = (status: string) => {
     switch (status) {
       case "active":
@@ -45,20 +46,6 @@ export function PlayerRow({
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
-
-  // Use passed callback functions if provided, otherwise use context functions
-  const handleEdit = onEdit || setEditingPlayer;
-  // Fixed handleDelete to not pass name parameter
-  const handleDelete = onDelete || ((id: string) => handleDeletePlayer(id));
-  const handleMessage = onMessage || ((player: Player) => {
-    setMessagePlayer(player);
-    setMessageContent("");
-  });
-  const handleViewDetails = onViewDetails || (() => {});
-  const handleRegisterActivity = onRegisterActivity || (() => {
-    setEditingPlayer(player);
-    setSelectedActivities([]);
-  });
 
   // Get program color for the border
   const programColor = player.program ? getProgramColor(player.program) : "#e0e0e0";
@@ -82,7 +69,35 @@ export function PlayerRow({
         </div>
       </TableCell>
       <TableCell>
-        <ProgramBadge program={player.program} />
+        {onChangeProgram ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="outline-none">
+              <div className="flex items-center gap-1">
+                <ProgramBadge program={player.program} />
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-40 bg-white">
+              <DropdownMenuItem 
+                onClick={() => onChangeProgram(player, '')}
+                className={!player.program ? "bg-gray-100" : ""}
+              >
+                Non assegnato
+              </DropdownMenuItem>
+              {availablePrograms.map(program => (
+                <DropdownMenuItem 
+                  key={program}
+                  onClick={() => onChangeProgram(player, program)}
+                  className={player.program === program ? "bg-gray-100" : ""}
+                >
+                  {program}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <ProgramBadge program={player.program} />
+        )}
       </TableCell>
       <TableCell>
         <span className="text-sm">{player.level}</span>
@@ -98,11 +113,11 @@ export function PlayerRow({
       <TableCell className="text-right">
         <PlayerActionMenu 
           player={player}
-          onDelete={() => handleDelete(player.id)}
-          onEdit={() => handleEdit(player)}
-          onMessage={() => handleMessage(player)}
-          onRegisterActivity={() => handleRegisterActivity(player.id)}
-          onViewDetails={() => handleViewDetails(player)}
+          onDelete={onDelete ? () => onDelete(player.id) : undefined}
+          onEdit={onEdit ? () => onEdit(player) : undefined}
+          onMessage={onMessage ? () => onMessage(player) : undefined}
+          onRegisterActivity={onRegisterActivity ? () => onRegisterActivity(player.id) : undefined}
+          onViewDetails={onViewDetails ? () => onViewDetails(player) : undefined}
         />
       </TableCell>
     </TableRow>

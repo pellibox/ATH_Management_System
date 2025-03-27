@@ -10,7 +10,7 @@ export const useCourtGridUtils = (
 ) => {
   const isMobile = useIsMobile();
   const [activeHoursByGroup, setActiveHoursByGroup] = useState<Record<string, string>>({});
-  const [visibleCourtIndices, setVisibleCourtIndices] = useState<Record<string, number[]>>({});
+  const [visibleCourtIndices, setVisibleCourtIndices] = useState<Record<string, number>>({});
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   const renderedCourtsRef = useRef<HTMLDivElement>(null);
 
@@ -20,7 +20,7 @@ export const useCourtGridUtils = (
   };
 
   // Generate court group IDs
-  const getGroupId = (type: string, pairIndex: number): string => `${type}-${pairIndex}`;
+  const getGroupId = (type: string): string => `${type}`;
 
   // Get all unique court types
   const courtTypes = useMemo(() => {
@@ -34,13 +34,8 @@ export const useCourtGridUtils = (
       const newActiveHours: Record<string, string> = {};
       
       courtTypes.forEach(type => {
-        const courtsByType = courts.filter(court => court.type === type);
-        
-        for (let i = 0; i < courtsByType.length; i += 2) {
-          const pairIndex = Math.floor(i / 2);
-          const groupId = getGroupId(type, pairIndex);
-          newActiveHours[groupId] = propActiveHour;
-        }
+        const groupId = getGroupId(type);
+        newActiveHours[groupId] = propActiveHour;
       });
       
       setActiveHoursByGroup(newActiveHours);
@@ -54,13 +49,8 @@ export const useCourtGridUtils = (
       const initialActiveHours: Record<string, string> = {};
       
       courtTypes.forEach(type => {
-        const courtsByType = courts.filter(court => court.type === type);
-        
-        for (let i = 0; i < courtsByType.length; i += 2) {
-          const pairIndex = Math.floor(i / 2);
-          const groupId = getGroupId(type, pairIndex);
-          initialActiveHours[groupId] = defaultHour;
-        }
+        const groupId = getGroupId(type);
+        initialActiveHours[groupId] = defaultHour;
       });
       
       setActiveHoursByGroup(initialActiveHours);
@@ -69,29 +59,18 @@ export const useCourtGridUtils = (
   
   // Initialize visible court indices
   useEffect(() => {
-    const initialVisibleIndices: Record<string, number[]> = {};
+    const initialVisibleIndices: Record<string, number> = {};
     
     courtTypes.forEach(type => {
-      const courtsByType = courts.filter(court => court.type === type);
-      
-      for (let i = 0; i < courtsByType.length; i += 2) {
-        const pairIndex = Math.floor(i / 2);
-        const groupId = getGroupId(type, pairIndex);
-        
-        // Store visible indices
-        if (i + 1 < courtsByType.length) {
-          initialVisibleIndices[groupId] = [0, 1]; // Both courts visible initially
-        } else {
-          initialVisibleIndices[groupId] = [0]; // Only one court in this pair
-        }
-      }
+      const groupId = getGroupId(type);
+      initialVisibleIndices[groupId] = 0; // First court visible initially
     });
     
     setVisibleCourtIndices(initialVisibleIndices);
   }, [courts, courtTypes]);
 
   // Handle hour change for a specific group
-  const handleHourChangeForGroup = (groupId: string, hour: string) => {
+  const handleHourChangeForGroup = (hour: string, groupId: string) => {
     setActiveHoursByGroup(prev => ({
       ...prev,
       [groupId]: hour
@@ -104,13 +83,8 @@ export const useCourtGridUtils = (
     
     // Update all group hours
     courtTypes.forEach(type => {
-      const courtsByType = courts.filter(court => court.type === type);
-      
-      for (let i = 0; i < courtsByType.length; i += 2) {
-        const pairIndex = Math.floor(i / 2);
-        const groupId = getGroupId(type, pairIndex);
-        newActiveHours[groupId] = hour;
-      }
+      const groupId = getGroupId(type);
+      newActiveHours[groupId] = hour;
     });
     
     setActiveHoursByGroup(newActiveHours);
@@ -127,13 +101,16 @@ export const useCourtGridUtils = (
   };
 
   // Navigate to a specific court
-  const navigateCourt = (courtId: string) => {
-    // Find the court element by ID
-    const courtElement = document.getElementById(`court-${courtId}`);
-    if (courtElement && renderedCourtsRef.current) {
-      // Scroll to the court
-      courtElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+  const navigateCourt = (key: string, direction: 'prev' | 'next') => {
+    setVisibleCourtIndices(prev => {
+      const current = prev[key] || 0;
+      if (direction === 'prev' && current > 0) {
+        return { ...prev, [key]: current - 1 };
+      } else if (direction === 'next') {
+        return { ...prev, [key]: current + 1 };
+      }
+      return prev;
+    });
   };
 
   return {
