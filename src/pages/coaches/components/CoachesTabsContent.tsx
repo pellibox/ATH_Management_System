@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Filter } from "lucide-react";
 import { CoachFilters } from "./CoachFilters";
 import { CoachesList } from "./CoachesList";
-import { CoachAvailabilityCalendar } from "./CoachAvailabilityCalendar";
+import { CoachAvailabilityCalendar } from "./coach-availability";
 import { PersonData, Program } from "@/components/court-vision/types";
 import { CoachAvailabilityEvent } from "@/contexts/programs/types";
 
