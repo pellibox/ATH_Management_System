@@ -1,38 +1,59 @@
-
-import { DEFAULT_PROGRAMS } from "@/components/court-vision/constants";
-
-export const getProgramColor = (program: string | undefined) => {
-  if (!program) return "#e0e0e0"; // Default gray
+/**
+ * Get a color based on program name
+ * This generates a consistent color for each program
+ */
+export function getProgramColor(programName: string): string {
+  // Simple hash function to generate consistent colors
+  const hash = programName.split('').reduce((acc, char) => {
+    return acc + char.charCodeAt(0);
+  }, 0);
   
-  const foundProgram = DEFAULT_PROGRAMS.find(p => p.name === program || p.id === program);
-  if (foundProgram) {
-    return foundProgram.color;
+  // Use a set of predefined colors for common programs
+  const programColors: Record<string, string> = {
+    "Performance 1": "#3b82f6", // blue
+    "Performance 2": "#2563eb", // darker blue
+    "Performance 3": "#1d4ed8", // even darker blue
+    "Performance 4": "#1e40af", // very dark blue
+    "Elite Performance": "#312e81", // indigo
+    "Tennis Junior": "#22c55e", // green
+    "Tennis Adult": "#15803d", // darker green
+    "Padel Base": "#f97316", // orange
+    "Padel Avanzato": "#ea580c", // darker orange
+    "Personal Training": "#8b5cf6", // purple
+  };
+  
+  // If we have a predefined color, use it
+  if (programColors[programName]) {
+    return programColors[programName];
   }
   
-  const hash = program.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8B5CF6", "#EC4899"];
+  // Otherwise generate a color based on the hash
+  const colors = [
+    "#3b82f6", // blue
+    "#22c55e", // green
+    "#ef4444", // red
+    "#f97316", // orange
+    "#8b5cf6", // purple
+    "#ec4899", // pink
+    "#14b8a6", // teal
+    "#f59e0b", // amber
+    "#64748b", // slate
+    "#84cc16", // lime
+  ];
+  
   return colors[hash % colors.length];
-};
+}
 
-// New function to check if a coach's programs include the player's program
-export const checkProgramCompatibility = (
-  playerProgram: string | undefined, 
-  coachPrograms: string[] | undefined
-): boolean => {
-  if (!playerProgram) return true; // Player has no program, any coach is compatible
-  if (!coachPrograms || coachPrograms.length === 0) return false; // Coach has no programs
+/**
+ * Get a background color based on the sport type
+ */
+export function getSportColor(sport: string): string {
+  const sportColors: Record<string, string> = {
+    "Tennis": "#3b82f6", // blue
+    "Padel": "#f97316", // orange
+    "Squash": "#22c55e", // green
+    "Badminton": "#8b5cf6", // purple
+  };
   
-  return coachPrograms.includes(playerProgram);
-};
-
-// Get formatted program names from program IDs
-export const getProgramNames = (programIds: string[] | undefined): string => {
-  if (!programIds || programIds.length === 0) return "Nessun programma";
-  
-  const programNames = programIds.map(id => {
-    const program = DEFAULT_PROGRAMS.find(p => p.id === id);
-    return program ? program.name : id;
-  });
-  
-  return programNames.join(", ");
-};
+  return sportColors[sport] || "#64748b"; // slate as default
+}

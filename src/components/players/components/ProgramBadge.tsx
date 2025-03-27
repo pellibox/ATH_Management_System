@@ -1,31 +1,33 @@
 
+import React from "react";
+import { Badge } from "@/components/ui/badge";
 import { getProgramColor } from "../utils/programUtils";
 
 interface ProgramBadgeProps {
   program?: string;
-  programId?: string;  // For backward compatibility
 }
 
-export function ProgramBadge({ program, programId }: ProgramBadgeProps) {
-  // Use program prop or fallback to programId for backward compatibility
-  const programName = program || programId;
-  
-  if (!programName) {
-    return <span className="text-gray-500">Non assegnato</span>;
+export function ProgramBadge({ program }: ProgramBadgeProps) {
+  if (!program) {
+    return (
+      <span className="text-gray-500 text-sm">Non assegnato</span>
+    );
   }
-  
-  const programColor = getProgramColor(programName);
-  
+
+  const bgColor = getProgramColor(program);
+  const bgColorLight = `${bgColor}20`; // Add transparency for background
+
   return (
-    <span 
-      className="px-2 py-1 rounded-full text-xs font-medium"
+    <Badge 
+      variant="outline" 
+      className="px-2 py-1 font-normal"
       style={{ 
-        backgroundColor: `${programColor}20`, 
-        color: programColor,
-        border: `1px solid ${programColor}40`
+        backgroundColor: bgColorLight,
+        borderColor: bgColor,
+        color: bgColor
       }}
     >
-      {programName}
-    </span>
+      {program}
+    </Badge>
   );
 }

@@ -42,7 +42,7 @@ export function ContactFields({ formData, setFormData }: ContactFieldsProps) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Metodo di contatto preferito</label>
         <Select
-          value={formData.preferredContactMethod}
+          value={formData.preferredContactMethod || "Email"}
           onValueChange={(value) => setFormData({
             ...formData, 
             preferredContactMethod: value as any

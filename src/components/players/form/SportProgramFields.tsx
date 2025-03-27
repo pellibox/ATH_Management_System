@@ -83,14 +83,14 @@ export function SportProgramFields({
         <label className="text-sm font-medium">Programma</label>
         {selectedSport ? (
           <Select 
-            value={formData.program || ""} 
-            onValueChange={(value) => setFormData({...formData, program: value})}
+            value={formData.program || "no-program"} 
+            onValueChange={(value) => setFormData({...formData, program: value === "no-program" ? "" : value})}
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleziona programma" />
             </SelectTrigger>
             <SelectContent className="bg-white">
-              <SelectItem value="">Nessun programma</SelectItem>
+              <SelectItem value="no-program">Nessun programma</SelectItem>
               {availablePrograms.map(program => (
                 <SelectItem key={program.name} value={program.name}>
                   {program.name} ({program.category})

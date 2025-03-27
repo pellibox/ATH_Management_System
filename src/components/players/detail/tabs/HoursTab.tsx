@@ -45,8 +45,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
   
   const sports = ["Tennis", "Padel"];
   
-  // Load available programs from TENNIS_PROGRAMS and PROGRAM_CATEGORIES
-  // Using useCallback to prevent unnecessary rerenders
   const loadPrograms = useCallback(() => {
     const programs: { 
       name: string; 
@@ -57,7 +55,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       totalWeeks: number 
     }[] = [];
     
-    // Add programs from TENNIS_PROGRAMS which has the actual data shown on Programs page
     const allPerformancePrograms = TENNIS_PROGRAMS.PERFORMANCE || [];
     const allJuniorPrograms = TENNIS_PROGRAMS.JUNIOR || [];
     const allPersonalPrograms = TENNIS_PROGRAMS.PERSONAL || [];
@@ -65,7 +62,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     const allCoachPrograms = TENNIS_PROGRAMS.COACH || [];
     const allPadelPrograms = TENNIS_PROGRAMS.PADEL || [];
     
-    // Process the actual program data from the Tennis category
     [
       { data: allPerformancePrograms, category: "PERFORMANCE", label: "Performance", sport: "Tennis" },
       { data: allJuniorPrograms, category: "JUNIOR", label: "Junior Program", sport: "Tennis" },
@@ -93,9 +89,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
       }
     });
     
-    // Add fallback programs if nothing was found
     if (programs.length === 0) {
-      // Add fallback Tennis programs
       programs.push(
         {
           name: "Performance 2",
@@ -147,7 +141,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
         }
       );
       
-      // Programmi Padel
       programs.push(
         {
           name: "Padel Base",
@@ -171,18 +164,15 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     setAvailablePrograms(programs);
   }, []);
   
-  // Run the loadPrograms function only once on component mount
   useEffect(() => {
     loadPrograms();
     
-    // Clean up any potential memory leaks
     return () => {
       setAvailablePrograms([]);
       setFilteredPrograms([]);
     };
   }, [loadPrograms]);
   
-  // Filter programs based on selected sports with proper dependency tracking
   useEffect(() => {
     if (selectedSports.length > 0 && availablePrograms.length > 0) {
       const filtered = availablePrograms.filter(program => 
@@ -194,13 +184,11 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     }
   }, [selectedSports, availablePrograms]);
   
-  // Update programs and sports from player data when player changes
   useEffect(() => {
     setSelectedPrograms(player.programs || []);
     setSelectedSports(player.sports || []);
   }, [player.programs, player.sports]);
   
-  // Calculate total hours of selected programs with proper dependency tracking
   useEffect(() => {
     let totalProgramHours = 0;
     
@@ -221,12 +209,10 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     const completedHours = player.completedHours || 0;
     setProgramHours(totalProgramHours);
     
-    // Calculate remaining hours, ensuring it doesn't go negative
     const remaining = Math.max(0, totalProgramHours - completedHours);
     setRemainingHours(remaining);
   }, [selectedPrograms, player.completedHours, availablePrograms]);
-
-  // Calculate progress percentage, capping at 100% if completedHours exceeds programHours
+  
   const hoursProgress = programHours > 0 
     ? Math.min(100, ((player.completedHours || 0) / programHours) * 100) 
     : 0;
@@ -273,7 +259,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     handleInputChange('programs', updatedPrograms);
   };
   
-  // Group programs by category for display in the select
   const programsByCategory = filteredPrograms.reduce((acc, program) => {
     if (!acc[program.category]) {
       acc[program.category] = {
@@ -285,11 +270,9 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
     return acc;
   }, {} as Record<string, { label: string, programs: typeof filteredPrograms }>);
 
-  // Format display message for remaining hours and completion percentage
   const formatRemainingHours = () => {
     const completedHours = player.completedHours || 0;
     if (completedHours >= programHours) {
-      // Program completed or exceeded
       const extraHours = completedHours - programHours;
       if (extraHours > 0) {
         return `+${extraHours.toFixed(1)} ore extra`;
@@ -297,7 +280,6 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
         return "Completato";
       }
     } else {
-      // Still has hours to complete
       return `${remainingHours.toFixed(1)}`;
     }
   };
@@ -519,7 +501,7 @@ export function HoursTab({ player, isEditing, handleInputChange, playerActivitie
           </div>
         </div>
         
-        {playerActivities.length > 0 && (
+        {playerActivities && playerActivities.length > 0 && (
           <div>
             <h3 className="text-base font-medium mb-2">Ultime Attività</h3>
             <div className="space-y-2">

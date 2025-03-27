@@ -2,7 +2,6 @@
 import React from "react";
 import { Player } from "@/types/player";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { formatDate } from "@/lib/utils";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { ProgramBadge } from "./ProgramBadge";
 import { PlayerActionMenu } from "./PlayerActionMenu";
