@@ -1,6 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { PersonData } from "../../../../types";
+import { PERSON_TYPES } from "../../../../constants";
 import { 
   preparePersonAssignment, 
   removePersonFromSource, 
@@ -35,6 +36,12 @@ export const useProcessAssignment = (
     const sourceTimeSlot = person.timeSlot || person.sourceTimeSlot;
     const sourceCourtId = person.courtId;
 
+    // Handle coach assignment specifically to ensure they have durationHours
+    if (person.type === PERSON_TYPES.COACH && !person.durationHours) {
+      console.log("Setting default duration for coach");
+      person = { ...person, durationHours: 1 };
+    }
+
     // Prepare the person object with court info, including proper time slot calculations
     const personWithCourtInfo = preparePersonAssignment(
       person, 
@@ -43,11 +50,6 @@ export const useProcessAssignment = (
       timeSlot,
       timeSlots
     );
-    
-    // Ensure coaches have a durationHours value
-    if (person.type === "coach" && !personWithCourtInfo.durationHours) {
-      personWithCourtInfo.durationHours = 1;
-    }
     
     // Set the date explicitly to the selected date's ISO string date part
     const dateString = selectedDate.toISOString().split('T')[0];

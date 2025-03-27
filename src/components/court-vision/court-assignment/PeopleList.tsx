@@ -36,11 +36,11 @@ export function PeopleList({
   // Handler to prepare person for assignment
   const handleAssign = (person: PersonData) => {
     if (onAssign) {
-      // For coaches, ensure we have duration set
-      if (person.type === PERSON_TYPES.COACH && !person.durationHours) {
+      // Always ensure coaches have duration set
+      if (person.type === PERSON_TYPES.COACH) {
         const personWithDuration = {
           ...person,
-          durationHours: 1 // Default duration for coaches
+          durationHours: person.durationHours || 1 // Default duration for coaches
         };
         onAssign(personWithDuration);
       } else {

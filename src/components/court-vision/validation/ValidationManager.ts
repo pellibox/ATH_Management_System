@@ -1,4 +1,3 @@
-
 import { PersonData, ActivityData, CourtProps, ValidationRule, ValidationResult } from "../types";
 import { hasExceededDailyLimit, isCoachAssignmentValid, calculateHealthScore } from "../utils/personUtils";
 import { useToast } from "@/hooks/use-toast";
@@ -221,6 +220,11 @@ export function quickValidateAssignment(
   
   // Check coach conflict
   if (person.type === "coach") {
+    // Always ensure coaches have durationHours set
+    if (!person.durationHours) {
+      person = { ...person, durationHours: 1 };
+    }
+    
     // Look for this coach in other courts at the same time
     const otherCourts = allCourts.filter(c => c.id !== targetCourt.id);
     

@@ -1,10 +1,8 @@
-
 import { PersonData } from "../../../../types";
 import { PERSON_TYPES } from "../../../../constants";
-import { calculateTimeSlotSpan } from "../../../../time-slot/utils";
 
 /**
- * Process a person assignment, handling time slots, positions, and metadata
+ * Prepare a person object with court info for assignment
  */
 export const preparePersonAssignment = (
   person: PersonData,
@@ -13,57 +11,41 @@ export const preparePersonAssignment = (
   timeSlot?: string,
   timeSlots?: string[]
 ): PersonData => {
-  // Create a deep copy of the person object to avoid reference issues
-  const personWithCourtInfo = { 
-    ...JSON.parse(JSON.stringify(person)), 
+  // Start with basic person data
+  const personWithCourtInfo: PersonData = {
+    ...person,
     courtId,
-    position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
-    date: new Date().toISOString().split('T')[0],
-    durationHours: person.durationHours || getProgramDuration(person),
-    programColor: person.programColor || (person.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#ef4444")
+    x: position?.x,
+    y: position?.y
   };
 
-  // IMPORTANT: Set the timeSlot if explicitly provided in the drop
+  // Handle time slot assignment
   if (timeSlot) {
-    console.log(`Setting timeSlot to ${timeSlot} for ${person.name}`);
     personWithCourtInfo.timeSlot = timeSlot;
     
-    // Calculate end time slot if duration > 1 or has fractional hours (like 1.5)
-    if (personWithCourtInfo.durationHours !== 1 && timeSlots) {
-      const endTimeSlot = calculateTimeSlotSpan(
-        timeSlot,
-        personWithCourtInfo.durationHours,
-        timeSlots
-      );
-      
-      if (endTimeSlot) {
-        personWithCourtInfo.endTimeSlot = endTimeSlot;
-        console.log(`Setting endTimeSlot to ${endTimeSlot} (spanning ${personWithCourtInfo.durationHours} hours)`);
+    // Calculate end time slot if person has duration and timeSlots is provided
+    if (person.durationHours && person.durationHours > 0 && timeSlots && timeSlots.length > 0) {
+      const slotIndex = timeSlots.indexOf(timeSlot);
+      if (slotIndex !== -1) {
+        // Calculate how many slots we need based on duration hours
+        // Each hour typically consists of 2 slots (30 min each)
+        const slotsNeeded = Math.round(person.durationHours * 2);
+        const endSlotIndex = Math.min(slotIndex + slotsNeeded - 1, timeSlots.length - 1);
+        personWithCourtInfo.endTimeSlot = timeSlots[endSlotIndex];
       }
     }
+  }
+
+  // Always ensure coaches have a duration set
+  if (person.type === PERSON_TYPES.COACH && !personWithCourtInfo.durationHours) {
+    personWithCourtInfo.durationHours = 1;
   }
 
   return personWithCourtInfo;
 };
 
 /**
- * Get program-based duration for a person
- */
-export const getProgramDuration = (person: PersonData): number => {
-  // This would come from actual program data in a real implementation
-  if (person.type === PERSON_TYPES.PLAYER) {
-    if (person.programId === "pro") return 2;
-    if (person.programId === "elite") return 1.5;
-    if (person.programId === "junior") return 1;
-    return 1; // Default for players
-  } else {
-    // Coaches use default duration
-    return 1;
-  }
-};
-
-/**
- * Create updated courts array with person removed from source
+ * Remove a person from their source location
  */
 export const removePersonFromSource = (
   courts: any[],
@@ -71,52 +53,55 @@ export const removePersonFromSource = (
   sourceTimeSlot?: string,
   sourceCourtId?: string
 ): any[] => {
-  if (!sourceTimeSlot && !sourceCourtId) return [...courts];
-  
-  // Create a new courts array
-  let updatedCourts = JSON.parse(JSON.stringify(courts));
+  if (!sourceCourtId) return courts;
 
-  // Handle removal for both player and coach types similarly - remove only from specific time slot
-  if (sourceTimeSlot && sourceCourtId) {
-    updatedCourts = updatedCourts.map((court: any) => {
-      if (court.id === sourceCourtId) {
-        return {
-          ...court,
-          occupants: court.occupants.filter((p: PersonData) => 
-            !(p.id === person.id && p.timeSlot === sourceTimeSlot)
-          )
-        };
-      }
-      return court;
-    });
-  } else {
-    // For layout view (non-time-slot), remove from all time slots
-    updatedCourts = updatedCourts.map((court: any) => {
-      return {
-        ...court,
-        occupants: court.occupants.filter((p: PersonData) => p.id !== person.id)
-      };
-    });
-  }
+  return courts.map(court => {
+    if (court.id !== sourceCourtId) return court;
 
-  return updatedCourts;
+    return {
+      ...court,
+      occupants: court.occupants.filter(
+        (p: PersonData) => !(p.id === person.id && 
+          (p.timeSlot === sourceTimeSlot || !sourceTimeSlot)
+        )
+      )
+    };
+  });
 };
 
 /**
- * Add person to target court
+ * Add a person to a court
  */
 export const addPersonToCourt = (
   courts: any[],
   courtId: string,
-  personWithCourtInfo: PersonData
+  person: PersonData
 ): any[] => {
-  return courts.map((court: any) => {
-    if (court.id === courtId) {
-      return {
-        ...court,
-        occupants: [...court.occupants, personWithCourtInfo],
-      };
+  return courts.map(court => {
+    if (court.id !== courtId) return court;
+
+    // For coaches, we might already have this coach in the court
+    // Check if we need to update an existing assignment or add a new one
+    if (person.type === PERSON_TYPES.COACH) {
+      const existingCoachIndex = court.occupants.findIndex(
+        (p: PersonData) => p.id === person.id && p.timeSlot === person.timeSlot
+      );
+
+      if (existingCoachIndex !== -1) {
+        // Update existing coach assignment
+        const updatedOccupants = [...court.occupants];
+        updatedOccupants[existingCoachIndex] = person;
+        return {
+          ...court,
+          occupants: updatedOccupants
+        };
+      }
     }
-    return court;
+
+    // Otherwise add as a new occupant
+    return {
+      ...court,
+      occupants: [...court.occupants, person]
+    };
   });
 };
