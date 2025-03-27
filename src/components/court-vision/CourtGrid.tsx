@@ -66,8 +66,9 @@ export default function CourtGrid({
   // Get all hours for timeline
   const hours = getUniqueHours(timeSlots);
   
-  // Handle hour change for a specific court type
+  // Handle hour change for a specific court type - prevent scroll events from bubbling
   const handleHourChangeForType = (type: string, hour: string) => {
+    // Update the specific court type's hour without affecting the scroll position
     setActiveHoursByType(prev => ({
       ...prev,
       [type]: hour
@@ -90,7 +91,7 @@ export default function CourtGrid({
   });
   
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full" scrollHideDelay={0}>
       <div className="space-y-6 md:space-y-8 pb-16 pt-4">
         {Object.entries(courtsByType).map(([type, typeCourts]) => {
           // Get active hour for this court type

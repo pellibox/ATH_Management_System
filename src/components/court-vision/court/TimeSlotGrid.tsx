@@ -37,7 +37,7 @@ export const TimeSlotGrid = forwardRef<HTMLDivElement, TimeSlotGridProps>(({
   const uniqueTimeSlots = [...new Set(timeSlots)];
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Scroll to active hour when it changes
+  // Scroll to active hour when it changes, but only scroll the slots inside the container
   useEffect(() => {
     if (activeHour && containerRef.current) {
       const matchingSlots = uniqueTimeSlots.filter(slot => slot.startsWith(activeHour));
@@ -47,7 +47,15 @@ export const TimeSlotGrid = forwardRef<HTMLDivElement, TimeSlotGridProps>(({
         
         const timeSlotElements = containerRef.current.querySelectorAll('.border-b');
         if (timeSlotElements[slotIndex]) {
-          timeSlotElements[slotIndex].scrollIntoView({ behavior: 'smooth' });
+          // Smooth scroll within the container instead of using scrollIntoView
+          const slotElement = timeSlotElements[slotIndex] as HTMLElement;
+          const containerTop = containerRef.current.scrollTop;
+          const slotTop = slotElement.offsetTop;
+          
+          containerRef.current.scrollTo({
+            top: slotTop,
+            behavior: 'smooth'
+          });
         }
       }
     }

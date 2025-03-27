@@ -58,6 +58,12 @@ export function VerticalTimeSlotSelector({
   
   const timeLabels = getTimeRangeLabels();
   
+  // Handle button click without scrolling the parent container
+  const handleButtonClick = (hour: string) => {
+    // Prevent default to avoid any automatic scrolling
+    onHourChange(hour);
+  };
+  
   return (
     <div className="h-full flex flex-col justify-start py-4 px-2 bg-white rounded-lg shadow-sm">
       <div className="flex items-center gap-1 mb-2">
@@ -99,7 +105,7 @@ export function VerticalTimeSlotSelector({
           return (
             <Button
               key={`hour-nav-${hour}`}
-              onClick={() => onHourChange(hour)}
+              onClick={() => handleButtonClick(hour)}
               variant={isActive ? "default" : "outline"}
               size="sm"
               className={`${isMobile ? 'h-7 text-xs px-2' : 'h-8 text-xs px-3'} font-medium w-full
