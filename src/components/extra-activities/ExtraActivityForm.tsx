@@ -38,16 +38,20 @@ export function ExtraActivityForm({
       if (activityToEdit) {
         // If we're editing, populate the form with activity data
         setNewActivity({
-          name: activityToEdit.name,
-          type: activityToEdit.type,
-          time: activityToEdit.time,
-          duration: activityToEdit.duration,
-          days: [...activityToEdit.days],
-          location: activityToEdit.location,
-          maxParticipants: activityToEdit.maxParticipants,
-          participants: [...activityToEdit.participants],
-          coach: activityToEdit.coach,
-          notes: activityToEdit.notes || ""
+          name: activityToEdit.name || "",
+          type: activityToEdit.type || "athletic",
+          time: activityToEdit.time || "16:00",
+          duration: activityToEdit.duration || 1,
+          days: [...(activityToEdit.days || [1])],
+          location: activityToEdit.location || "",
+          maxParticipants: activityToEdit.maxParticipants || 8,
+          participants: [...(activityToEdit.participants || [])],
+          coach: activityToEdit.coach || "",
+          notes: activityToEdit.notes || "",
+          title: activityToEdit.title || "",
+          date: activityToEdit.date || new Date().toISOString().split('T')[0],
+          startTime: activityToEdit.startTime || "16:00",
+          endTime: activityToEdit.endTime || "17:00"
         });
       } else {
         // Reset form for new activity

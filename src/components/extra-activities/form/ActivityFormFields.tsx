@@ -4,10 +4,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { ACTIVITY_TYPES } from "@/types/extra-activities";
 import { toggleDay } from "./activity-form-utils";
+import { ExtraActivity } from "@/types/extra-activities";
 
 interface ActivityFormFieldsProps {
-  newActivity: any;
-  setNewActivity: (activity: any) => void;
+  newActivity: Omit<ExtraActivity, "id">;
+  setNewActivity: (activity: Omit<ExtraActivity, "id">) => void;
   coachesList: Array<{ id: string; name: string }>;
 }
 
@@ -22,8 +23,8 @@ export function ActivityFormFields({
         <div className="space-y-2">
           <label className="text-sm font-medium">Nome Attività*</label>
           <Input 
-            value={newActivity.name} 
-            onChange={(e) => setNewActivity({...newActivity, name: e.target.value})}
+            value={newActivity.name || ""} 
+            onChange={(e) => setNewActivity({...newActivity, name: e.target.value, title: e.target.value})}
             placeholder="Es. Allenamento Atletico"
           />
         </div>
@@ -31,7 +32,7 @@ export function ActivityFormFields({
         <div className="space-y-2">
           <label className="text-sm font-medium">Tipo Attività*</label>
           <Select 
-            value={newActivity.type}
+            value={newActivity.type || "athletic"}
             onValueChange={(value) => setNewActivity({...newActivity, type: value})}
           >
             <SelectTrigger>
@@ -48,26 +49,44 @@ export function ActivityFormFields({
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Orario*</label>
-          <Select 
-            value={newActivity.time}
-            onValueChange={(value) => setNewActivity({...newActivity, time: value})}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleziona orario" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 13 }, (_, i) => `${i + 8}:00`).map(time => (
-                <SelectItem key={time} value={time}>{time}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <label className="text-sm font-medium">Data*</label>
+          <Input 
+            type="date"
+            value={newActivity.date} 
+            onChange={(e) => setNewActivity({...newActivity, date: e.target.value})}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Orario Inizio*</label>
+          <Input 
+            type="time"
+            value={newActivity.startTime} 
+            onChange={(e) => {
+              setNewActivity({
+                ...newActivity, 
+                startTime: e.target.value,
+                time: e.target.value
+              });
+            }}
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Orario Fine*</label>
+          <Input 
+            type="time"
+            value={newActivity.endTime} 
+            onChange={(e) => setNewActivity({...newActivity, endTime: e.target.value})}
+          />
         </div>
         
         <div className="space-y-2">
           <label className="text-sm font-medium">Durata (ore)*</label>
           <Select 
-            value={newActivity.duration.toString()}
+            value={newActivity.duration?.toString() || "1"}
             onValueChange={(value) => setNewActivity({...newActivity, duration: parseFloat(value)})}
           >
             <SelectTrigger>
@@ -85,8 +104,8 @@ export function ActivityFormFields({
         </div>
       </div>
       
-      <WeekdaySelector days={newActivity.days} toggleDay={(day) => {
-        const updatedDays = toggleDay(newActivity.days, day);
+      <WeekdaySelector days={newActivity.days || []} toggleDay={(day) => {
+        const updatedDays = toggleDay(newActivity.days || [], day);
         setNewActivity({...newActivity, days: updatedDays});
       }} />
       
@@ -94,7 +113,7 @@ export function ActivityFormFields({
         <div className="space-y-2">
           <label className="text-sm font-medium">Ubicazione*</label>
           <Input 
-            value={newActivity.location} 
+            value={newActivity.location || ""} 
             onChange={(e) => setNewActivity({...newActivity, location: e.target.value})}
             placeholder="Es. Palestra"
           />
@@ -105,7 +124,7 @@ export function ActivityFormFields({
           <Input 
             type="number"
             min="1"
-            value={newActivity.maxParticipants} 
+            value={newActivity.maxParticipants || 8} 
             onChange={(e) => setNewActivity({...newActivity, maxParticipants: parseInt(e.target.value)})}
             placeholder="Es. 8"
           />
@@ -115,7 +134,7 @@ export function ActivityFormFields({
       <div className="space-y-2">
         <label className="text-sm font-medium">Coach Responsabile*</label>
         <Select 
-          value={newActivity.coach}
+          value={newActivity.coach || ""}
           onValueChange={(value) => setNewActivity({...newActivity, coach: value})}
         >
           <SelectTrigger>
