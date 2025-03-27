@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { getCourtLabel } from "./CourtStyleUtils";
 
 interface CourtHeaderProps {
   courtName: string;
@@ -57,7 +56,6 @@ export function CourtHeader({
           </div>
         )}
       </span>
-      <span className="text-xs bg-ath-black/70 text-white px-2 py-1 rounded">{getCourtLabel(courtType)}</span>
     </div>
   );
 }

@@ -3,7 +3,6 @@ import React, { useRef, useState } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
-import { HorizontalTimeNav } from "./HorizontalTimeNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CourtScheduleViewProps {
@@ -32,7 +31,7 @@ export function CourtScheduleView({
   onRemoveActivity
 }: CourtScheduleViewProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [activeHour, setActiveHour] = useState<string | null>(null);
+  const [activeRange, setActiveRange] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const getOccupantsForTimeSlot = (time: string) => {
@@ -51,49 +50,68 @@ export function CourtScheduleView({
     );
   };
 
-  const scrollToTimeSlot = (index: number) => {
-    if (scrollContainerRef.current && index >= 0 && index < timeSlots.length) {
-      const timeSlotElements = scrollContainerRef.current.querySelectorAll('.border-b.border-gray-200');
-      if (timeSlotElements[index]) {
-        timeSlotElements[index].scrollIntoView({ behavior: 'smooth' });
+  // Generate time ranges (8-10, 11-13, etc)
+  const getTimeRanges = () => {
+    if (!timeSlots.length) return [];
+    
+    const hours = timeSlots.map(slot => parseInt(slot.split(':')[0]));
+    const uniqueHours = [...new Set(hours)].sort((a, b) => a - b);
+    
+    const ranges = [];
+    for (let i = 0; i < uniqueHours.length; i += 2) {
+      if (i + 1 < uniqueHours.length) {
+        ranges.push(`${uniqueHours[i]}-${uniqueHours[i + 1]}`);
+      } else {
+        // Handle odd number of hours
+        ranges.push(`${uniqueHours[i]}-${uniqueHours[i] + 2}`);
       }
     }
+    return ranges;
   };
 
-  const handleHourNavigation = (hour: string) => {
-    const targetIndex = timeSlots.findIndex(slot => slot.startsWith(hour));
-    if (targetIndex !== -1) {
-      scrollToTimeSlot(targetIndex);
-      setActiveHour(hour);
+  const scrollToTimeRange = (range: string) => {
+    const [start] = range.split('-');
+    if (scrollContainerRef.current && start) {
+      const startHour = parseInt(start);
+      const matchingSlots = timeSlots.filter(slot => parseInt(slot.split(':')[0]) === startHour);
+      if (matchingSlots.length > 0) {
+        const firstSlot = matchingSlots[0];
+        const slotIndex = timeSlots.indexOf(firstSlot);
+        
+        const timeSlotElements = scrollContainerRef.current.querySelectorAll('.border-b.border-gray-200');
+        if (timeSlotElements[slotIndex]) {
+          timeSlotElements[slotIndex].scrollIntoView({ behavior: 'smooth' });
+        }
+      }
     }
+    setActiveRange(range);
   };
+
+  const timeRanges = getTimeRanges();
 
   return (
     <div className="flex-1 flex flex-col relative h-full overflow-hidden">
       {/* Court name header - more space and prominence */}
       <div className="py-2 px-3 bg-white bg-opacity-90 z-30 border-b border-gray-200 text-center mb-1">
         <h3 className="font-bold text-lg truncate">
-          {courtName} <span className="text-sm font-medium">#{courtNumber}</span>
+          {courtName} #{courtNumber} - {getCourtLabel(courtType)}
         </h3>
       </div>
       
       {/* Floating time navigation - positioned absolutely within the court */}
-      <div className="absolute right-1 top-12 z-40">
+      <div className="absolute right-2 top-12 z-40">
         <div className="time-nav-floating">
-          {timeSlots.map((slot) => {
-            const hour = slot.split(':')[0];
-            return (
-              <button
-                key={`nav-${hour}`}
-                className={`time-selection-button ${
-                  activeHour === hour ? 'bg-ath-red-clay/10 text-ath-red-clay font-semibold' : ''
-                }`}
-                onClick={() => handleHourNavigation(hour)}
-              >
-                {hour}
-              </button>
-            );
-          })}
+          {timeRanges.map((range) => (
+            <button
+              key={`range-${range}`}
+              className={`time-range-button ${
+                activeRange === range ? 'active-time-range' : ''
+              }`}
+              onClick={() => scrollToTimeRange(range)}
+            >
+              {range}
+            </button>
+          ))}
         </div>
       </div>
       
@@ -133,3 +151,12 @@ export function CourtScheduleView({
     </div>
   );
 }
+
+// Helper function to format court type
+const getCourtLabel = (courtType: string): string => {
+  const type = courtType.split("-");
+  if (type.length > 1) {
+    return type[1].charAt(0).toUpperCase() + type[1].slice(1);
+  }
+  return "";
+};
