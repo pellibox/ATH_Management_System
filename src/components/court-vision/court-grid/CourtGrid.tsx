@@ -87,7 +87,7 @@ const CourtGrid = forwardRef<HTMLDivElement, CourtGridProps>(({
       
       setConflictsCount(totalConflicts);
     }
-  }, [courts, showOnlyConflicts, timeSlots]);
+  }, [courts, showOnlyConflicts, timeSlots, getCoachConflicts]);
   
   // Group courts by type for display
   const courtsByType: Record<string, CourtProps[]> = {};

@@ -18,13 +18,13 @@ export interface CourtGridProps {
 
 export interface GlobalControlsProps {
   timeSlots: string[];
-  syncAllSliders: (hour: number) => void;
-  currentBusinessHour: number | null;
+  syncAllSliders: (hour: string) => void;  // Changed from number to string
+  currentBusinessHour: string | null;      // Changed from number to string
   diagnosticMode: boolean;
   setDiagnosticMode: (value: boolean) => void;
-  showOnlyConflicts?: boolean;
-  setShowOnlyConflicts?: (value: boolean) => void;
-  conflictsCount?: number;
+  showOnlyConflicts: boolean;
+  setShowOnlyConflicts: (value: boolean) => void;
+  conflictsCount: number;
 }
 
 export interface CourtGroupProps {
@@ -39,11 +39,11 @@ export interface CourtGroupProps {
   onChangeCourtType: (courtId: string, type: string) => void;
   onChangeCourtNumber: (courtId: string, number: number) => void;
   activeHoursByGroup: Record<string, string | null>;
-  visibleCourtIndices: Record<string, number[]>;
-  handleHourChangeForGroup: (type: string, hour: string) => void;
+  visibleCourtIndices: Record<string, number>;  // Changed from number[] to number
+  handleHourChangeForGroup: (groupId: string, hour: string) => void;
   navigateCourt: (type: string, pairIndex: number, direction: "next" | "prev") => void;
   isMobile: boolean;
-  getGroupId: (type: string) => string;
+  getGroupId: (type: string, pairIndex?: number) => string;  // Added optional pairIndex
 }
 
 export interface CourtPairProps {
@@ -59,9 +59,9 @@ export interface CourtPairProps {
   onChangeCourtType: (courtId: string, type: string) => void;
   onChangeCourtNumber: (courtId: string, number: number) => void;
   activeHoursByGroup: Record<string, string | null>;
-  visibleCourtIndices: Record<string, number[]>;
-  handleHourChangeForGroup: (type: string, hour: string) => void;
+  visibleCourtIndices: Record<string, number>;  // Changed from number[] to number
+  handleHourChangeForGroup: (groupId: string, hour: string) => void;
   navigateCourt: (type: string, pairIndex: number, direction: "next" | "prev") => void;
   isMobile: boolean;
-  getGroupId: (type: string) => string;
+  getGroupId: (type: string, pairIndex?: number) => string;  // Added optional pairIndex
 }

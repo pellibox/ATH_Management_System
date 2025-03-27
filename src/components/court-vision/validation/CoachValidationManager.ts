@@ -1,6 +1,7 @@
 
 import { PersonData, CourtProps, ValidationResult } from "../types";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 /**
  * Validates coach assignments across courts
@@ -106,13 +107,11 @@ export function useCoachValidation() {
       toast({
         title: "Conferma assegnazione coach",
         description: validationResults[0].message + " Confermare comunque?",
-        action: {
-          label: "Azioni",
-          onClick: () => {
-            // This is just a placeholder as we're using custom action buttons
-          },
-          altText: "Azioni disponibili"
-        }
+        action: (
+          <ToastAction altText="Conferma" onClick={onConfirm}>
+            Conferma
+          </ToastAction>
+        )
       });
 
       // Instead of JSX, we trigger the actions programmatically

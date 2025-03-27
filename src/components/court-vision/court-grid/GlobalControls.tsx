@@ -43,7 +43,8 @@ export function GlobalControls({
             max={hours.length - 1}
             step={1}
             onValueChange={(value) => {
-              syncAllSliders(hours[value[0]]);
+              // Convert the numeric index to the actual hour string
+              syncAllSliders(hours[value[0]].toString());
             }}
           />
           {/* Current time indicator */}
@@ -64,7 +65,7 @@ export function GlobalControls({
           className="text-xs"
           onClick={() => {
             if (currentBusinessHour !== null) {
-              syncAllSliders(parseInt(currentBusinessHour));
+              syncAllSliders(currentBusinessHour);
             }
           }}
         >
