@@ -13,6 +13,8 @@ interface CourtPersonProps {
   className?: string;
   isSpanning?: boolean;
   position?: { x: number, y: number };
+  hasConflict?: boolean;
+  isConfirmed?: boolean;
 }
 
 export function CourtPerson({ 
@@ -22,58 +24,101 @@ export function CourtPerson({
   onRemove,
   className = "",
   isSpanning = false,
-  position
+  position,
+  hasConflict = false,
+  isConfirmed = true
 }: CourtPersonProps) {
   const isCoach = person.type === "coach";
   
   // Enhanced color-coding based on person type and program
   let bgColor, textColor, borderColor, gradientStyle;
   
+  // Get program color (fallback to default if not found)
+  const programColor = person.programColor || 
+    (isCoach ? "#b00c20" : "#3b82f6"); // Red for coaches, blue for players
+  
+  // Apply status styling
   if (isCoach) {
     // Coaches get a more distinct coloring with program influence
-    const baseColor = person.programColor || "#b00c20"; // Default coach color (red)
     const bgOpacity = isSpanning ? '90' : '';  // Less opacity for spanning blocks
     
-    bgColor = `bg-[${baseColor}${bgOpacity}]`;
+    bgColor = `bg-[${programColor}${bgOpacity}]`;
     textColor = "text-white";
     borderColor = "border-white/30";
     
     // Add gradient effect for spanning blocks
     gradientStyle = isSpanning 
-      ? { backgroundImage: `linear-gradient(to bottom, ${baseColor}, ${baseColor}80)` }
-      : { backgroundColor: baseColor };
+      ? { backgroundImage: `linear-gradient(to bottom, ${programColor}, ${programColor}80)` }
+      : { backgroundColor: programColor };
   } else {
     // Players get program-colored styling
-    const baseColor = person.programColor || "#3b82f6"; // Default player color (blue)
-    
-    bgColor = `bg-[${baseColor}20]`; // Light background with program color
+    bgColor = `bg-[${programColor}20]`; // Light background with program color
     textColor = "text-gray-800";
-    borderColor = `border-[${baseColor}]`;
+    borderColor = `border-[${programColor}]`;
     
     // Add gradient effect for spanning blocks
     gradientStyle = isSpanning 
-      ? { backgroundImage: `linear-gradient(to bottom, ${baseColor}30, ${baseColor}10)` }
-      : { backgroundColor: `${baseColor}20` };
+      ? { backgroundImage: `linear-gradient(to bottom, ${programColor}30, ${programColor}10)` }
+      : { backgroundColor: `${programColor}20` };
   }
   
   // Add prominent left border with program color
-  const programBorder = person.programColor 
-    ? { borderLeftColor: person.programColor, borderLeftWidth: '4px' }
-    : {};
+  const programBorder = { 
+    borderLeftColor: programColor, 
+    borderLeftWidth: '4px' 
+  };
   
   // Special styling for time slots that span multiple periods
   const spanningStyles = isSpanning 
     ? 'border-t border-dashed opacity-90' 
     : '';
   
-  // Calculate remaining hours for the player
-  const programLimit = person.programId ? 4 : 2; // Example limit based on program
-  const usedHours = person.hoursAssigned || 0;
-  const remainingHours = Math.max(0, programLimit - usedHours);
+  // Styling for confirmation status
+  const confirmationStyle = !isConfirmed
+    ? 'bg-stripes' // Add striped background for unconfirmed
+    : '';
   
-  // Status indicators (pending, confirmed, conflict)
-  const statusClass = '';
+  // Styling for conflicts
+  const conflictStyle = hasConflict
+    ? 'border-2 border-orange-500 animate-pulse' // Pulsing border for conflicts
+    : '';
   
+  // Calculate program-based default duration and daily limits
+  const getDefaultDuration = () => {
+    if (!person.programId) return 1;
+    // Different programs have different default durations
+    const programDurations: Record<string, number> = {
+      "perf2": 1.5,
+      "perf3": 1.5,
+      "perf4": 1.5,
+      "elite": 1.5,
+      "elite-full": 2,
+      "junior-sit": 1,
+      "junior-sat": 1,
+    };
+    return programDurations[person.programId] || 1;
+  };
+  
+  const getDailyLimit = () => {
+    if (!person.programId) return 2;
+    // Different programs have different daily limits
+    const programLimits: Record<string, number> = {
+      "perf2": 3,
+      "perf3": 4.5,
+      "perf4": 6,
+      "elite": 7.5,
+      "elite-full": 10,
+      "junior-sit": 3,
+      "junior-sat": 1.5,
+    };
+    return programLimits[person.programId] || 2;
+  };
+  
+  const defaultDuration = getDefaultDuration();
+  const dailyLimit = getDailyLimit();
+  const hoursAssigned = person.hoursAssigned || 0;
+  const remainingHours = Math.max(0, dailyLimit - hoursAssigned);
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -82,10 +127,10 @@ export function CourtPerson({
             className={`
               relative px-2 py-1 rounded-md text-xs font-medium
               ${textColor} ${className} ${spanningStyles} 
+              ${confirmationStyle} ${conflictStyle}
               border ${borderColor}
               flex-shrink-0 flex items-center justify-between
               shadow-sm hover:shadow-md transition-shadow
-              ${statusClass}
             `}
             style={{ 
               minWidth: '90px',
@@ -138,9 +183,10 @@ export function CourtPerson({
               <div className="absolute -top-2 -right-2 flex gap-0.5">
                 <Badge 
                   className={`text-[9px] ${isCoach ? 'bg-red-500' : 'bg-blue-500'} text-white px-1 py-0 min-w-5 h-4 flex items-center justify-center`}
+                  style={{ backgroundColor: programColor }}
                 >
                   <Clock className="h-2 w-2 mr-0.5" />
-                  {person.durationHours || 1}h
+                  {person.durationHours || defaultDuration}h
                 </Badge>
                 
                 {/* Remaining hours badge for players */}
@@ -155,6 +201,13 @@ export function CourtPerson({
                 )}
               </div>
             )}
+            
+            {/* Conflict indicator */}
+            {hasConflict && (
+              <div className="absolute -top-2 -left-2">
+                <AlertCircle className="h-4 w-4 text-orange-500 fill-white" />
+              </div>
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent>
@@ -165,7 +218,13 @@ export function CourtPerson({
             {person.durationHours && <p>Duration: {person.durationHours} hour{person.durationHours !== 1 ? 's' : ''}</p>}
             {person.timeSlot && <p>Time: {person.timeSlot}{person.endTimeSlot ? ` - ${person.endTimeSlot}` : ''}</p>}
             {person.type === "player" && (
-              <p>Daily Limit: {person.hoursAssigned || 0}/{programLimit} hours</p>
+              <p>Daily Limit: {person.hoursAssigned || 0}/{dailyLimit} hours</p>
+            )}
+            {hasConflict && (
+              <p className="text-orange-500 font-semibold">⚠️ Has scheduling conflict</p>
+            )}
+            {!isConfirmed && (
+              <p className="text-blue-500 italic">Pending confirmation</p>
             )}
           </div>
         </TooltipContent>

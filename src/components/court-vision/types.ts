@@ -1,3 +1,4 @@
+
 export interface PersonData {
   id: string;
   name: string;
@@ -23,6 +24,7 @@ export interface PersonData {
   activityHistory?: ActivityHistoryEntry[]; // Track activities player has participated in
   endTimeSlot?: string; // End time slot for spanning multiple slots
   date?: string; // ISO date string for the assignment day
+  status?: "confirmed" | "pending" | "conflict"; // Confirmation status
 }
 
 export interface ActivityHistoryEntry {
@@ -50,6 +52,7 @@ export interface ActivityData {
   sourceTimeSlot?: string; // Source time slot for drag and drop operations
   sportType?: string; // Type of sport (tennis, padel, pickleball, touchtennis)
   participants?: string[]; // Array of player IDs who are part of this activity
+  status?: "confirmed" | "pending" | "conflict"; // Confirmation status
 }
 
 export interface CourtProps {
@@ -80,4 +83,5 @@ export interface Program {
   weeklyHours?: number; // Weekly hours assigned to this program
   totalWeeks?: number; // Total weeks for the program duration
   remainingWeeks?: number; // Remaining weeks in the program
+  category?: string; // Category for grouping programs
 }

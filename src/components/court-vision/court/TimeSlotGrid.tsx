@@ -84,6 +84,7 @@ export const TimeSlotGrid = forwardRef<HTMLDivElement, TimeSlotGridProps>(({
               onRemoveActivity={onRemoveActivity}
               hasConflicts={hasConflicts}
               isHourStart={isHourStart}
+              conflicts={conflicts}
             />
           );
         })}

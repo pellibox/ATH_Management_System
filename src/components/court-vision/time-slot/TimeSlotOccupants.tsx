@@ -11,12 +11,14 @@ interface TimeSlotOccupantsProps {
   occupants: PersonData[];
   onRemovePerson: (personId: string, timeSlot?: string) => void;
   time: string;
+  conflicts?: Record<string, string[]>;
 }
 
 export function TimeSlotOccupants({ 
   occupants, 
   onRemovePerson,
-  time 
+  time,
+  conflicts = {}
 }: TimeSlotOccupantsProps) {
   // Define timeSlots array for this component
   const timeSlots = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", 
@@ -32,10 +34,31 @@ export function TimeSlotOccupants({
   const coaches = occupants.filter(p => p.type === "coach");
   const players = occupants.filter(p => p.type === "player");
 
+  // Check if a person has a conflict in this time slot
+  const hasConflict = (person: PersonData): boolean => {
+    const timeConflicts = conflicts[time] || [];
+    return timeConflicts.includes(person.id);
+  };
+
   // Calculate remaining hours for each player
   const getRemainingHours = (player: PersonData): number => {
-    // This would come from the player's program in a real implementation
-    const programLimit = player.programId ? 4 : 2; // Example limit based on program
+    // Get daily limit based on program
+    const getDailyLimit = () => {
+      if (!player.programId) return 2;
+      // Different programs have different daily limits
+      const programLimits: Record<string, number> = {
+        "perf2": 3,
+        "perf3": 4.5,
+        "perf4": 6,
+        "elite": 7.5,
+        "elite-full": 10,
+        "junior-sit": 3,
+        "junior-sat": 1.5,
+      };
+      return programLimits[player.programId] || 2;
+    };
+    
+    const programLimit = getDailyLimit();
     const usedHours = player.hoursAssigned || player.durationHours || 1;
     return Math.max(0, programLimit - usedHours);
   };
@@ -55,10 +78,16 @@ export function TimeSlotOccupants({
           // For continuation slots, add special styling
           const personClass = isContinuationSlot ? `${continuationStyle} border-t border-dashed border-gray-300` : '';
           
+          // Check for conflicts
+          const coachHasConflict = hasConflict(coach);
+          
           // Status style - confirmed, pending, conflict
           const statusStyle = coach.isPresent === false 
             ? 'opacity-50' // Unavailable coach
             : '';
+          
+          // Default to confirmed unless specified otherwise
+          const isConfirmed = coach.status !== "pending";
           
           return (
             <div key={`coach-${coach.id}-${index}-${time}`} className="relative">
@@ -69,17 +98,9 @@ export function TimeSlotOccupants({
                 onRemove={showRemoveButton ? () => onRemovePerson(coach.id, time) : undefined}
                 className={`${personClass} ${statusStyle} z-10`}
                 isSpanning={isContinuationSlot}
+                hasConflict={coachHasConflict}
+                isConfirmed={isConfirmed}
               />
-              
-              {/* Show coach badge only at the start of assignment */}
-              {coach.timeSlot === time && (
-                <Badge 
-                  className="absolute -top-2 -right-2 text-[9px] bg-red-500 text-white px-1 py-0 min-w-5 h-4 flex items-center justify-center"
-                >
-                  <Clock className="h-2 w-2 mr-0.5" />
-                  {coach.durationHours || 1}h
-                </Badge>
-              )}
             </div>
           );
         })}
@@ -96,12 +117,11 @@ export function TimeSlotOccupants({
           // For continuation slots, add special styling
           const personClass = isContinuationSlot ? `${continuationStyle} border-t border-dashed border-gray-300` : '';
           
-          // Calculate remaining hours for the player
-          const remainingHours = getRemainingHours(player);
+          // Check for conflicts
+          const playerHasConflict = hasConflict(player);
           
-          // Program-based styling
-          const programStyle = player.programColor ? 
-            `border-l-4 border-l-[${player.programColor}]` : '';
+          // Default to confirmed unless specified otherwise
+          const isConfirmed = player.status !== "pending";
           
           return (
             <div key={`player-${player.id}-${index}-${time}`} className="relative">
@@ -110,29 +130,11 @@ export function TimeSlotOccupants({
                 index={index}
                 total={players.length}
                 onRemove={showRemoveButton ? () => onRemovePerson(player.id, time) : undefined}
-                className={`${personClass} ${programStyle}`}
+                className={`${personClass}`}
                 isSpanning={isContinuationSlot}
+                hasConflict={playerHasConflict}
+                isConfirmed={isConfirmed}
               />
-              
-              {/* Show duration badge only at the start of assignment */}
-              {player.timeSlot === time && (
-                <div className="absolute -top-2 -right-2 flex gap-0.5">
-                  <Badge 
-                    className="text-[9px] bg-blue-500 text-white px-1 py-0 min-w-5 h-4 flex items-center justify-center"
-                  >
-                    <Clock className="h-2 w-2 mr-0.5" />
-                    {player.durationHours || 1}h
-                  </Badge>
-                  
-                  <Badge 
-                    className={`text-[9px] px-1 py-0 min-w-5 h-4 flex items-center justify-center ${
-                      remainingHours > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                    }`}
-                  >
-                    {remainingHours}h
-                  </Badge>
-                </div>
-              )}
             </div>
           );
         })}

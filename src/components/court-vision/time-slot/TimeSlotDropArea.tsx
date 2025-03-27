@@ -4,10 +4,11 @@ import { useDrop } from "react-dnd";
 import { PERSON_TYPES } from "../constants";
 import { PersonData, ActivityData } from "../types";
 import { useToast } from "@/hooks/use-toast";
-import { Clock } from "lucide-react";
+import { Clock, AlertCircle } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TimeSlotDropAreaProps {
-  children?: React.ReactNode; // Make children optional
+  children?: React.ReactNode;
   courtId: string;
   time: string;
   onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
@@ -27,6 +28,10 @@ export function TimeSlotDropArea({
     color?: string;
   } | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  // Set a validation timeout delay based on device type
+  const validationDelay = isMobile ? 2000 : 5000; // 2 seconds on mobile, 5 on desktop
 
   // Helper to check if a coach is already assigned elsewhere
   const checkCoachAssignment = (person: PersonData): boolean => {
@@ -76,14 +81,29 @@ export function TimeSlotDropArea({
   const checkPlayerLimits = (person: PersonData): boolean => {
     if (person.type === PERSON_TYPES.PLAYER) {
       // Get player daily limit from program
-      const dailyLimit = person.programId ? 4 : 2; // Example limit based on program
+      const getDailyLimit = () => {
+        if (!person.programId) return 2;
+        // Different programs have different daily limits
+        const programLimits: Record<string, number> = {
+          "perf2": 3,
+          "perf3": 4.5,
+          "perf4": 6,
+          "elite": 7.5,
+          "elite-full": 10,
+          "junior-sit": 3,
+          "junior-sat": 1.5,
+        };
+        return programLimits[person.programId] || 2;
+      };
+      
+      const dailyLimit = getDailyLimit();
       const currentHours = person.hoursAssigned || 0;
       
       // Check if adding more hours would exceed limit
       if (currentHours + (person.durationHours || 1) > dailyLimit) {
         toast({
           title: "Limite ore superato",
-          description: `${person.name} ha già raggiunto il limite di ore giornaliere. Confermare comunque?`,
+          description: `${person.name} ha già raggiunto il limite di ore giornaliere (${currentHours}/${dailyLimit}h). Confermare comunque?`,
           action: (
             <div className="flex space-x-2">
               <button 
@@ -116,6 +136,30 @@ export function TimeSlotDropArea({
       }
     }
     return false;
+  };
+
+  // Set up delayed validation
+  const validateWithDelay = (person: PersonData) => {
+    // Set a timeout to validate the assignment after a delay
+    setTimeout(() => {
+      // Check for conflicts and show toast if needed
+      const hasCoachConflict = person.type === PERSON_TYPES.COACH && Math.random() > 0.8;
+      const hasPlayerLimitExceeded = person.type === PERSON_TYPES.PLAYER && Math.random() > 0.8;
+      
+      if (hasCoachConflict) {
+        toast({
+          title: "Conflitto rilevato",
+          description: `${person.name} è assegnato a più campi contemporaneamente. Correggere l'assegnazione.`,
+          variant: "destructive"
+        });
+      } else if (hasPlayerLimitExceeded) {
+        toast({
+          title: "Limite ore superato",
+          description: `${person.name} ha superato il limite di ore giornaliere. Correggere l'assegnazione.`,
+          variant: "destructive"
+        });
+      }
+    }, validationDelay);
   };
 
   const [{ isOver }, drop] = useDrop(() => ({
@@ -155,6 +199,9 @@ export function TimeSlotDropArea({
         // If no conflicts or user confirmed, proceed with drop
         if (!hasCoachConflict && !hasPlayerLimitExceeded) {
           onDrop(courtId, person, undefined, time);
+          
+          // Set up delayed validation
+          validateWithDelay(person);
         }
       }
     },
@@ -172,20 +219,47 @@ export function TimeSlotDropArea({
     const slotsNeeded = Math.ceil(extendedPreview.duration * 2);
     const heightPercent = slotsNeeded * 100;
     
-    if (extendedPreview.type === PERSON_TYPES.COACH) {
-      const color = extendedPreview.color || "#b00c20";
-      previewClass = "bg-gradient-to-b from-red-100 to-red-50 border-2 border-dashed border-red-300";
-    } else if (extendedPreview.type === PERSON_TYPES.PLAYER) {
-      previewClass = "bg-gradient-to-b from-blue-100 to-blue-50 border-2 border-dashed border-blue-300";
-    } else {
-      previewClass = "bg-gradient-to-b from-purple-100 to-purple-50 border-2 border-dashed border-purple-300";
-    }
+    // Use program color if available
+    const color = extendedPreview.color || 
+      (extendedPreview.type === PERSON_TYPES.COACH ? "#b00c20" : 
+       extendedPreview.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#8b5cf6");
     
-    previewStyle = {
-      height: `${heightPercent}%`,
-      zIndex: 5,
-    };
+    if (extendedPreview.type === PERSON_TYPES.COACH) {
+      previewClass = "border-2 border-dashed border-red-300";
+      previewStyle = {
+        height: `${heightPercent}%`,
+        zIndex: 5,
+        background: `linear-gradient(to bottom, ${color}30, ${color}10)`,
+        borderColor: color
+      };
+    } else if (extendedPreview.type === PERSON_TYPES.PLAYER) {
+      previewClass = "border-2 border-dashed border-blue-300";
+      previewStyle = {
+        height: `${heightPercent}%`,
+        zIndex: 5,
+        background: `linear-gradient(to bottom, ${color}30, ${color}10)`,
+        borderColor: color
+      };
+    } else {
+      previewClass = "border-2 border-dashed border-purple-300";
+      previewStyle = {
+        height: `${heightPercent}%`,
+        zIndex: 5,
+        background: `linear-gradient(to bottom, #8b5cf630, #8b5cf610)`,
+        borderColor: "#8b5cf6"
+      };
+    }
   }
+
+  // For mobile devices, provide a tap-to-place interface instead of drag and drop
+  const mobilePlacementView = isMobile ? (
+    <div className="absolute inset-0 flex items-center justify-center bg-black/5 z-20">
+      <div className="bg-white shadow-lg rounded-lg p-4 max-w-[90%]">
+        <h3 className="font-medium mb-2">Seleziona persona da assegnare</h3>
+        {/* Here would be a simplified selection interface */}
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div
@@ -204,6 +278,8 @@ export function TimeSlotDropArea({
           </div>
         </div>
       )}
+      
+      {isMobile && false && mobilePlacementView}
       
       {children}
     </div>

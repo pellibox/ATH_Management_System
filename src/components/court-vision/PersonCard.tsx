@@ -12,7 +12,7 @@ import { ProgramBadges } from "./person-card/ProgramBadges";
 import { AbsenceIndicator } from "./person-card/AbsenceIndicator";
 import { CardActions } from "./person-card/CardActions";
 import { PersonContextMenu } from "./person-card/PersonContextMenu";
-import { Clock, User, UserCog } from "lucide-react";
+import { Clock, User, UserCog, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface PersonCardProps {
@@ -28,7 +28,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
     item: {
       ...person,
       // Set default duration based on program if not already set
-      durationHours: person.durationHours || (person.programId ? 1.5 : 1)
+      durationHours: person.durationHours || getProgramBasedDuration(person)
     },
     canDrag: person.isPresent !== false, 
     collect: (monitor) => ({
@@ -65,35 +65,49 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
   // Determine if the coach is unavailable
   const isUnavailable = isPersonUnavailable(person);
   
-  // Calculate program-based default duration and daily limits
-  const getDefaultDuration = () => {
+  // Get program-based duration
+  function getProgramBasedDuration(person: PersonData): number {
     if (!person.programId) return 1;
+    
     // Different programs have different default durations
     const programDurations: Record<string, number> = {
-      "PRO": 2,
-      "ELITE": 1.5,
-      "JUNIOR": 1.5,
-      "BASIC": 1,
+      "perf2": 1.5,
+      "perf3": 1.5,
+      "perf4": 1.5,
+      "elite": 1.5,
+      "elite-full": 2,
+      "junior-sit": 1,
+      "junior-sat": 1,
     };
+    
     return programDurations[person.programId] || 1;
-  };
+  }
   
-  const getDailyLimit = () => {
+  // Calculate program-based daily limits
+  function getProgramBasedDailyLimit(person: PersonData): number {
     if (!person.programId) return 2;
+    
     // Different programs have different daily limits
     const programLimits: Record<string, number> = {
-      "PRO": 4,
-      "ELITE": 3,
-      "JUNIOR": 2.5,
-      "BASIC": 2,
+      "perf2": 3,
+      "perf3": 4.5,
+      "perf4": 6,
+      "elite": 7.5,
+      "elite-full": 10,
+      "junior-sit": 3,
+      "junior-sat": 1.5,
     };
+    
     return programLimits[person.programId] || 2;
-  };
+  }
   
-  const defaultDuration = getDefaultDuration();
-  const dailyLimit = getDailyLimit();
+  const defaultDuration = getProgramBasedDuration(person);
+  const dailyLimit = getProgramBasedDailyLimit(person);
   const hoursAssigned = person.hoursAssigned || 0;
   const remainingHours = Math.max(0, dailyLimit - hoursAssigned);
+  
+  // Determine if the player has exceeded their daily limit
+  const hasExceededLimit = remainingHours <= 0;
 
   return (
     <ContextMenu>
@@ -103,7 +117,9 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
           className={`flex items-center justify-between p-2 my-1 ${
             isUnavailable 
               ? "bg-gray-100 border-red-200" 
-              : "bg-gray-50 hover:bg-gray-100"
+              : hasExceededLimit && person.type === "player"
+                ? "bg-orange-50 border-orange-200"
+                : "bg-gray-50 hover:bg-gray-100"
           } rounded-md border border-gray-200 ${
             isDragging ? "opacity-50" : ""
           } transition-colors cursor-grab`}
@@ -115,9 +131,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
           <div className="flex items-center space-x-2">
             {/* Icon based on person type */}
             <div 
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
-                person.type === "coach" ? "bg-red-500" : "bg-blue-500"
-              }`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-white`}
               style={{ backgroundColor: programColor || (person.type === "coach" ? "#b00c20" : "#3b82f6") }}
             >
               {person.type === "coach" ? (
@@ -146,6 +160,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
                   <Badge 
                     variant="outline" 
                     className="text-[9px] px-1 py-0 h-4 flex items-center bg-gray-50"
+                    style={{ borderColor: programColor, color: programColor }}
                   >
                     <Clock className="h-2.5 w-2.5 mr-0.5" />
                     {defaultDuration}h
@@ -162,8 +177,17 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
                 </div>
               )}
               
-              {/* Absence reason */}
-              <AbsenceIndicator person={person} />
+              {/* Absence indicator or limit exceeded warning */}
+              {isUnavailable ? (
+                <AbsenceIndicator person={person} />
+              ) : (
+                hasExceededLimit && person.type === "player" && (
+                  <div className="flex items-center mt-1 text-orange-500 text-xs">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Limite ore superato
+                  </div>
+                )
+              )}
             </div>
           </div>
           

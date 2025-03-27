@@ -19,6 +19,7 @@ interface TimeSlotProps {
   onRemoveActivity: (activityId: string, time?: string) => void;
   hasConflicts?: boolean;
   isHourStart?: boolean;
+  conflicts?: Record<string, string[]>;
 }
 
 export function TimeSlot({ 
@@ -31,7 +32,8 @@ export function TimeSlot({
   onRemovePerson, 
   onRemoveActivity,
   hasConflicts = false,
-  isHourStart = false
+  isHourStart = false,
+  conflicts = {}
 }: TimeSlotProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -76,6 +78,7 @@ export function TimeSlot({
               occupants={occupants} 
               onRemovePerson={onRemovePerson}
               time={time}
+              conflicts={conflicts}
             />
             <TimeSlotActivities 
               activities={activities} 
