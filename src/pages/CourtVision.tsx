@@ -15,22 +15,27 @@ export default function CourtVision() {
   // Log the shared players for debugging
   useEffect(() => {
     console.log("CourtVision: Received sharedPlayers count:", sharedPlayers.length);
-    if (sharedPlayers.length > 0) {
-      console.log("CourtVision: First shared player:", sharedPlayers[0].name);
-    }
-  }, [sharedPlayers]);
+    
+    // Let's see which players are actually in the shared context
+    sharedPlayers.forEach(player => {
+      console.log(`CourtVision: Player ${player.id}: ${player.name}, status: ${player.status}`);
+    });
+    
+    // Force a refresh of the shared player list when Court Vision loads
+    updateSharedPlayerList();
+  }, [sharedPlayers.length]);
 
-  // Ensure data consistency on page load
+  // Always show a notification with the current player count
   useEffect(() => {
-    if (sharedPlayers.length > 0) {
-      // Force a refresh of shared player data when Court Vision loads
-      updateSharedPlayerList();
-      
+    // Give a moment for the DOM to settle
+    const timeoutId = setTimeout(() => {
       toast.info("Dati dei giocatori sincronizzati", {
         description: `${sharedPlayers.length} giocatori caricati correttamente`
       });
-    }
-  }, []);
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, []); 
   
   return (
     <DndProvider backend={HTML5Backend}>

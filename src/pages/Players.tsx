@@ -60,6 +60,7 @@ function PlayersContent() {
   
   // Log shared players count for debugging
   console.log("Players page: SharedPlayers count:", sharedPlayers.length);
+  console.log("Players page: Players count:", players.length);
   
   // Set available programs from TENNIS_PROGRAMS
   useEffect(() => {
@@ -67,18 +68,25 @@ function PlayersContent() {
     setAvailablePrograms(programs);
   }, [setAvailablePrograms]);
   
-  // Initial sync from shared context to player context - only do this once
+  // Force initial sync from Players to shared context - only do this once
   useEffect(() => {
-    if (!initialSyncDone && sharedPlayers.length > 0) {
-      console.log("Players page: Performing initial sync from shared context");
-      updateSharedPlayerList();
+    if (!initialSyncDone) {
+      console.log("Players page: Performing initial sync TO shared context");
+      
+      // Force sync all players to shared context
+      players.forEach(player => {
+        console.log("Initial sync of player to shared context:", player.name, player.status);
+        updatePlayer(player);
+      });
+      
+      // Mark initial sync as done
       setInitialSyncDone(true);
       
       toast.info("Dati dei giocatori sincronizzati", {
-        description: `${sharedPlayers.length} giocatori caricati correttamente`
+        description: `${players.length} giocatori caricati correttamente`
       });
     }
-  }, [sharedPlayers, initialSyncDone, updateSharedPlayerList]);
+  }, [players, initialSyncDone, updatePlayer]);
   
   // Memorizziamo questa funzione per evitare sincronizzazioni eccessive
   const syncPlayersWithSharedContext = useCallback(() => {

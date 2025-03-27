@@ -7,7 +7,7 @@ import { mockPlayers } from "@/types/player";
 
 // Convert Player type to PersonData type
 const convertPlayerToPerson = (player: Player): PersonData => {
-  console.log("Converting player to PersonData:", player.name);
+  console.log("Converting player to PersonData:", player.name, player.status);
   return {
     id: player.id,
     name: player.name,
@@ -27,7 +27,7 @@ const convertPlayerToPerson = (player: Player): PersonData => {
     // Program-based metrics
     dailyLimit: calculateDailyLimit(player),
     durationHours: calculateDefaultDuration(player),
-    // Status - always use value from player object if available
+    // Status - always convert to confirmed unless explicitly inactive
     status: player.status === 'inactive' ? "pending" : "confirmed"
   };
 };
@@ -45,6 +45,7 @@ const convertPersonToPlayer = (person: PersonData): Player => {
     programs: person.programIds,
     sports: person.sportTypes,
     notes: person.notes,
+    // Convert status back to active/inactive format
     status: person.status === "pending" ? 'inactive' : 'active',
     // Hours tracking
     completedHours: person.completedHours,
@@ -122,11 +123,15 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Log initial state
   useEffect(() => {
     console.log("SharedPlayerContext initialized with", sharedPlayers.length, "players");
+    // Log each player to ensure we're starting with the correct data
+    sharedPlayers.forEach(player => {
+      console.log(`Player in shared context: ${player.name}, status: ${player.status}`);
+    });
   }, []);
 
   // Add a new player
   const addPlayer = (player: Player) => {
-    console.log("SharedPlayerContext: Adding player", player.name);
+    console.log("SharedPlayerContext: Adding player", player.name, player.status);
     const newPerson = convertPlayerToPerson(player);
     setSharedPlayers((prevPlayers) => {
       // Check if player already exists to avoid duplicates
@@ -135,13 +140,14 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
         console.log("Player already exists, updating instead");
         return prevPlayers.map(p => p.id === player.id ? newPerson : p);
       }
+      console.log("Adding new player to shared context");
       return [...prevPlayers, newPerson];
     });
   };
 
   // Update an existing player
   const updatePlayer = (player: Player) => {
-    console.log("SharedPlayerContext: Updating player", player.name);
+    console.log("SharedPlayerContext: Updating player", player.name, player.status);
     const updatedPerson = convertPlayerToPerson(player);
     setSharedPlayers((prevPlayers) => {
       // Check if player exists
@@ -150,6 +156,7 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
         console.log("Player doesn't exist, adding instead");
         return [...prevPlayers, updatedPerson];
       }
+      console.log("Updating existing player in shared context");
       return prevPlayers.map((p) => (p.id === player.id ? updatedPerson : p));
     });
   };
@@ -186,9 +193,12 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Force a refresh of the shared player list (useful when switching between pages)
   const updateSharedPlayerList = () => {
-    console.log("SharedPlayerContext: Forcing refresh of shared player list");
-    // This effectively re-applies all data transformations
-    setSharedPlayers(prev => [...prev]);
+    console.log("SharedPlayerContext: Forcing refresh of shared player list - count:", sharedPlayers.length);
+    // This effectively re-applies all data transformations and triggers dependents to update
+    setSharedPlayers(prev => {
+      console.log("Refreshed players count:", prev.length);
+      return [...prev];
+    });
   };
 
   return (

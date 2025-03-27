@@ -33,6 +33,11 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
 }) => {
   console.log("CourtVisionProvider rendering with initialPlayers:", initialPlayers.length);
   
+  // Log each initial player for debugging
+  initialPlayers.forEach(player => {
+    console.log(`CourtVisionProvider: Initial player ${player.id}: ${player.name}, status: ${player.status}`);
+  });
+  
   // Get state from hook
   const initialState = useCourtVisionState();
   
@@ -65,58 +70,63 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     if (initialPlayers && initialPlayers.length > 0) {
       console.log("Court Vision: Setting playersList from initialPlayers:", initialPlayers.length);
       
-      // Check if data has actually changed to avoid unnecessary re-renders
-      const isDifferent = !isInitialized || 
-        playersList.length !== initialPlayers.length || 
-        JSON.stringify(playersList.map(p => p.id)) !== JSON.stringify(initialPlayers.map(p => p.id));
-      
-      if (isDifferent) {
-        // Map player data to include necessary properties for court vision
-        const mappedPlayers = initialPlayers.map(player => {
-          // Calculate programColor based on program if not already set
-          let programColor = player.programColor;
-          if (!programColor && player.programId) {
-            const program = programs.find(p => p.id === player.programId);
-            if (program) {
-              programColor = program.color;
-            }
-          }
-          
-          // Ensure hours tracking properties are preserved
-          return {
-            ...player,
-            programColor,
-            // Preserve hours data
-            completedHours: player.completedHours || 0,
-            trainingHours: player.trainingHours || 0,
-            extraHours: player.extraHours || 0,
-            missedHours: player.missedHours || 0,
-            dailyLimit: player.dailyLimit || calculateDailyLimit(player),
-            durationHours: player.durationHours || calculateDefaultDuration(player),
-          };
-        });
-        
-        setPlayersList(mappedPlayers);
-        setIsInitialized(true);
-        
-        // Also update people list to include these players
-        setPeople(prevPeople => {
-          // Filter out existing players
-          const nonPlayerPeople = prevPeople.filter(p => p.type !== "player");
-          // Add mapped players
-          return [...nonPlayerPeople, ...mappedPlayers];
-        });
-        
-        // Show toast for debug purposes
-        if (isInitialized) {
-          toast.info("Dati giocatori aggiornati", {
-            description: `${mappedPlayers.length} giocatori aggiornati nella Visione Campo`,
-            duration: 3000
-          });
+      // Always update players - removing the isDifferent check to ensure all players are always loaded
+      // Map player data to include necessary properties for court vision
+      const mappedPlayers = initialPlayers.map(player => {
+        // Filter out any players with status = "pending" as they shouldn't be visible
+        if (player.status === "pending") {
+          console.log(`Filtering out pending player: ${player.name}`);
         }
+        
+        // Calculate programColor based on program if not already set
+        let programColor = player.programColor;
+        if (!programColor && player.programId) {
+          const program = programs.find(p => p.id === player.programId);
+          if (program) {
+            programColor = program.color;
+          }
+        }
+        
+        // Ensure hours tracking properties are preserved
+        return {
+          ...player,
+          programColor,
+          // Preserve hours data
+          completedHours: player.completedHours || 0,
+          trainingHours: player.trainingHours || 0,
+          extraHours: player.extraHours || 0,
+          missedHours: player.missedHours || 0,
+          dailyLimit: player.dailyLimit || calculateDailyLimit(player),
+          durationHours: player.durationHours || calculateDefaultDuration(player),
+        };
+      });
+      
+      console.log(`Court Vision: Mapped ${mappedPlayers.length} players`);
+      
+      // Only include active players in the playersList (status !== "pending")
+      const activePlayers = mappedPlayers.filter(player => player.status !== "pending");
+      console.log(`Court Vision: Filtered to ${activePlayers.length} active players`);
+      
+      setPlayersList(activePlayers);
+      setIsInitialized(true);
+      
+      // Also update people list to include these players
+      setPeople(prevPeople => {
+        // Filter out existing players
+        const nonPlayerPeople = prevPeople.filter(p => p.type !== "player");
+        // Add mapped active players
+        return [...nonPlayerPeople, ...activePlayers];
+      });
+      
+      // Show toast for debug purposes
+      if (isInitialized) {
+        toast.info("Dati giocatori aggiornati", {
+          description: `${activePlayers.length} giocatori aggiornati nella Visione Campo`,
+          duration: 3000
+        });
       }
     }
-  }, [initialPlayers, programs, isInitialized, playersList.length]);
+  }, [initialPlayers, programs, isInitialized]);
 
   // Sync back court assignments to shared context
   useEffect(() => {
