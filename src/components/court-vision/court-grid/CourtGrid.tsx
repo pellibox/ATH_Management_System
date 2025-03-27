@@ -6,10 +6,13 @@ import { GlobalControls } from "./GlobalControls";
 import { CourtTypeGroup } from "./CourtTypeGroup";
 import { EmptyCourtMessage } from "./EmptyCourtMessage";
 import { CourtGridProps } from "./types";
+import { CourtProps } from "../types";
 
 const CourtGrid = forwardRef<HTMLDivElement, CourtGridProps>(({
   courts,
   timeSlots,
+  availablePeople,
+  availableActivities,
   onDrop,
   onActivityDrop,
   onRemovePerson,

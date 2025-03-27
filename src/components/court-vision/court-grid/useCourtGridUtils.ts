@@ -31,7 +31,12 @@ export function useCourtGridUtils(courts: CourtProps[], timeSlots: string[], pro
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   
   // Function to generate a unique ID for each court group
-  const getGroupId = useCallback((type: string, pairIndex: number) => `${type}-${pairIndex}`, []);
+  const getGroupId = useCallback((type: string, pairIndex?: number) => {
+    if (pairIndex !== undefined) {
+      return `${type}-${pairIndex}`;
+    }
+    return type;
+  }, []);
   
   // Initialize currentActiveHour from the first time slot on component mount or when propActiveHour changes
   useEffect(() => {

@@ -2,6 +2,7 @@
 import React from "react";
 import { CourtGroupProps } from "./types";
 import { CourtPair } from "./CourtPair";
+import { CourtProps } from "../types";
 
 export function CourtTypeGroup({
   type,
