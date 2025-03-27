@@ -40,13 +40,6 @@ export function TimeSlot({
   const hasPrimaryAssignments = occupants.some(p => p.timeSlot === time) || 
                                activities.some(a => a.startTime === time);
   
-  // Get time parts for display
-  const [hour, minute] = time.split(':');
-  const hourInt = parseInt(hour);
-  const isPM = hourInt >= 12;
-  const displayHour = hourInt > 12 ? hourInt - 12 : hourInt;
-  const amPm = isPM ? 'PM' : 'AM';
-  
   // Determine background color based on state
   let bgColor = "";
   if (hasConflicts) {
@@ -67,11 +60,6 @@ export function TimeSlot({
         isHourStart ? 'border-t-2 border-t-gray-300' : ''
       }`}
     >
-      {/* Time indicator (visible on hover for clarity) */}
-      <div className="absolute left-2 top-1 text-xs font-semibold text-gray-500 group-hover:opacity-100 opacity-70">
-        {displayHour}:{minute} {amPm}
-      </div>
-      
       {hasConflicts && (
         <div className="absolute right-2 top-1 z-30">
           <AlertTriangle className="h-4 w-4 text-orange-500" />

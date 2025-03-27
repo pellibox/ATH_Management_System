@@ -49,7 +49,6 @@ export const TimeSlotGrid = forwardRef<HTMLDivElement, TimeSlotGridProps>(({
         if (timeSlotElements[slotIndex]) {
           // Smooth scroll within the container instead of using scrollIntoView
           const slotElement = timeSlotElements[slotIndex] as HTMLElement;
-          const containerTop = containerRef.current.scrollTop;
           const slotTop = slotElement.offsetTop;
           
           containerRef.current.scrollTo({

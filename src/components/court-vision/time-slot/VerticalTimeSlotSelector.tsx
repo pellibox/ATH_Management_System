@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -58,12 +57,6 @@ export function VerticalTimeSlotSelector({
   
   const timeLabels = getTimeRangeLabels();
   
-  // Handle button click without scrolling the parent container
-  const handleButtonClick = (hour: string) => {
-    // Prevent default to avoid any automatic scrolling
-    onHourChange(hour);
-  };
-  
   return (
     <div className="h-full flex flex-col justify-start py-4 px-2 bg-white rounded-lg shadow-sm">
       <div className="flex items-center gap-1 mb-2">
@@ -91,31 +84,6 @@ export function VerticalTimeSlotSelector({
           <span>{timeLabels.mid}</span>
           <span>{timeLabels.start}</span>
         </div>
-      </div>
-      
-      {/* Hour buttons */}
-      <div className="flex flex-col gap-1 mt-4 overflow-y-auto max-h-[300px]">
-        {hours.map((hour) => {
-          const isActive = activeHour === hour;
-          const hourInt = parseInt(hour);
-          const isPM = hourInt >= 12;
-          const displayHour = hourInt > 12 ? hourInt - 12 : hourInt;
-          const amPm = isPM ? 'PM' : 'AM';
-          
-          return (
-            <Button
-              key={`hour-nav-${hour}`}
-              onClick={() => handleButtonClick(hour)}
-              variant={isActive ? "default" : "outline"}
-              size="sm"
-              className={`${isMobile ? 'h-7 text-xs px-2' : 'h-8 text-xs px-3'} font-medium w-full
-                ${isActive ? 'bg-blue-600' : 'hover:bg-blue-50'}`}
-            >
-              <Clock className="h-3 w-3 mr-1" />
-              {displayHour}{amPm}
-            </Button>
-          );
-        })}
       </div>
     </div>
   );
