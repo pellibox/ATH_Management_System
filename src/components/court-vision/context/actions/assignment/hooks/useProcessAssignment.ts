@@ -26,6 +26,8 @@ export const useProcessAssignment = (
     position?: { x: number, y: number }, 
     timeSlot?: string
   ) => {
+    console.log("Processing assignment for:", person.name, "type:", person.type, "to court:", courtId);
+    
     // Check if moving from an existing assignment (with source info)
     const isMovingFromExistingAssignment = person.sourceTimeSlot || person.courtId;
 
@@ -41,6 +43,11 @@ export const useProcessAssignment = (
       timeSlot,
       timeSlots
     );
+    
+    // Ensure coaches have a durationHours value
+    if (person.type === "coach" && !personWithCourtInfo.durationHours) {
+      personWithCourtInfo.durationHours = 1;
+    }
     
     // Set the date explicitly to the selected date's ISO string date part
     const dateString = selectedDate.toISOString().split('T')[0];
@@ -64,7 +71,8 @@ export const useProcessAssignment = (
     console.log("Updated courts after drop:", updatedCourts);
     setCourts(updatedCourts);
 
-    // Remove from available list if coming from there (for players only)
+    // Only remove from available list if it's a player and not a coach
+    // Coaches should remain available for multiple assignments
     const isFromAvailableList = people.some(p => p.id === person.id);
     if (isFromAvailableList && person.type === "player") {
       setPeople(people.filter(p => p.id !== person.id));

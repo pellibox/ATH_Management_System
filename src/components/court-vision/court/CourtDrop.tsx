@@ -34,7 +34,13 @@ export function CourtDrop({
         
         if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
           if (viewMode === "layout") {
-            onDrop(courtId, item as PersonData, position);
+            // Ensure coaches have durationHours set to at least 1
+            const person = { ...item } as PersonData;
+            if (person.type === PERSON_TYPES.COACH && !person.durationHours) {
+              person.durationHours = 1;
+            }
+            
+            onDrop(courtId, person, position);
           } else {
             console.log("Court component: schedule view drop - no direct action needed");
           }
@@ -48,7 +54,13 @@ export function CourtDrop({
       } else {
         if (item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) {
           if (viewMode === "layout") {
-            onDrop(courtId, item as PersonData);
+            // Ensure coaches have durationHours set to at least 1
+            const person = { ...item } as PersonData;
+            if (person.type === PERSON_TYPES.COACH && !person.durationHours) {
+              person.durationHours = 1;
+            }
+            
+            onDrop(courtId, person);
           } else {
             console.log("Court component: schedule view drop without position - no direct action needed");
           }

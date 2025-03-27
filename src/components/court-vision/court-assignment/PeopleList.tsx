@@ -33,6 +33,22 @@ export function PeopleList({
     ? people.filter(person => !person.timeSlot || person.timeSlot === selectedTimeSlot) 
     : people;
 
+  // Handler to prepare person for assignment
+  const handleAssign = (person: PersonData) => {
+    if (onAssign) {
+      // For coaches, ensure we have duration set
+      if (person.type === PERSON_TYPES.COACH && !person.durationHours) {
+        const personWithDuration = {
+          ...person,
+          durationHours: 1 // Default duration for coaches
+        };
+        onAssign(personWithDuration);
+      } else {
+        onAssign(person);
+      }
+    }
+  };
+
   return (
     <div className="space-y-2">
       {filteredPeople.map((person) => (
@@ -64,7 +80,7 @@ export function PeopleList({
             <Button
               size="sm"
               className="bg-ath-red-clay hover:bg-ath-red-clay-dark"
-              onClick={() => onAssign(person)}
+              onClick={() => handleAssign(person)}
             >
               Assign
             </Button>

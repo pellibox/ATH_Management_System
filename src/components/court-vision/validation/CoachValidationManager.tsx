@@ -114,13 +114,6 @@ export function useCoachValidation() {
           </ToastAction>
         )
       });
-
-      // Instead of JSX, we trigger the actions programmatically
-      setTimeout(() => {
-        // Create a simulated event that the confirm button was clicked
-        onConfirm();
-      }, 100);
-
       return true;
     }
     

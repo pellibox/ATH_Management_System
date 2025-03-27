@@ -226,6 +226,11 @@ export function TimeSlotDropArea({
             status: "confirmed" as const
           };
           
+          // For coaches, ensure we have a durationHours value (default to 1)
+          if (person.type === PERSON_TYPES.COACH && !personWithStatus.durationHours) {
+            personWithStatus.durationHours = 1;
+          }
+          
           onDrop(courtId, personWithStatus, undefined, time);
           
           // Set up delayed validation
@@ -279,16 +284,6 @@ export function TimeSlotDropArea({
     }
   }
 
-  // For mobile devices, provide a tap-to-place interface instead of drag and drop
-  const mobilePlacementView = isMobile ? (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/5 z-20">
-      <div className="bg-white shadow-lg rounded-lg p-4 max-w-[90%]">
-        <h3 className="font-medium mb-2">Seleziona persona da assegnare</h3>
-        {/* Here would be a simplified selection interface */}
-      </div>
-    </div>
-  ) : null;
-
   return (
     <div
       ref={drop}
@@ -306,8 +301,6 @@ export function TimeSlotDropArea({
           </div>
         </div>
       )}
-      
-      {isMobile && false && mobilePlacementView}
       
       {children}
     </div>
