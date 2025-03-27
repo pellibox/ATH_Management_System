@@ -1,5 +1,5 @@
 
-import React, { forwardRef } from "react";
+import React, { forwardRef, useRef, useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCourtGridUtils } from "./useCourtGridUtils";
 import { GlobalControls } from "./GlobalControls";

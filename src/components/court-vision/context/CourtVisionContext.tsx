@@ -56,13 +56,82 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   const [filteredPlayers, setFilteredPlayers] = useState(initialState.filteredPlayers);
   const [filteredCoaches, setFilteredCoaches] = useState(initialState.filteredCoaches);
 
-  // Update playersList when initialPlayers changes
+  // Sync with initialPlayers whenever it changes
   useEffect(() => {
     if (initialPlayers && initialPlayers.length > 0) {
       console.log("Setting playersList from initialPlayers:", initialPlayers.length);
-      setPlayersList(initialPlayers);
+      // Map player data to include necessary properties for court vision
+      const mappedPlayers = initialPlayers.map(player => {
+        // Calculate programColor based on program if not already set
+        let programColor = player.programColor;
+        if (!programColor && player.programId) {
+          const program = programs.find(p => p.id === player.programId);
+          if (program) {
+            programColor = program.color;
+          }
+        }
+        
+        // Ensure hours tracking properties are preserved
+        return {
+          ...player,
+          programColor,
+          // Preserve hours data
+          completedHours: player.completedHours || 0,
+          trainingHours: player.trainingHours || 0,
+          extraHours: player.extraHours || 0,
+          missedHours: player.missedHours || 0,
+          dailyLimit: player.dailyLimit || calculateDailyLimit(player),
+          durationHours: player.durationHours || calculateDefaultDuration(player),
+        };
+      });
+      
+      setPlayersList(mappedPlayers);
+      
+      // Also update people list to include these players
+      setPeople(prevPeople => {
+        // Filter out existing players
+        const nonPlayerPeople = prevPeople.filter(p => p.type !== "player");
+        // Add mapped players
+        return [...nonPlayerPeople, ...mappedPlayers];
+      });
     }
-  }, [initialPlayers]);
+  }, [initialPlayers, programs]);
+
+  // Helper function to calculate daily limit based on program
+  const calculateDailyLimit = (player: PersonData): number => {
+    if (!player.programId) return 2;
+    
+    // Program-specific daily limits
+    const programLimits: Record<string, number> = {
+      "perf2": 3,
+      "perf3": 4.5,
+      "perf4": 6,
+      "elite": 7.5,
+      "elite-full": 10,
+      "junior-sit": 3,
+      "junior-sat": 1.5,
+    };
+    
+    return programLimits[player.programId] || 2;
+  };
+
+  // Helper function to calculate default duration based on program
+  const calculateDefaultDuration = (player: PersonData): number => {
+    if (!player.programId) return 1;
+    
+    // Program-specific durations
+    const programDurations: Record<string, number> = {
+      "perf2": 1.5,
+      "perf3": 1.5,
+      "perf4": 1.5,
+      "elite": 1.5,
+      "elite-full": 2,
+      "junior-sit": 1,
+      "junior-sat": 1,
+    };
+    
+    return programDurations[player.programId] || 1;
+  };
 
   // Apply filters
   useCourtVisionFilters({
@@ -156,4 +225,4 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
       )}
     </CourtVisionContext.Provider>
   );
-}
+};

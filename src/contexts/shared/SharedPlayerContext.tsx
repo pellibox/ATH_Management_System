@@ -18,8 +18,54 @@ const convertPlayerToPerson = (player: Player): PersonData => {
     sportTypes: player.sports, // Map sports to sportTypes
     // Add other relevant fields
     notes: player.notes,
+    // Hours tracking
+    completedHours: player.completedHours || 0,
+    trainingHours: player.trainingHours || 0,
+    extraHours: player.extraHours || 0,
+    missedHours: player.missedHours || 0,
+    // Program-based metrics
+    dailyLimit: calculateDailyLimit(player),
+    durationHours: calculateDefaultDuration(player),
+    // Status
+    status: "confirmed"
   };
 };
+
+// Helper function to calculate daily limit based on program
+function calculateDailyLimit(player: Player): number {
+  if (!player.program) return 2;
+  
+  // Program-specific daily limits
+  const programLimits: Record<string, number> = {
+    "perf2": 3,
+    "perf3": 4.5,
+    "perf4": 6,
+    "elite": 7.5,
+    "elite-full": 10,
+    "junior-sit": 3,
+    "junior-sat": 1.5,
+  };
+  
+  return programLimits[player.program] || 2;
+}
+
+// Helper function to calculate default duration based on program
+function calculateDefaultDuration(player: Player): number {
+  if (!player.program) return 1;
+  
+  // Program-specific durations
+  const programDurations: Record<string, number> = {
+    "perf2": 1.5,
+    "perf3": 1.5,
+    "perf4": 1.5,
+    "elite": 1.5,
+    "elite-full": 2,
+    "junior-sit": 1,
+    "junior-sat": 1,
+  };
+  
+  return programDurations[player.program] || 1;
+}
 
 // Interface for the shared player context
 interface SharedPlayerContextType {
@@ -28,6 +74,7 @@ interface SharedPlayerContextType {
   updatePlayer: (player: Player) => void;
   removePlayer: (id: string) => void;
   getPlayerById: (id: string) => PersonData | undefined;
+  syncHours: (id: string, completedHours: number, missedHours: number) => void;
 }
 
 // Create context with default values
@@ -37,6 +84,7 @@ const SharedPlayerContext = createContext<SharedPlayerContextType>({
   updatePlayer: () => {},
   removePlayer: () => {},
   getPlayerById: () => undefined,
+  syncHours: () => {},
 });
 
 // Create provider component
@@ -69,6 +117,24 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const getPlayerById = (id: string) => {
     return sharedPlayers.find((p) => p.id === id);
   };
+  
+  // Sync hours between Court Vision and Players page
+  const syncHours = (id: string, completedHours: number, missedHours: number) => {
+    setSharedPlayers((prevPlayers) => 
+      prevPlayers.map((p) => {
+        if (p.id === id) {
+          return {
+            ...p,
+            completedHours,
+            missedHours,
+            // Update hoursAssigned for Court Vision
+            hoursAssigned: completedHours
+          };
+        }
+        return p;
+      })
+    );
+  };
 
   return (
     <SharedPlayerContext.Provider
@@ -78,6 +144,7 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
         updatePlayer,
         removePlayer,
         getPlayerById,
+        syncHours
       }}
     >
       {children}

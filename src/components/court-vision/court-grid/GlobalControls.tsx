@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { SkipBack } from "lucide-react";
+import { SkipBack, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GlobalControlsProps } from "./types";
 
@@ -42,7 +42,8 @@ export function GlobalControls({
             onClick={() => syncAllSliders(currentBusinessHour)}
             title="Vai all'ora corrente"
           >
-            Ora
+            <Clock className="h-3 w-3 mr-1" />
+            <span>Ora</span>
           </Button>
         )}
         
@@ -59,25 +60,7 @@ export function GlobalControls({
         )}
       </div>
       
-      {/* Test button for generating random assignments */}
-      <Button
-        variant="outline"
-        size="sm"
-        className="text-xs bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-        onClick={() => {
-          toast({
-            title: "TEST - Generazione casuale",
-            description: "Funzionalità di test attivata - generazione in corso",
-            duration: 2000,
-          });
-          
-          // This would call some test function to generate random assignments
-          // Implementation would depend on your test data generation approach
-        }}
-        title="Funzionalità temporanea solo per testing"
-      >
-        TEST - Genera Assegnazioni Casuali
-      </Button>
+      {/* Test button for generating random assignments - removed */}
     </div>
   );
 }
