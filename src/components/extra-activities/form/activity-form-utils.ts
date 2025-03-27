@@ -12,7 +12,11 @@ export const getDefaultActivity = (): Omit<ExtraActivity, "id"> => ({
   maxParticipants: 8,
   participants: [],
   coach: "",
-  notes: ""
+  notes: "",
+  title: "",
+  date: new Date().toISOString().split('T')[0],
+  startTime: "16:00",
+  endTime: "17:00"
 });
 
 // Form validation function

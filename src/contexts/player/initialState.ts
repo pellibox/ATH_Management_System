@@ -38,6 +38,7 @@ export const defaultNewPlayer: Omit<Player, "id"> = {
 export const mockExtraActivities: ExtraActivity[] = [
   {
     id: "athletic-1",
+    title: "Preparazione Atletica Settimanale",
     name: "Preparazione Atletica Settimanale",
     type: "athletic",
     time: "17:00",
@@ -47,10 +48,14 @@ export const mockExtraActivities: ExtraActivity[] = [
     maxParticipants: 8,
     participants: ["p1", "p2", "p3"],
     coach: "coach-1",
-    notes: "Portare abbigliamento sportivo e scarpe da ginnastica"
+    notes: "Portare abbigliamento sportivo e scarpe da ginnastica",
+    date: new Date().toISOString().split('T')[0],
+    startTime: "17:00",
+    endTime: "18:30"
   },
   {
     id: "mental-1",
+    title: "Sessione di Mindfulness",
     name: "Sessione di Mindfulness",
     type: "mental",
     time: "16:00",
@@ -60,6 +65,9 @@ export const mockExtraActivities: ExtraActivity[] = [
     maxParticipants: 10,
     participants: ["p2", "p4"],
     coach: "coach-2",
-    notes: "Portare tappetino yoga"
+    notes: "Portare tappetino yoga",
+    date: new Date().toISOString().split('T')[0],
+    startTime: "16:00",
+    endTime: "17:00"
   }
 ];
