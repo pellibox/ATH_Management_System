@@ -46,7 +46,7 @@ export const mockExtraActivities: ExtraActivity[] = [
     location: "Palestra",
     maxParticipants: 8,
     participants: ["p1", "p2", "p3"],
-    coach: "Coach Martinez",
+    coach: "coach-1",
     notes: "Portare abbigliamento sportivo e scarpe da ginnastica"
   },
   {
@@ -59,7 +59,7 @@ export const mockExtraActivities: ExtraActivity[] = [
     location: "Sala Conferenze",
     maxParticipants: 10,
     participants: ["p2", "p4"],
-    coach: "Coach Anderson",
+    coach: "coach-2",
     notes: "Portare tappetino yoga"
   }
 ];
