@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { Layers } from "lucide-react";
-import { useCourtVision } from "./CourtVisionContext";
+import { useCourtVision } from "./context/CourtVisionContext";
 
 export function ViewModeToggle() {
   const { currentSport } = useCourtVision();

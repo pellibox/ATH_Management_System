@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import CourtVisionHeader from "@/components/court-vision/CourtVisionHeader";
@@ -10,11 +10,6 @@ import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
 export default function CourtVision() {
   const { sharedPlayers } = useSharedPlayers();
-  
-  useEffect(() => {
-    console.log("CourtVision page mounted");
-    console.log("CourtVision: sharedPlayers updated", sharedPlayers);
-  }, [sharedPlayers]);
   
   return (
     <DndProvider backend={HTML5Backend}>

@@ -8,22 +8,34 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import { SharedPlayerProvider } from "./contexts/shared/SharedPlayerContext";
 
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Calendar = lazy(() => import("./pages/Calendar"));
-const Courts = lazy(() => import("./pages/Courts"));
-const CourtVision = lazy(() => import("./pages/CourtVision"));
-const Staff = lazy(() => import("./pages/Staff"));
-const Players = lazy(() => import("./pages/Players"));
-const Programs = lazy(() => import("./pages/Programs"));
-const Settings = lazy(() => import("./pages/Settings"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Reports = lazy(() => import("./pages/Reports"));
-const Tournaments = lazy(() => import("./pages/Tournaments"));
-const Videos = lazy(() => import("./pages/Videos"));
-const Integrations = lazy(() => import("./pages/Integrations"));
-const Activities = lazy(() => import("./pages/Activities"));
-const ExtraActivities = lazy(() => import("./pages/ExtraActivities"));
-const Coaches = lazy(() => import("./pages/Coaches"));
+// Improve lazy loading with error handling
+const lazyLoad = (importFunc) => {
+  return lazy(() => {
+    return importFunc().catch(err => {
+      console.error("Failed to lazy load component:", err);
+      // Return a module with a default component that shows the error
+      return { default: () => <div className="p-4 text-red-500">Failed to load component: {err.message}</div> };
+    });
+  });
+};
+
+// Use the enhanced lazy loading
+const Dashboard = lazyLoad(() => import("./pages/Dashboard"));
+const Calendar = lazyLoad(() => import("./pages/Calendar"));
+const Courts = lazyLoad(() => import("./pages/Courts"));
+const CourtVision = lazyLoad(() => import("./pages/CourtVision"));
+const Staff = lazyLoad(() => import("./pages/Staff"));
+const Players = lazyLoad(() => import("./pages/Players"));
+const Programs = lazyLoad(() => import("./pages/Programs"));
+const Settings = lazyLoad(() => import("./pages/Settings"));
+const NotFound = lazyLoad(() => import("./pages/NotFound"));
+const Reports = lazyLoad(() => import("./pages/Reports"));
+const Tournaments = lazyLoad(() => import("./pages/Tournaments"));
+const Videos = lazyLoad(() => import("./pages/Videos"));
+const Integrations = lazyLoad(() => import("./pages/Integrations"));
+const Activities = lazyLoad(() => import("./pages/Activities"));
+const ExtraActivities = lazyLoad(() => import("./pages/ExtraActivities"));
+const Coaches = lazyLoad(() => import("./pages/Coaches"));
 
 const LoadingFallback = () => (
   <div className="flex justify-center items-center h-screen">
