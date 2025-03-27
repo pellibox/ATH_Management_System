@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { CourtProps, PersonData, ActivityData } from './types';
 import { Court } from './Court';
@@ -17,7 +18,7 @@ interface CourtGridProps {
   onRenameCourt: (courtId: string, name: string) => void;
   onChangeCourtType: (courtId: string, type: string) => void;
   onChangeCourtNumber: (courtId: string, number: number) => void;
-  activeHour?: string | null; // Added the activeHour prop
+  activeHour?: string | null; // The prop coming from parent
 }
 
 export default function CourtGrid({
@@ -30,10 +31,10 @@ export default function CourtGrid({
   onRenameCourt,
   onChangeCourtType,
   onChangeCourtNumber,
-  activeHour
+  activeHour: propActiveHour // Renamed to propActiveHour to avoid conflict
 }: CourtGridProps) {
   const isMobile = useIsMobile();
-  const [activeHour, setActiveHour] = useState<string | null>(null);
+  const [currentActiveHour, setCurrentActiveHour] = useState<string | null>(propActiveHour || null);
   
   // Get unique hours from time slots
   const getUniqueHours = (slots: string[]) => {
@@ -44,26 +45,28 @@ export default function CourtGrid({
   // Get all hours for timeline
   const hours = getUniqueHours(timeSlots);
   
-  // Initialize activeHour from the first time slot on component mount
+  // Initialize currentActiveHour from the first time slot on component mount or when propActiveHour changes
   useEffect(() => {
-    if (timeSlots.length > 0 && !activeHour) {
+    if (propActiveHour) {
+      setCurrentActiveHour(propActiveHour);
+    } else if (timeSlots.length > 0 && !currentActiveHour) {
       const firstHour = timeSlots[0].split(':')[0];
-      setActiveHour(firstHour);
+      setCurrentActiveHour(firstHour);
     }
-  }, [timeSlots, activeHour]);
+  }, [timeSlots, currentActiveHour, propActiveHour]);
   
   // Handle slider change
   const handleSliderChange = (value: number[]) => {
     const hourIndex = value[0];
     if (hourIndex >= 0 && hourIndex < hours.length) {
-      setActiveHour(hours[hourIndex]);
+      setCurrentActiveHour(hours[hourIndex]);
     }
   };
   
   // Get current hour index for slider
   const getCurrentHourIndex = () => {
-    if (!activeHour) return 0;
-    const index = hours.indexOf(activeHour);
+    if (!currentActiveHour) return 0;
+    const index = hours.indexOf(currentActiveHour);
     return index >= 0 ? index : 0;
   };
 
@@ -106,7 +109,7 @@ export default function CourtGrid({
           {/* Hour buttons for quick selection */}
           <div className="flex gap-1 overflow-x-auto pb-1 hide-scrollbar">
             {hours.map((hour) => {
-              const isActive = activeHour === hour;
+              const isActive = currentActiveHour === hour;
               const hourInt = parseInt(hour);
               const isPM = hourInt >= 12;
               const displayHour = hourInt > 12 ? hourInt - 12 : hourInt;
@@ -115,7 +118,7 @@ export default function CourtGrid({
               return (
                 <Button
                   key={`hour-nav-${hour}`}
-                  onClick={() => setActiveHour(hour)}
+                  onClick={() => setCurrentActiveHour(hour)}
                   variant={isActive ? "default" : "outline"}
                   size="sm"
                   className={`${isMobile ? 'h-8 min-w-14 text-xs px-2' : 'h-8 min-w-16 text-sm px-3'} font-medium
@@ -165,7 +168,7 @@ export default function CourtGrid({
                   onChangeType={onChangeCourtType}
                   onChangeNumber={onChangeCourtNumber}
                   isSidebarCollapsed={isMobile}
-                  activeHour={activeHour}
+                  activeHour={currentActiveHour}
                 />
               ))}
             </div>
