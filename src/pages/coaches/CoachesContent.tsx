@@ -57,7 +57,8 @@ export function CoachesContent() {
     selectedDate,
     setSelectedDate,
     currentView,
-    setCurrentView
+    setCurrentView,
+    filteredPrograms
   } = useCoaches(coachesList, playersList, programs);
 
   const handleAddCoach = () => {
