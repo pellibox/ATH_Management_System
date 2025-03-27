@@ -68,7 +68,8 @@ export function HorizontalTimeNav({
                   onClick={() => onHourSelect(start)}
                   variant={isActive ? "default" : "outline"}
                   size="sm"
-                  className={`${isMobile ? 'h-7 min-w-12 text-xs px-2' : 'h-8 min-w-16 text-sm px-3'} font-medium`}
+                  className={`${isMobile ? 'h-7 min-w-12 text-xs px-2' : 'h-8 min-w-16 text-sm px-3'} font-medium
+                    ${isActive ? 'bg-blue-600' : 'hover:bg-blue-50'}`}
                 >
                   {range}
                 </Button>

@@ -19,7 +19,7 @@ export const preparePersonAssignment = (
     courtId,
     position: position || { x: Math.random() * 0.8 + 0.1, y: Math.random() * 0.8 + 0.1 },
     date: new Date().toISOString().split('T')[0],
-    durationHours: person.durationHours || 1,
+    durationHours: person.durationHours || getProgramDuration(person),
     programColor: person.programColor || (person.type === PERSON_TYPES.PLAYER ? "#3b82f6" : "#ef4444")
   };
 
@@ -44,6 +44,22 @@ export const preparePersonAssignment = (
   }
 
   return personWithCourtInfo;
+};
+
+/**
+ * Get program-based duration for a person
+ */
+export const getProgramDuration = (person: PersonData): number => {
+  // This would come from actual program data in a real implementation
+  if (person.type === PERSON_TYPES.PLAYER) {
+    if (person.programId === "pro") return 2;
+    if (person.programId === "elite") return 1.5;
+    if (person.programId === "junior") return 1;
+    return 1; // Default for players
+  } else {
+    // Coaches use default duration
+    return 1;
+  }
 };
 
 /**

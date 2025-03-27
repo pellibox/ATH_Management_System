@@ -40,11 +40,6 @@ export function CourtPerson({
     borderColor = person.programColor ? `border-${person.programColor}` : "border-blue-300";
   }
   
-  // Add indication for spanning time slots
-  const durationInfo = person.durationHours && person.durationHours > 1
-    ? `(${person.durationHours}h)`
-    : "";
-  
   // Special styling for time slots that span multiple periods
   const spanningStyles = isSpanning 
     ? 'border-t border-dashed opacity-90' 
@@ -71,14 +66,10 @@ export function CourtPerson({
           >
             <div className="flex justify-between items-center w-full truncate">
               <span className="truncate mr-1">
-                {person.name} {!isSpanning && durationInfo}
+                {person.name}
               </span>
               
               <div className="flex items-center flex-shrink-0">
-                {!isSpanning && person.durationHours && person.durationHours > 1 && (
-                  <Clock className="h-3 w-3 ml-1 flex-shrink-0" />
-                )}
-                
                 {onRemove && (
                   <button 
                     onClick={(e) => {
@@ -101,6 +92,7 @@ export function CourtPerson({
             {person.programId && <p>Program: {person.programId}</p>}
             {person.durationHours && <p>Duration: {person.durationHours} hour{person.durationHours !== 1 ? 's' : ''}</p>}
             {person.timeSlot && <p>Time: {person.timeSlot}{person.endTimeSlot ? ` - ${person.endTimeSlot}` : ''}</p>}
+            {person.type === "player" && <p>Daily Limit: {person.hoursAssigned || 0}/{4} hours</p>}
           </div>
         </TooltipContent>
       </Tooltip>
