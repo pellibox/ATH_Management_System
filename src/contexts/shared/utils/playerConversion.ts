@@ -38,6 +38,8 @@ export const convertPersonToPlayer = (person: PersonData): Player => {
     email: person.email || "",
     phone: person.phone || "",
     level: "",
+    // Add the required status property
+    status: 'active', // Default to active to satisfy the type requirement
     // We don't sync program or status back to avoid overwriting Player data
     // program: person.programId,
     // programs: person.programIds,
