@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
 import { PERSON_TYPES } from "../constants";
@@ -55,6 +56,10 @@ export function TimeSlotDropArea({
                   ...person,
                   status: "conflict" as const
                 };
+                // Ensure coach has durationHours set
+                if (person.type === PERSON_TYPES.COACH && !personWithStatus.durationHours) {
+                  personWithStatus.durationHours = 1;
+                }
                 onDrop(courtId, personWithStatus, undefined, time);
                 toast({
                   title: "Confermato",
@@ -195,6 +200,11 @@ export function TimeSlotDropArea({
       } else {
         const person = item as PersonData;
         
+        // Ensure coaches have durationHours set to at least 1
+        if (person.type === PERSON_TYPES.COACH && !person.durationHours) {
+          person.durationHours = 1;
+        }
+        
         const hasCoachConflict = person.type === PERSON_TYPES.COACH && checkCoachAssignment(person);
         const hasPlayerLimitExceeded = person.type === PERSON_TYPES.PLAYER && checkPlayerLimits(person);
         
@@ -203,10 +213,6 @@ export function TimeSlotDropArea({
             ...person,
             status: "confirmed" as const
           };
-          
-          if (person.type === PERSON_TYPES.COACH && !personWithStatus.durationHours) {
-            personWithStatus.durationHours = 1;
-          }
           
           onDrop(courtId, personWithStatus, undefined, time);
           
