@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useCourtVision } from "@/components/court-vision/CourtVisionContext";
 import { PERSON_TYPES } from "@/components/court-vision/constants";
-import { useCoaches } from "./hooks/useCoaches";
+import { useCoaches } from "./hooks";
 import { 
   CoachesHeader, 
   CoachesTabsContent 
