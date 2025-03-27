@@ -23,21 +23,28 @@
   </head>
   <body>
     <div id="root">
-      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
-        <div style="text-align: center;">
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; background-color: #f0f4f8;">
+        <div style="text-align: center; display: flex; flex-direction: column; align-items: center;">
           <svg 
             width="80" 
             height="80" 
             viewBox="0 0 100 100" 
-            style="animation: spin 1.5s linear infinite;"
+            style="animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));"
           >
+            <defs>
+              <radialGradient id="ballGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                <stop offset="0%" style="stop-color:#8BC34A;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:0.9" />
+              </radialGradient>
+            </defs>
             <circle 
               cx="50" 
               cy="50" 
               r="45" 
-              fill="#8BC34A" 
+              fill="url(#ballGradient)" 
               stroke="#558B2F" 
-              stroke-width="5"
+              stroke-width="3"
+              style="transition: all 0.3s ease;"
             />
             <path 
               d="M50 5 
@@ -45,10 +52,20 @@
                  Q70 25, 50 5" 
               fill="white" 
               stroke="#558B2F" 
-              stroke-width="3"
+              stroke-width="2"
+              style="opacity: 0.8;"
+            />
+            <path 
+              d="M50 5 
+                 Q40 15, 50 25 
+                 Q60 15, 50 5" 
+              fill="white" 
+              stroke="#FFFFFF" 
+              stroke-width="1"
+              style="opacity: 0.5;"
             />
           </svg>
-          <p style="margin-top: 20px; color: #558B2F;">Caricamento ATH Management System...</p>
+          <p style="margin-top: 20px; color: #558B2F; font-weight: 600; letter-spacing: 0.5px;">Caricamento ATH Management System...</p>
         </div>
       </div>
     </div>
