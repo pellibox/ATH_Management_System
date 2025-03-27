@@ -9,6 +9,7 @@ interface CourtHeaderProps {
   courtType: string;
   occupants: any[];
   onValidate: () => void;
+  onChangeNumber?: (number: number) => void; // Added the missing prop
 }
 
 export function CourtHeader({ 
@@ -16,7 +17,8 @@ export function CourtHeader({
   courtNumber, 
   courtType, 
   occupants,
-  onValidate
+  onValidate,
+  onChangeNumber
 }: CourtHeaderProps) {
   return (
     <div className="sticky top-0 py-3 px-4 bg-white bg-opacity-95 z-30 border-b border-gray-200 shadow-sm">

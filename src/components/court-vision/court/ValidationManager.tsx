@@ -20,7 +20,8 @@ export function ValidationManager({ occupants, onValidate }: ValidationManagerPr
   useEffect(() => {
     let validationTimer: NodeJS.Timeout;
     
-    if (occupants.length > 0) {
+    // Fix: Check if occupants is defined before accessing its length
+    if (occupants && occupants.length > 0) {
       setValidationInProgress(true);
       validationTimer = setTimeout(() => {
         onValidate();
