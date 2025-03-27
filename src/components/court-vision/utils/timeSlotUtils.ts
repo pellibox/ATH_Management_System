@@ -1,9 +1,20 @@
+
 /**
  * Utility functions for working with time slots
  */
 
-// Cache per le funzioni più usate
+// Cache per le funzioni più usate - aumentiamo la dimensione massima della cache
 const timeSlotCache = new Map();
+const MAX_CACHE_SIZE = 500;
+
+// Funzione per controllare e gestire la dimensione della cache
+function manageCacheSize() {
+  if (timeSlotCache.size > MAX_CACHE_SIZE) {
+    // Se la cache supera la dimensione massima, eliminiamo le entry più vecchie
+    const keysToDelete = Array.from(timeSlotCache.keys()).slice(0, Math.floor(MAX_CACHE_SIZE * 0.3));
+    keysToDelete.forEach(key => timeSlotCache.delete(key));
+  }
+}
 
 /**
  * Formats a time slot for display
@@ -17,6 +28,7 @@ export function formatTimeSlot(timeSlot: string): string {
   
   const result = timeSlot;
   timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
   return result;
 }
 
@@ -31,6 +43,7 @@ export function getHourFromTimeSlot(timeSlot: string): string {
   
   const result = timeSlot.split(':')[0];
   timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
   return result;
 }
 
@@ -45,6 +58,7 @@ export function isSameHour(timeSlot1: string, timeSlot2: string): boolean {
   
   const result = getHourFromTimeSlot(timeSlot1) === getHourFromTimeSlot(timeSlot2);
   timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
   return result;
 }
 
@@ -52,15 +66,25 @@ export function isSameHour(timeSlot1: string, timeSlot2: string): boolean {
  * Categorizes a time slot as morning, afternoon, or evening
  */
 export function categorizeTimeSlot(timeSlot: string): 'morning' | 'afternoon' | 'evening' {
+  const cacheKey = `category_${timeSlot}`;
+  if (timeSlotCache.has(cacheKey)) {
+    return timeSlotCache.get(cacheKey);
+  }
+  
   const hour = parseInt(getHourFromTimeSlot(timeSlot));
+  let result;
   
   if (hour < 12) {
-    return 'morning';
+    result = 'morning';
   } else if (hour < 17) {
-    return 'afternoon';
+    result = 'afternoon';
   } else {
-    return 'evening';
+    result = 'evening';
   }
+  
+  timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
+  return result;
 }
 
 /**
@@ -70,23 +94,22 @@ export function getRepresentativeTimeForCategory(
   category: 'morning' | 'afternoon' | 'evening',
   timeSlots: string[]
 ): string | null {
+  const cacheKey = `rep_time_${category}_${timeSlots.length}`;
+  if (timeSlotCache.has(cacheKey)) {
+    return timeSlotCache.get(cacheKey);
+  }
+  
   // Filter time slots by category
   const filteredSlots = timeSlots.filter(slot => {
-    const hour = parseInt(getHourFromTimeSlot(slot));
-    
-    if (category === 'morning' && hour < 12) {
-      return true;
-    } else if (category === 'afternoon' && hour >= 12 && hour < 17) {
-      return true;
-    } else if (category === 'evening' && hour >= 17) {
-      return true;
-    }
-    
-    return false;
+    const slotCategory = categorizeTimeSlot(slot);
+    return slotCategory === category;
   });
   
   // Return the first matching slot, or null if none
-  return filteredSlots.length > 0 ? filteredSlots[0] : null;
+  const result = filteredSlots.length > 0 ? filteredSlots[0] : null;
+  timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
+  return result;
 }
 
 /**
@@ -108,6 +131,7 @@ export function calculateDurationBetweenTimeSlots(startSlot: string, endSlot: st
   // Each slot typically represents 30 minutes
   const result = (endIndex - startIndex + 1) * 0.5;
   timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
   return result;
 }
 
@@ -125,11 +149,13 @@ export function getNextTimeSlot(currentSlot: string, allSlots: string[]): string
   if (currentIndex === -1 || currentIndex === allSlots.length - 1) {
     const result = null;
     timeSlotCache.set(cacheKey, result);
+    manageCacheSize();
     return result;
   }
   
   const result = allSlots[currentIndex + 1];
   timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
   return result;
 }
 
@@ -147,6 +173,7 @@ export function getTimeSlotWithOffset(currentSlot: string, offsetSlots: number, 
   if (currentIndex === -1) {
     const result = null;
     timeSlotCache.set(cacheKey, result);
+    manageCacheSize();
     return result;
   }
   
@@ -155,11 +182,13 @@ export function getTimeSlotWithOffset(currentSlot: string, offsetSlots: number, 
   if (targetIndex < 0 || targetIndex >= allSlots.length) {
     const result = null;
     timeSlotCache.set(cacheKey, result);
+    manageCacheSize();
     return result;
   }
   
   const result = allSlots[targetIndex];
   timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
   return result;
 }
 
@@ -177,6 +206,7 @@ export function calculateEndTimeSlot(startSlot: string, durationHours: number, a
   if (startIndex === -1) {
     const result = null;
     timeSlotCache.set(cacheKey, result);
+    manageCacheSize();
     return result;
   }
   
@@ -187,15 +217,35 @@ export function calculateEndTimeSlot(startSlot: string, durationHours: number, a
   if (endIndex >= allSlots.length) {
     const result = allSlots[allSlots.length - 1];
     timeSlotCache.set(cacheKey, result);
+    manageCacheSize();
     return result;
   }
   
   const result = allSlots[endIndex];
   timeSlotCache.set(cacheKey, result);
+  manageCacheSize();
   return result;
 }
 
 // Aggiunge una funzione per pulire la cache se necessario
 export function clearTimeSlotCache(): void {
   timeSlotCache.clear();
+}
+
+// Funzione per preallocare cache per time slot comuni
+export function preloadCommonTimeSlots(slots: string[]): void {
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    formatTimeSlot(slot);
+    getHourFromTimeSlot(slot);
+    categorizeTimeSlot(slot);
+    
+    // Precarica alcune combinazioni comuni
+    if (i < slots.length - 1) {
+      const nextSlot = slots[i + 1];
+      isSameHour(slot, nextSlot);
+      getNextTimeSlot(slot, slots);
+      calculateDurationBetweenTimeSlots(slot, nextSlot, slots);
+    }
+  }
 }

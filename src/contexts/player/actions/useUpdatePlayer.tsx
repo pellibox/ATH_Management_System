@@ -2,7 +2,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { PlayerActionsProps } from "./types";
 import { Player } from "@/types/player";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ToastAction } from "@/components/ui/toast";
 
 export const useUpdatePlayer = ({ 
@@ -18,7 +18,8 @@ export const useUpdatePlayer = ({
     coachId: string;
   } | null>(null);
 
-  const handleUpdatePlayer = (updatedPlayer: Player) => {
+  // Ottimizziamo con useCallback per evitare ricreazioni inutili
+  const handleUpdatePlayer = useCallback((updatedPlayer: Player) => {
     try {
       if (!updatedPlayer || !updatedPlayer.id) {
         console.error("Invalid player data:", updatedPlayer);
@@ -30,18 +31,33 @@ export const useUpdatePlayer = ({
         return;
       }
       
-      setPlayers(
-        players.map((player) =>
-          player.id === updatedPlayer.id ? updatedPlayer : player
-        )
-      );
+      // Utilizziamo una funzione per l'update che non causa re-render non necessari
+      setPlayers(prevPlayers => {
+        // Controlliamo se il giocatore è effettivamente cambiato
+        const playerIndex = prevPlayers.findIndex(p => p.id === updatedPlayer.id);
+        if (playerIndex === -1) return prevPlayers;
+        
+        const currentPlayer = prevPlayers[playerIndex];
+        // Confronto superficiale per verificare se ci sono cambiamenti
+        if (JSON.stringify(currentPlayer) === JSON.stringify(updatedPlayer)) {
+          return prevPlayers; // Nessun cambiamento, non aggiorniamo lo stato
+        }
+        
+        // Creiamo un nuovo array con il giocatore aggiornato
+        const newPlayers = [...prevPlayers];
+        newPlayers[playerIndex] = updatedPlayer;
+        return newPlayers;
+      });
       
       toast({
         title: "Giocatore aggiornato",
         description: `${updatedPlayer.name} è stato aggiornato con successo`,
       });
 
-      setEditingPlayer(null);
+      // Ritardiamo il reset di editingPlayer per evitare problemi di rendering
+      setTimeout(() => {
+        setEditingPlayer(null);
+      }, 50);
     } catch (error) {
       console.error("Error updating player:", error);
       toast({
@@ -50,11 +66,11 @@ export const useUpdatePlayer = ({
         variant: "destructive"
       });
     }
-  };
+  }, [setPlayers, setEditingPlayer, toast]);
 
-  const handleAssignCoach = (playerId: string, coachId: string, force = false) => {
+  // Ottimizziamo con useCallback
+  const handleAssignCoach = useCallback((playerId: string, coachId: string, force = false) => {
     const player = players.find(p => p.id === playerId);
-    const coachesWithPrograms = players.filter(p => p.coach === coachId && p.programs);
     
     if (!player) return;
     
@@ -68,6 +84,7 @@ export const useUpdatePlayer = ({
       return;
     }
     
+    // Se force è true, aggiorniamo il giocatore immediatamente
     if (force) {
       const updatedPlayer = { ...player, coach: coachId };
       handleUpdatePlayer(updatedPlayer);
@@ -81,13 +98,18 @@ export const useUpdatePlayer = ({
       return;
     }
     
+    // Controlliamo la compatibilità dei programmi
+    const coachesWithPrograms = players.filter(p => p.coach === coachId && p.programs);
     const playerProgram = player.program;
-    const coachPrograms = coachesWithPrograms.flatMap(c => c.programs || []);
     
-    if (!playerProgram || coachPrograms.includes(playerProgram)) {
+    // Se non ci sono problemi di compatibilità, procediamo con l'aggiornamento
+    if (!playerProgram || playerProgram === "" || coachesWithPrograms.some(c => 
+      c.programs?.includes(playerProgram)
+    )) {
       const updatedPlayer = { ...player, coach: coachId };
       handleUpdatePlayer(updatedPlayer);
     } else {
+      // Altrimenti, salviamo l'assegnazione in sospeso e mostriamo un dialog
       setPendingCoachAssignment({ playerId, coachId });
       setShowProgramMismatchDialog(true);
       
@@ -98,9 +120,10 @@ export const useUpdatePlayer = ({
         action: <ToastAction altText="Autorizza" onClick={() => handleAssignCoach(playerId, coachId, true)}>Autorizza</ToastAction>
       });
     }
-  };
+  }, [players, handleUpdatePlayer, toast]);
 
-  const confirmCoachAssignment = () => {
+  // Ottimizziamo le altre funzioni con useCallback
+  const confirmCoachAssignment = useCallback(() => {
     if (pendingCoachAssignment) {
       handleAssignCoach(
         pendingCoachAssignment.playerId, 
@@ -109,12 +132,12 @@ export const useUpdatePlayer = ({
       );
     }
     setShowProgramMismatchDialog(false);
-  };
+  }, [pendingCoachAssignment, handleAssignCoach]);
 
-  const cancelCoachAssignment = () => {
+  const cancelCoachAssignment = useCallback(() => {
     setPendingCoachAssignment(null);
     setShowProgramMismatchDialog(false);
-  };
+  }, []);
 
   return {
     handleUpdatePlayer,

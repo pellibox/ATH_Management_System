@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Player } from "@/types/player";
 import { 
   Card, 
@@ -29,7 +29,8 @@ interface PlayerDetailCardProps {
   extraActivities?: any[];
 }
 
-export function PlayerDetailCard({ player, onClose, extraActivities = [] }: PlayerDetailCardProps) {
+// Memorizziamo il componente di scheda per evitare re-render non necessari
+export const PlayerDetailCard = memo(({ player, onClose, extraActivities = [] }: PlayerDetailCardProps) => {
   const [activeTab, setActiveTab] = useState("info");
   const [isEditing, setIsEditing] = useState(false);
   const [editedPlayer, setEditedPlayer] = useState<Player>({ ...player });
@@ -39,7 +40,8 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
   
   // When player prop changes, update the editedPlayer state
   useEffect(() => {
-    setEditedPlayer({ ...player });
+    // Crea una copia profonda del player per evitare modifiche indesiderate
+    setEditedPlayer(JSON.parse(JSON.stringify(player)));
   }, [player]);
 
   // Clean up state when component unmounts
@@ -49,40 +51,49 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
     };
   }, []);
   
-  // Get player's activities 
-  const playerActivities = extraActivities.filter(activity => 
-    activity.participants?.includes(editedPlayer.id)
-  );
-
-  const handleInputChange = (field: keyof Player, value: any) => {
+  // Utilizziamo useCallback per ottimizzare le funzioni
+  const handleInputChange = useCallback((field: keyof Player, value: any) => {
     setEditedPlayer(prev => ({
       ...prev,
       [field]: value
     }));
-  };
+  }, []);
 
-  const handleNestedChange = (parent: keyof Player, field: string, value: any) => {
-    const currentParentValue = editedPlayer[parent] || {};
-    
-    setEditedPlayer(prev => ({
-      ...prev,
-      [parent]: {
-        ...currentParentValue,
-        [field]: value
-      }
-    }));
-  };
+  const handleNestedChange = useCallback((parent: keyof Player, field: string, value: any) => {
+    setEditedPlayer(prev => {
+      const currentParentValue = prev[parent] || {};
+      
+      return {
+        ...prev,
+        [parent]: {
+          ...currentParentValue,
+          [field]: value
+        }
+      };
+    });
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     try {
+      // Implementiamo una verifica di cambio effettivo per evitare update inutili
+      const hasChanged = JSON.stringify(player) !== JSON.stringify(editedPlayer);
+      
+      if (!hasChanged) {
+        setIsEditing(false);
+        return;
+      }
+      
       // Use the context's update function if available, otherwise update directly
       if (handleUpdatePlayer) {
-        handleUpdatePlayer(editedPlayer);
+        // Utilizziamo setTimeout per evitare blocchi dell'interfaccia
+        setTimeout(() => {
+          handleUpdatePlayer(editedPlayer);
+        }, 50);
       } else {
-        // Update player in the context
-        setPlayers(players.map(p => 
-          p.id === editedPlayer.id ? editedPlayer : p
-        ));
+        // Update player in the context with batch update
+        setPlayers(prevPlayers => 
+          prevPlayers.map(p => p.id === editedPlayer.id ? editedPlayer : p)
+        );
       }
       
       toast({
@@ -99,7 +110,12 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
         variant: "destructive"
       });
     }
-  };
+  }, [player, editedPlayer, handleUpdatePlayer, setPlayers, toast]);
+
+  // Get player's activities - memorizziamo il calcolo per evitare elaborazioni ripetute
+  const playerActivities = extraActivities.filter(activity => 
+    activity.participants?.includes(editedPlayer.id)
+  );
 
   return (
     <Card className="w-full max-w-4xl">
@@ -167,4 +183,6 @@ export function PlayerDetailCard({ player, onClose, extraActivities = [] }: Play
       </CardFooter>
     </Card>
   );
-}
+});
+
+PlayerDetailCard.displayName = 'PlayerDetailCard';

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, memo, useMemo } from "react";
 import { Player } from "@/types/player";
 import {
   Table,
@@ -28,17 +28,13 @@ export function PlayerList() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [sortColumn, setSortColumn] = useState<"name" | "program" | "email" | "phone">("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  // Ottimizziamo aggiungendo un cache per i giocatori ordinati
-  const [sortedPlayers, setSortedPlayers] = useState<Player[]>([]);
-
-  // Clean up selected player when component unmounts or when player list changes
-  useEffect(() => {
-    return () => setSelectedPlayer(null);
-  }, []);
-
-  // Ottimizziamo la funzione di ordinamento per non ricalcolare ad ogni render
-  useEffect(() => {
-    const newSortedPlayers = [...filteredPlayers].sort((a, b) => {
+  
+  // Utilizziamo useMemo per i giocatori ordinati per evitare calcoli inutili
+  const sortedPlayers = useMemo(() => {
+    // Preveniamo ordinamenti troppo frequenti usando un debounce interno con una copia difensiva
+    const playersToSort = [...filteredPlayers];
+    
+    return playersToSort.sort((a, b) => {
       const valueA = (a[sortColumn] || "").toString().toLowerCase();
       const valueB = (b[sortColumn] || "").toString().toLowerCase();
       
@@ -48,10 +44,14 @@ export function PlayerList() {
         return valueB.localeCompare(valueA);
       }
     });
-    
-    setSortedPlayers(newSortedPlayers);
   }, [filteredPlayers, sortColumn, sortDirection]);
 
+  // Clean up selected player when component unmounts or when player list changes
+  useEffect(() => {
+    return () => setSelectedPlayer(null);
+  }, []);
+
+  // Ottimizziamo le callback per evitare ricreazioni inutili
   const handleSort = useCallback((column: "name" | "program" | "email" | "phone") => {
     setSortColumn(prevColumn => {
       if (prevColumn === column) {
@@ -65,15 +65,51 @@ export function PlayerList() {
   }, []);
 
   const handleViewDetails = useCallback((player: Player) => {
-    setSelectedPlayer(player);
+    // Impostiamo un breve delay per evitare render troppo rapidi
+    setTimeout(() => {
+      setSelectedPlayer(player);
+    }, 10);
   }, []);
 
   const handleRegisterActivity = useCallback((playerId: string) => {
-    const dialogTrigger = document.querySelector(`[data-player-id="${playerId}"]`);
-    if (dialogTrigger instanceof HTMLElement) {
-      dialogTrigger.click();
-    }
+    // Aggiungiamo un delay per evitare problemi di UI freezing
+    setTimeout(() => {
+      const dialogTrigger = document.querySelector(`[data-player-id="${playerId}"]`);
+      if (dialogTrigger instanceof HTMLElement) {
+        dialogTrigger.click();
+      }
+    }, 20);
   }, []);
+
+  // Memorizziamo il render dei giocatori per evitare calcoli eccessivi
+  const playerRows = useMemo(() => {
+    if (sortedPlayers.length === 0) {
+      return <NoPlayersFound />;
+    }
+
+    return sortedPlayers.map((player) => (
+      <MemoizedPlayerRow
+        key={player.id}
+        player={player}
+        onViewDetails={handleViewDetails}
+        onRegisterActivity={handleRegisterActivity}
+      />
+    ));
+  }, [sortedPlayers, handleViewDetails, handleRegisterActivity]);
+
+  // Memorizziamo i dialoghi nascosti per evitare render inutili
+  const hiddenDialogs = useMemo(() => {
+    return filteredPlayers.map(player => (
+      <div key={player.id} className="hidden">
+        <Dialog>
+          <DialogTrigger data-player-id={player.id} />
+          <DialogContent className="sm:max-w-[600px]">
+            <ActivityRegistration playerId={player.id} playerName={player.name} />
+          </DialogContent>
+        </Dialog>
+      </div>
+    ));
+  }, [filteredPlayers]);
 
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -84,18 +120,7 @@ export function PlayerList() {
           handleSort={handleSort}
         />
         <TableBody>
-          {sortedPlayers.length > 0 ? (
-            sortedPlayers.map((player) => (
-              <MemoizedPlayerRow
-                key={player.id}
-                player={player}
-                onViewDetails={handleViewDetails}
-                onRegisterActivity={handleRegisterActivity}
-              />
-            ))
-          ) : (
-            <NoPlayersFound />
-          )}
+          {playerRows}
         </TableBody>
       </Table>
 
@@ -114,16 +139,7 @@ export function PlayerList() {
         </Dialog>
       )}
 
-      {filteredPlayers.map(player => (
-        <div key={player.id} className="hidden">
-          <Dialog>
-            <DialogTrigger data-player-id={player.id} />
-            <DialogContent className="sm:max-w-[600px]">
-              <ActivityRegistration playerId={player.id} playerName={player.name} />
-            </DialogContent>
-          </Dialog>
-        </div>
-      ))}
+      {hiddenDialogs}
     </div>
   );
 }

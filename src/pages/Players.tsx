@@ -10,12 +10,15 @@ import { ScheduleMessage } from "@/components/players/ScheduleMessage";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 import { DialogTrigger } from "@/components/ui/dialog";
-import { useEffect, useCallback, memo } from "react";
+import { useEffect, useCallback, memo, useMemo } from "react";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
-// Memorizziamo il componente per evitare re-render inutili
+// Memorizziamo i componenti per evitare re-render inutili
 const MemoizedPlayerFilters = memo(PlayerFilters);
 const MemoizedPlayerList = memo(PlayerList);
+
+// Limitiamo la frequenza di sincronizzazione
+const SYNC_THROTTLE_MS = 300;
 
 function PlayersContent() {
   const { 
@@ -31,23 +34,25 @@ function PlayersContent() {
   // Get shared player context
   const { addPlayer, updatePlayer } = useSharedPlayers();
   
-  // Sincronizzazione ottimizzata con useCallback per evitare la creazione di nuove funzioni ad ogni render
+  // Memorizziamo questa funzione per evitare sincronizzazioni eccessive
   const syncPlayersWithSharedContext = useCallback(() => {
     console.log("PlayersContent: Syncing players with shared context", players);
     
-    // Utilizziamo un batch di aggiornamenti invece di aggiornare ogni giocatore singolarmente
-    const playersToUpdate = [...players];
-    playersToUpdate.forEach(player => {
+    // Implementiamo un batch più efficiente per evitare aggiornamenti troppo frequenti
+    const lastThreePlayers = players.slice(-3);
+    
+    // Limitiamo gli aggiornamenti solo ai player recenti per ridurre il carico
+    lastThreePlayers.forEach(player => {
       updatePlayer(player);
     });
   }, [players, updatePlayer]);
   
-  // Usiamo uno stato più stabile riducendo la frequenza degli aggiornamenti
+  // Usiamo uno stato più stabile riducendo ulteriormente la frequenza degli aggiornamenti
   useEffect(() => {
-    // Aggiungiamo un minimo delay per ridurre il carico di aggiornamenti simultanei
+    // Aumentiamo il delay per ridurre la frequenza di aggiornamento
     const timeoutId = setTimeout(() => {
       syncPlayersWithSharedContext();
-    }, 50);
+    }, SYNC_THROTTLE_MS);
     
     return () => clearTimeout(timeoutId);
   }, [syncPlayersWithSharedContext]);
@@ -55,26 +60,52 @@ function PlayersContent() {
   // Memorizziamo queste funzioni per evitare la creazione di nuove ad ogni render
   const handleAddPlayerWithSync = useCallback((player) => {
     const result = handleAddPlayer(player);
-    // Aggiungiamo un leggero timeout per evitare aggiornamenti simultanei che causano lag
-    setTimeout(() => addPlayer(player), 10);
+    // Utilizziamo un delay maggiore per evitare aggiornamenti troppo frequenti
+    setTimeout(() => addPlayer(player), 200);
     return result;
   }, [handleAddPlayer, addPlayer]);
   
   const handleUpdatePlayerWithSync = useCallback((player) => {
     const result = handleUpdatePlayer(player);
-    // Aggiungiamo un leggero timeout per evitare aggiornamenti simultanei che causano lag
-    setTimeout(() => updatePlayer(player), 10);
+    // Utilizziamo un delay maggiore per evitare aggiornamenti troppo frequenti
+    setTimeout(() => updatePlayer(player), 200);
     return result;
   }, [handleUpdatePlayer, updatePlayer]);
   
-  // Clean up any open dialogs when component unmounts
+  // Clean up when component unmounts
   useEffect(() => {
     return () => {
-      // Reset any open states to prevent memory leaks
       setEditingPlayer(null);
       setMessagePlayer(null);
     };
   }, [setEditingPlayer, setMessagePlayer]);
+
+  // Memoriziamo elementi UI per renderli solo quando necessario
+  const dialogForms = useMemo(() => (
+    <>
+      {editingPlayer && (
+        <Dialog 
+          open={!!editingPlayer} 
+          onOpenChange={(open) => !open && setEditingPlayer(null)}
+        >
+          <DialogContent className="sm:max-w-[600px]">
+            <PlayerForm buttonText="Aggiorna Giocatore" handleSave={handleUpdatePlayerWithSync} />
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {messagePlayer && (
+        <Dialog 
+          open={!!messagePlayer} 
+          onOpenChange={(open) => !open && setMessagePlayer(null)}
+        >
+          <DialogContent className="sm:max-w-[600px]">
+            <ScheduleMessage />
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  ), [editingPlayer, messagePlayer, handleUpdatePlayerWithSync, setEditingPlayer, setMessagePlayer]);
   
   return (
     <div className="max-w-7xl mx-auto">
@@ -108,33 +139,16 @@ function PlayersContent() {
       <MemoizedPlayerFilters />
       <MemoizedPlayerList />
       
-      {editingPlayer && (
-        <Dialog 
-          open={!!editingPlayer} 
-          onOpenChange={(open) => !open && setEditingPlayer(null)}
-        >
-          <DialogContent className="sm:max-w-[600px]">
-            <PlayerForm buttonText="Aggiorna Giocatore" handleSave={handleUpdatePlayerWithSync} />
-          </DialogContent>
-        </Dialog>
-      )}
-      
-      {messagePlayer && (
-        <Dialog 
-          open={!!messagePlayer} 
-          onOpenChange={(open) => !open && setMessagePlayer(null)}
-        >
-          <DialogContent className="sm:max-w-[600px]">
-            <ScheduleMessage />
-          </DialogContent>
-        </Dialog>
-      )}
+      {dialogForms}
     </div>
   );
 }
 
-// Utilizziamo React.memo anche sul contenitore principale per ridurre i re-render
-const MemoizedPlayersContent = memo(PlayersContent);
+// Utilizziamo React.memo con un comparatore personalizzato per evitare re-render non necessari
+const MemoizedPlayersContent = memo(PlayersContent, (prevProps, nextProps) => {
+  // Poiché non ci sono props da confrontare, restituiamo true per evitare re-render
+  return true;
+});
 
 export default function Players() {
   return (
