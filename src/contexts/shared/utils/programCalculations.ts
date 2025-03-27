@@ -4,10 +4,23 @@ import { PersonData } from "@/components/court-vision/types";
 
 // Calculate daily limit based on program
 export const calculateDailyLimit = (player: Player | PersonData): number => {
-  if (!player.program && !player.programId) return 2;
+  // Handle Player type
+  if ('program' in player) {
+    if (!player.program) return 2;
+    return getProgramLimit(player.program);
+  }
   
-  const programId = player.program || player.programId;
+  // Handle PersonData type
+  if ('programId' in player) {
+    if (!player.programId) return 2;
+    return getProgramLimit(player.programId);
+  }
   
+  return 2; // Default value if no program info is found
+};
+
+// Helper function to get program limits
+const getProgramLimit = (programId: string): number => {
   // Program-specific daily limits
   const programLimits: Record<string, number> = {
     "perf2": 3,
@@ -22,15 +35,28 @@ export const calculateDailyLimit = (player: Player | PersonData): number => {
     "Elite": 8
   };
   
-  return programLimits[programId as string] || 2;
+  return programLimits[programId] || 2;
 };
 
 // Calculate default duration based on program
 export const calculateDefaultDuration = (player: Player | PersonData): number => {
-  if (!player.program && !player.programId) return 1;
+  // Handle Player type
+  if ('program' in player) {
+    if (!player.program) return 1;
+    return getProgramDuration(player.program);
+  }
   
-  const programId = player.program || player.programId;
+  // Handle PersonData type
+  if ('programId' in player) {
+    if (!player.programId) return 1;
+    return getProgramDuration(player.programId);
+  }
   
+  return 1; // Default value if no program info is found
+};
+
+// Helper function to get program durations
+const getProgramDuration = (programId: string): number => {
   // Program-specific durations
   const programDurations: Record<string, number> = {
     "perf2": 1.5,
@@ -45,5 +71,5 @@ export const calculateDefaultDuration = (player: Player | PersonData): number =>
     "Elite": 2
   };
   
-  return programDurations[programId as string] || 1;
+  return programDurations[programId] || 1;
 };
