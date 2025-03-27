@@ -6,7 +6,7 @@ import { DateSelector } from './DateSelector';
 import { SendScheduleDialog } from './schedule-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScheduleTemplates } from './ScheduleTemplates';
-import { useCourtVision } from '@/components/court-vision/CourtVisionContext';
+import { useCourtVision } from './context/CourtVisionContext';
 
 export default function CourtVisionHeader() {
   const { 

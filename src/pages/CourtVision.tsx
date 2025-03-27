@@ -43,6 +43,7 @@ export default function CourtVision() {
         <div className="mx-auto py-4 relative flex flex-col h-[calc(100vh-theme(spacing.16))]">
           <h1 className="text-2xl font-bold mb-4">Visione Campo</h1>
           
+          {/* Make sure CourtVisionHeader is inside the CourtVisionProvider */}
           <CourtVisionHeader />
           
           {/* Main content area with sidebar layout */}
