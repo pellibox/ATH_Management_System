@@ -12,6 +12,8 @@ import { ProgramBadges } from "./person-card/ProgramBadges";
 import { AbsenceIndicator } from "./person-card/AbsenceIndicator";
 import { CardActions } from "./person-card/CardActions";
 import { PersonContextMenu } from "./person-card/PersonContextMenu";
+import { Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface PersonCardProps {
   person: PersonData;
@@ -23,7 +25,11 @@ interface PersonCardProps {
 export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }: PersonCardProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: person.type,
-    item: person,
+    item: {
+      ...person,
+      // Set default duration based on program if not already set
+      durationHours: person.durationHours || (person.programId ? 1.5 : 1)
+    },
     canDrag: person.isPresent !== false, 
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -58,6 +64,36 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
   
   // Determine if the coach is unavailable
   const isUnavailable = isPersonUnavailable(person);
+  
+  // Calculate program-based default duration and daily limits
+  const getDefaultDuration = () => {
+    if (!person.programId) return 1;
+    // Different programs have different default durations
+    const programDurations: Record<string, number> = {
+      "PRO": 2,
+      "ELITE": 1.5,
+      "JUNIOR": 1.5,
+      "BASIC": 1,
+    };
+    return programDurations[person.programId] || 1;
+  };
+  
+  const getDailyLimit = () => {
+    if (!person.programId) return 2;
+    // Different programs have different daily limits
+    const programLimits: Record<string, number> = {
+      "PRO": 4,
+      "ELITE": 3,
+      "JUNIOR": 2.5,
+      "BASIC": 2,
+    };
+    return programLimits[person.programId] || 2;
+  };
+  
+  const defaultDuration = getDefaultDuration();
+  const dailyLimit = getDailyLimit();
+  const hoursAssigned = person.hoursAssigned || 0;
+  const remainingHours = Math.max(0, dailyLimit - hoursAssigned);
 
   return (
     <ContextMenu>
@@ -96,6 +132,28 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
               
               {/* Program badges */}
               <ProgramBadges programs={validPrograms} />
+              
+              {/* Duration and hours information */}
+              {person.type === "player" && person.programId && (
+                <div className="flex items-center space-x-1 mt-1">
+                  <Badge 
+                    variant="outline" 
+                    className="text-[9px] px-1 py-0 h-4 flex items-center bg-gray-50"
+                  >
+                    <Clock className="h-2.5 w-2.5 mr-0.5" />
+                    {defaultDuration}h
+                  </Badge>
+                  
+                  <Badge 
+                    variant="outline" 
+                    className={`text-[9px] px-1 py-0 h-4 flex items-center ${
+                      remainingHours > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
+                    }`}
+                  >
+                    {remainingHours}/{dailyLimit}h
+                  </Badge>
+                </div>
+              )}
               
               {/* Absence reason */}
               <AbsenceIndicator person={person} />

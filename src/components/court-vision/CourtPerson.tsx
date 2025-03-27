@@ -1,8 +1,9 @@
 
 import React from "react";
-import { X, Clock } from "lucide-react";
+import { X, Clock, AlertCircle } from "lucide-react";
 import { PersonData } from "./types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface CourtPersonProps {
   person: PersonData;
@@ -26,24 +27,39 @@ export function CourtPerson({
   const isCoach = person.type === "coach";
   
   // Enhanced color-coding based on person type
-  let bgColor, textColor, borderColor;
+  let bgColor, textColor, borderColor, gradientStyle;
   
   if (isCoach) {
     // Coaches get a more distinct coloring
     bgColor = person.programColor || "bg-ath-red-clay";
     textColor = "text-white";
     borderColor = "border-white/30";
+    
+    // Add gradient effect for spanning blocks
+    gradientStyle = isSpanning 
+      ? { backgroundImage: `linear-gradient(to bottom, ${person.programColor || "#b00c20"}, ${person.programColor || "#b00c20"}80)` }
+      : { backgroundColor: person.programColor || "#b00c20" };
   } else {
     // Players get a lighter background with darker text
     bgColor = person.programColor ? `${person.programColor}20` : "bg-blue-100";
-    textColor = person.programColor || "text-blue-700";
+    textColor = person.programColor ? `text-blue-700` : "text-blue-700";
     borderColor = person.programColor ? `border-${person.programColor}` : "border-blue-300";
+    
+    // Add gradient effect for spanning blocks
+    gradientStyle = isSpanning 
+      ? { backgroundImage: `linear-gradient(to bottom, ${person.programColor ? `${person.programColor}30` : "#e6f0ff"}, ${person.programColor ? `${person.programColor}10` : "#f0f7ff"})` }
+      : { backgroundColor: person.programColor ? `${person.programColor}20` : "#e6f0ff" };
   }
   
   // Special styling for time slots that span multiple periods
   const spanningStyles = isSpanning 
     ? 'border-t border-dashed opacity-90' 
     : '';
+  
+  // Calculate remaining hours for the player
+  const programLimit = person.programId ? 4 : 2; // Example limit based on program
+  const usedHours = person.hoursAssigned || 0;
+  const remainingHours = Math.max(0, programLimit - usedHours);
   
   return (
     <TooltipProvider>
@@ -52,15 +68,15 @@ export function CourtPerson({
           <div 
             className={`
               relative px-2 py-1 rounded-md text-xs font-medium
-              ${isCoach ? bgColor : bgColor} ${textColor}
+              ${textColor}
               ${className} ${spanningStyles} border border-${borderColor}
               flex-shrink-0 flex items-center justify-between
               shadow-sm hover:shadow-md transition-shadow
             `}
             style={{ 
-              minWidth: '85px',
+              minWidth: '90px',
               maxWidth: '100%',
-              backgroundColor: isCoach ? (person.programColor || "#b00c20") : (person.programColor ? `${person.programColor}20` : "#e6f0ff"),
+              ...gradientStyle,
               position: 'relative'
             }}
           >
@@ -83,6 +99,29 @@ export function CourtPerson({
                 )}
               </div>
             </div>
+            
+            {/* Duration badge */}
+            {!isSpanning && (
+              <div className="absolute -top-2 -right-2 flex gap-0.5">
+                <Badge 
+                  className={`text-[9px] ${isCoach ? 'bg-red-500' : 'bg-blue-500'} text-white px-1 py-0 min-w-5 h-4 flex items-center justify-center`}
+                >
+                  <Clock className="h-2 w-2 mr-0.5" />
+                  {person.durationHours || 1}h
+                </Badge>
+                
+                {/* Remaining hours badge for players */}
+                {!isCoach && (
+                  <Badge 
+                    className={`text-[9px] px-1 py-0 min-w-5 h-4 flex items-center justify-center ${
+                      remainingHours > 0 ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'
+                    }`}
+                  >
+                    {remainingHours}h
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent>
@@ -92,7 +131,9 @@ export function CourtPerson({
             {person.programId && <p>Program: {person.programId}</p>}
             {person.durationHours && <p>Duration: {person.durationHours} hour{person.durationHours !== 1 ? 's' : ''}</p>}
             {person.timeSlot && <p>Time: {person.timeSlot}{person.endTimeSlot ? ` - ${person.endTimeSlot}` : ''}</p>}
-            {person.type === "player" && <p>Daily Limit: {person.hoursAssigned || 0}/{4} hours</p>}
+            {person.type === "player" && (
+              <p>Daily Limit: {person.hoursAssigned || 0}/{programLimit} hours</p>
+            )}
           </div>
         </TooltipContent>
       </Tooltip>

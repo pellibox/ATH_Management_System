@@ -4,6 +4,7 @@ import { useDrop } from "react-dnd";
 import { PERSON_TYPES } from "../constants";
 import { PersonData, ActivityData } from "../types";
 import { useToast } from "@/hooks/use-toast";
+import { Clock } from "lucide-react";
 
 interface TimeSlotDropAreaProps {
   children?: React.ReactNode; // Make children optional
@@ -20,7 +21,11 @@ export function TimeSlotDropArea({
   onDrop,
   onActivityDrop
 }: TimeSlotDropAreaProps) {
-  const [isExtendedPreview, setIsExtendedPreview] = useState(false);
+  const [extendedPreview, setExtendedPreview] = useState<{
+    duration: number;
+    type: string;
+    color?: string;
+  } | null>(null);
   const { toast } = useToast();
 
   // Helper to check if a coach is already assigned elsewhere
@@ -70,9 +75,12 @@ export function TimeSlotDropArea({
   // Helper to check player daily limits
   const checkPlayerLimits = (person: PersonData): boolean => {
     if (person.type === PERSON_TYPES.PLAYER) {
-      // This would check player's daily hours in a real implementation
-      // For now, we'll simply show a confirmation toast randomly
-      if (Math.random() > 0.7) {
+      // Get player daily limit from program
+      const dailyLimit = person.programId ? 4 : 2; // Example limit based on program
+      const currentHours = person.hoursAssigned || 0;
+      
+      // Check if adding more hours would exceed limit
+      if (currentHours + (person.durationHours || 1) > dailyLimit) {
         toast({
           title: "Limite ore superato",
           description: `${person.name} ha già raggiunto il limite di ore giornaliere. Confermare comunque?`,
@@ -114,13 +122,23 @@ export function TimeSlotDropArea({
     accept: [PERSON_TYPES.PLAYER, PERSON_TYPES.COACH, "activity"],
     hover: (item: any) => {
       // Show extended preview for multi-slot occupancy
-      if ((item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH) && 
-          item.durationHours && item.durationHours > 1) {
-        setIsExtendedPreview(true);
+      if ((item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH)) {
+        const duration = item.durationHours || 1;
+        setExtendedPreview({
+          duration: duration,
+          type: item.type,
+          color: item.programColor
+        });
+      } else if (item.type === "activity") {
+        const duration = item.durationHours || 1;
+        setExtendedPreview({
+          duration: duration,
+          type: "activity"
+        });
       }
     },
     drop: (item: any) => {
-      setIsExtendedPreview(false);
+      setExtendedPreview(null);
       
       if (item.type === "activity") {
         // Handle activity drop
@@ -145,14 +163,48 @@ export function TimeSlotDropArea({
     }),
   }), [courtId, time, onDrop, onActivityDrop]);
 
+  // Calculate preview style based on preview duration
+  let previewStyle = {};
+  let previewClass = "";
+  
+  if (extendedPreview) {
+    // Calculate height based on number of 30-min slots
+    const slotsNeeded = Math.ceil(extendedPreview.duration * 2);
+    const heightPercent = slotsNeeded * 100;
+    
+    if (extendedPreview.type === PERSON_TYPES.COACH) {
+      const color = extendedPreview.color || "#b00c20";
+      previewClass = "bg-gradient-to-b from-red-100 to-red-50 border-2 border-dashed border-red-300";
+    } else if (extendedPreview.type === PERSON_TYPES.PLAYER) {
+      previewClass = "bg-gradient-to-b from-blue-100 to-blue-50 border-2 border-dashed border-blue-300";
+    } else {
+      previewClass = "bg-gradient-to-b from-purple-100 to-purple-50 border-2 border-dashed border-purple-300";
+    }
+    
+    previewStyle = {
+      height: `${heightPercent}%`,
+      zIndex: 5,
+    };
+  }
+
   return (
     <div
       ref={drop}
-      className={`absolute inset-0 z-10 ${
-        isOver ? (isExtendedPreview ? "bg-blue-100/50 border-2 border-blue-300 border-dashed" : "bg-gray-100/50") : ""
-      }`}
-      onMouseLeave={() => setIsExtendedPreview(false)}
+      className="absolute inset-0 z-10"
+      onMouseLeave={() => setExtendedPreview(null)}
     >
+      {isOver && extendedPreview && (
+        <div 
+          className={`absolute left-0 right-0 top-0 ${previewClass} rounded-md transition-all duration-200 flex items-center justify-center`}
+          style={previewStyle}
+        >
+          <div className="flex items-center bg-white/80 px-2 py-1 rounded-full">
+            <Clock className="h-3 w-3 mr-1" />
+            <span className="text-xs font-medium">{extendedPreview.duration}h</span>
+          </div>
+        </div>
+      )}
+      
       {children}
     </div>
   );
