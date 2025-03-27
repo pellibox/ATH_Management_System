@@ -6,6 +6,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import AnimationProvider from "./AnimationProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TennisBallLoader } from "../ui/TennisBallLoader";
 
 export default function MainLayout() {
   const location = useLocation();
@@ -60,18 +61,7 @@ export default function MainLayout() {
   console.log("MainLayout rendering, path:", location.pathname, "initialized:", isInitialized, "isLoading:", isLoading);
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="text-center">
-          <img 
-            src="/lovable-uploads/1d4cf35c-0a44-4354-ba59-335096dbc4b6.png" 
-            alt="Tennis Ball Loading" 
-            className="w-16 h-16 mx-auto animate-spin"
-          />
-          <p className="mt-4 text-gray-600">Caricamento layout...</p>
-        </div>
-      </div>
-    );
+    return <TennisBallLoader text="Caricamento layout..." />;
   }
 
   return (

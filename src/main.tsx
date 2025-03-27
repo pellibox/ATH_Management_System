@@ -2,6 +2,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
+import { TennisBallLoader } from './components/ui/TennisBallLoader.tsx'
 import './index.css'
 
 // Add explicit error boundary
@@ -14,13 +15,21 @@ try {
 
   console.log("Mounting application");
   
-  createRoot(rootElement).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
+  // Create a temporary loading state
+  rootElement.innerHTML = '';
+  const tempRoot = createRoot(rootElement);
+  tempRoot.render(<TennisBallLoader />);
   
-  console.log("App mounted successfully");
+  // Then replace with the actual app
+  setTimeout(() => {
+    createRoot(rootElement).render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    console.log("App mounted successfully");
+  }, 100);
+  
 } catch (error) {
   console.error("Failed to mount application:", error);
   

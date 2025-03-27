@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import { SharedPlayerProvider } from "./contexts/shared/SharedPlayerContext";
+import { TennisBallLoader } from "./components/ui/TennisBallLoader";
 
 // Improve lazy loading with error handling
 const lazyLoad = (importFunc) => {
@@ -37,19 +38,6 @@ const Activities = lazyLoad(() => import("./pages/Activities"));
 const ExtraActivities = lazyLoad(() => import("./pages/ExtraActivities"));
 const Coaches = lazyLoad(() => import("./pages/Coaches"));
 
-const LoadingFallback = () => (
-  <div className="flex justify-center items-center h-screen">
-    <div className="text-center">
-      <img 
-        src="/lovable-uploads/1d4cf35c-0a44-4354-ba59-335096dbc4b6.png" 
-        alt="Tennis Ball Loading" 
-        className="w-16 h-16 mx-auto animate-spin"
-      />
-      <p className="mt-4 text-gray-600">Caricamento...</p>
-    </div>
-  </div>
-);
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -67,7 +55,7 @@ function App() {
       <TooltipProvider>
         <SharedPlayerProvider>
           <BrowserRouter>
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={<TennisBallLoader />}>
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/" element={<MainLayout />}>
