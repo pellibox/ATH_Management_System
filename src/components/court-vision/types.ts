@@ -1,4 +1,3 @@
-
 export interface PersonData {
   id: string;
   name: string;
@@ -29,6 +28,10 @@ export interface PersonData {
   programRecommendedDuration?: number; // Recommended duration based on program
   validationState?: "valid" | "warning" | "error"; // State of validation rules
   validationMessage?: string; // Message explaining validation issues
+  completedHours?: number;
+  trainingHours?: number;
+  extraHours?: number;
+  missedHours?: number;
 }
 
 export interface ActivityHistoryEntry {

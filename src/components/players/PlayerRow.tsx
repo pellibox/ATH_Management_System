@@ -1,246 +1,110 @@
 
-import { useState } from "react";
-import { 
-  Edit, 
-  Send, 
-  MoreHorizontal,
-  Trash,
-  User,
-  UserCheck,
-  Calendar,
-  Clock,
-  BookOpen
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { it } from "date-fns/locale";
-
-import { Badge } from "@/components/ui/badge";
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Player } from "@/types/player";
-import { getProgramColor } from "./utils/programUtils";
-import { cn } from "@/lib/utils";
+import { Pencil, MessageSquare, Trash } from "lucide-react";
+import { formatDate } from '@/lib/utils';
+import { Player } from '@/types/player/interfaces';
+import ProgramBadge from './components/ProgramBadge';
 
 interface PlayerRowProps {
   player: Player;
-  onDelete: (id: string) => void;
-  onEdit: (id: string) => void;
+  onEdit: (player: Player) => void;
+  onDelete: (playerId: string) => void;
   onMessage: (player: Player) => void;
-  onSetObjectives: () => void;
-  programs: { id: string; name: string; color: string }[];
 }
 
-export function PlayerRow({ 
-  player, 
-  onDelete, 
-  onEdit, 
-  onMessage, 
-  onSetObjectives,
-  programs = []
-}: PlayerRowProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  // Find program color
-  const programColor = getProgramColor(player.program, programs);
-  
-  // Calculate completion percentages
-  const totalHours = (player.trainingHours || 0) + (player.extraHours || 0);
-  const completedPercentage = totalHours > 0 
-    ? Math.min(100, Math.round(((player.completedHours || 0) / totalHours) * 100)) 
-    : 0;
-  
-  // Calculate daily limit based on program
-  const getDailyLimit = () => {
-    if (!player.program) return 2;
+const PlayerRow = ({ player, onEdit, onDelete, onMessage }: PlayerRowProps) => {
+  // Format level as a nicely styled badge
+  const getLevelBadge = (level: string) => {
+    let bgColor = 'bg-gray-100';
+    let textColor = 'text-gray-700';
     
-    // Program-specific daily limits
-    const programLimits: Record<string, number> = {
-      "perf2": 3,
-      "perf3": 4.5,
-      "perf4": 6,
-      "elite": 7.5,
-      "elite-full": 10,
-      "junior-sit": 3,
-      "junior-sat": 1.5,
-    };
+    switch (level.toLowerCase()) {
+      case 'beginner':
+        bgColor = 'bg-green-100';
+        textColor = 'text-green-800';
+        break;
+      case 'intermediate':
+        bgColor = 'bg-blue-100';
+        textColor = 'text-blue-800';
+        break;
+      case 'advanced':
+        bgColor = 'bg-purple-100';
+        textColor = 'text-purple-800';
+        break;
+      case 'professional':
+        bgColor = 'bg-red-100';
+        textColor = 'text-red-800';
+        break;
+    }
     
-    return programLimits[player.program] || 2;
+    return (
+      <span className={`${bgColor} ${textColor} text-xs px-2 py-1 rounded-full`}>
+        {level}
+      </span>
+    );
   };
-  
-  // Calculate default duration based on program
-  const getDefaultDuration = () => {
-    if (!player.program) return 1;
-    
-    // Program-specific durations
-    const programDurations: Record<string, number> = {
-      "perf2": 1.5,
-      "perf3": 1.5,
-      "perf4": 1.5,
-      "elite": 1.5,
-      "elite-full": 2,
-      "junior-sit": 1,
-      "junior-sat": 1,
-    };
-    
-    return programDurations[player.program] || 1;
-  };
-  
-  const dailyLimit = getDailyLimit();
-  const defaultDuration = getDefaultDuration();
 
   return (
-    <div className={cn(
-      "flex items-center p-3 hover:bg-gray-50 border-l-4 rounded-md bg-white relative border mb-2 shadow-sm",
-      programColor ? `border-l-[${programColor}]` : "border-l-blue-500"
-    )}
-    style={{ borderLeftColor: programColor }}>
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={player.avatar} alt={player.name} />
-        <AvatarFallback className="bg-blue-100 text-blue-800">
-          {player.name.charAt(0)}
-        </AvatarFallback>
-      </Avatar>
-      
-      <div className="ml-4 flex-1 grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-2 items-center">
-        <div className="sm:col-span-3">
-          <div className="font-medium text-gray-900">{player.name}</div>
-          <div className="text-xs text-gray-500">{player.email}</div>
-        </div>
-        
-        <div className="sm:col-span-2 flex flex-col">
-          <span className="text-xs text-gray-500 flex items-center">
-            <UserCheck className="h-3 w-3 mr-1" />
-            {player.coach || "Non assegnato"}
-          </span>
-          <span className="text-xs text-gray-500 flex items-center">
-            <Calendar className="h-3 w-3 mr-1" />
-            {player.joinDate
-              ? formatDistanceToNow(new Date(player.joinDate), { 
-                  addSuffix: true,
-                  locale: it
-                })
-              : "N/D"}
-          </span>
-        </div>
-        
-        <div className="sm:col-span-2 flex flex-col">
-          <div className="flex items-center">
-            <Badge variant="outline" className="text-xs h-5">
-              {player.level || "N/D"}
-            </Badge>
-            
-            {player.program && (
-              <Badge 
-                variant="outline" 
-                className="ml-1 text-xs h-5"
-                style={{ borderColor: programColor, color: programColor }}
-              >
-                {programs.find(p => p.id === player.program)?.name || player.program}
-              </Badge>
-            )}
+    <tr className="border-b border-gray-200 hover:bg-gray-50">
+      <td className="p-4 whitespace-nowrap">
+        <div className="flex items-center">
+          <div className="h-10 w-10 flex-shrink-0 mr-3 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
+            {player.name.charAt(0)}
           </div>
-          
-          {/* Session duration and daily limit */}
-          <div className="flex items-center space-x-1 mt-1">
-            <Badge 
-              variant="outline" 
-              className="text-[9px] px-1 py-0 h-4 flex items-center bg-gray-50"
-              style={{ borderColor: programColor, color: programColor }}
-            >
-              <Clock className="h-2.5 w-2.5 mr-0.5" />
-              {defaultDuration}h
-            </Badge>
-            
-            <Badge 
-              variant="outline" 
-              className="text-[9px] px-1 py-0 h-4 flex items-center bg-gray-50 text-gray-700"
-            >
-              {dailyLimit}h/giorno
-            </Badge>
+          <div>
+            <div className="font-medium text-gray-900">{player.name}</div>
+            <div className="text-gray-500 text-sm">{player.email || 'No email'}</div>
           </div>
         </div>
-        
-        <div className="sm:col-span-3 flex flex-col">
-          <div className="flex items-center">
-            <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full" 
-                style={{ width: `${completedPercentage}%` }}
-              ></div>
-            </div>
-            <span className="text-xs whitespace-nowrap">{completedPercentage}%</span>
-          </div>
-          
-          <div className="text-xs text-gray-500 mt-1">
-            {player.completedHours || 0}/{totalHours} ore completate
-          </div>
+      </td>
+      <td className="p-4 whitespace-nowrap text-sm">
+        {player.level ? getLevelBadge(player.level) : 'N/A'}
+      </td>
+      <td className="p-4 whitespace-nowrap text-sm">
+        <div className="flex flex-wrap gap-1">
+          {player.programs && player.programs.map(program => (
+            <ProgramBadge key={program} programId={program} />
+          ))}
+          {!player.programs && player.program && (
+            <ProgramBadge programId={player.program} />
+          )}
         </div>
-        
-        <div className="sm:col-span-2 flex justify-end space-x-1">
+      </td>
+      <td className="p-4 whitespace-nowrap text-sm">
+        {player.phone || 'N/A'}
+      </td>
+      <td className="p-4 whitespace-nowrap text-sm">
+        {player.joinDate ? formatDate(player.joinDate) : 'N/A'}
+      </td>
+      <td className="p-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex justify-end space-x-2">
           <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            title="Obiettivi"
-            onClick={onSetObjectives}
+            variant="outline" 
+            size="sm"
+            onClick={() => onEdit(player)}
           >
-            <BookOpen className="h-4 w-4" />
+            <Pencil className="h-4 w-4 mr-1" /> Edit
           </Button>
-          
           <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            title="Invia messaggio"
+            variant="outline" 
+            size="sm"
             onClick={() => onMessage(player)}
           >
-            <Send className="h-4 w-4" />
+            <MessageSquare className="h-4 w-4 mr-1" /> Message
           </Button>
-          
           <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            title="Modifica"
-            onClick={() => onEdit(player.id)}
+            variant="outline" 
+            size="sm"
+            className="border-red-300 text-red-600 hover:bg-red-50"
+            onClick={() => onDelete(player.id)}
           >
-            <Edit className="h-4 w-4" />
+            <Trash className="h-4 w-4 mr-1" /> Delete
           </Button>
-          
-          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(player.id)}>
-                <Edit className="h-4 w-4 mr-2" />
-                <span>Modifica</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onMessage(player)}>
-                <Send className="h-4 w-4 mr-2" />
-                <span>Invia messaggio</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-red-600"
-                onClick={() => onDelete(player.id)}
-              >
-                <Trash className="h-4 w-4 mr-2" />
-                <span>Elimina</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
-}
+};
+
+export default PlayerRow;

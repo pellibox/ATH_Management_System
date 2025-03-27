@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { PersonData, ActivityData, CourtProps } from "../types";
 
@@ -23,6 +22,14 @@ export interface CourtGridProps {
   visibleCourtIndices?: number[];
   defaultActiveHour?: string;
   ref?: React.ForwardedRef<HTMLDivElement>;
+}
+
+export interface GlobalControlsProps {
+  timeSlots: string[];
+  syncAllSliders: (hour: string) => void;
+  currentBusinessHour: string | null;
+  diagnosticMode: boolean;
+  setDiagnosticMode: (mode: boolean) => void;
 }
 
 export interface CourtGroupProps {

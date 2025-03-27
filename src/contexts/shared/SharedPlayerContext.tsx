@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { PersonData } from "@/components/court-vision/types";
 import { Player } from "@/types/player";
@@ -18,7 +17,7 @@ const convertPlayerToPerson = (player: Player): PersonData => {
     sportTypes: player.sports, // Map sports to sportTypes
     // Add other relevant fields
     notes: player.notes,
-    // Hours tracking
+    // Hours tracking (these are now part of PersonData)
     completedHours: player.completedHours || 0,
     trainingHours: player.trainingHours || 0,
     extraHours: player.extraHours || 0,

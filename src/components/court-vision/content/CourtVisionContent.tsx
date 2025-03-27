@@ -10,6 +10,8 @@ export function CourtVisionContent() {
     filteredCourts, 
     timeSlots, 
     selectedDate,
+    playersList,
+    activities,
     handleDrop,
     handleActivityDrop,
     handleRemovePerson,
@@ -48,6 +50,8 @@ export function CourtVisionContent() {
         <CourtGrid
           courts={filteredCourts}
           timeSlots={timeSlots}
+          availablePeople={playersList}
+          availableActivities={activities}
           onDrop={handleDrop}
           onActivityDrop={handleActivityDrop}
           onRemovePerson={handleRemovePerson}
@@ -55,7 +59,7 @@ export function CourtVisionContent() {
           onRenameCourt={handleRenameCourt}
           onChangeCourtType={handleChangeCourtType}
           onChangeCourtNumber={handleChangeCourtNumber}
-          activeHour={activeHour}
+          activeHour={activeHour || undefined}
         />
       </div>
     </div>

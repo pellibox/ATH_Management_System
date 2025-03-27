@@ -26,7 +26,7 @@ export function CourtPair({
   getGroupId
 }: CourtPairProps) {
   // Get group ID for this pair of courts
-  const groupId = getGroupId(type, pairIndex);
+  const groupId = getGroupId(type);
   
   // Get active hour for this court group
   const groupActiveHour = activeHoursByGroup[groupId] || null;
@@ -42,7 +42,7 @@ export function CourtPair({
         <VerticalTimeSlotSelector
           timeSlots={timeSlots}
           activeHour={groupActiveHour}
-          onHourChange={(hour) => handleHourChangeForGroup(groupId, hour)}
+          onHourChange={(hour) => handleHourChangeForGroup(hour, groupId)}
           groupId={groupId}
         />
       </div>
@@ -55,7 +55,7 @@ export function CourtPair({
             <Button 
               variant="outline" 
               size="icon" 
-              onClick={() => navigateCourt(type, pairIndex, 'prev')}
+              onClick={() => navigateCourt(key, 'prev')}
               disabled={visibleCourtIndex === 0}
               className="h-8 w-8 rounded-full bg-white/90 shadow-md pointer-events-auto"
             >
@@ -64,7 +64,7 @@ export function CourtPair({
             <Button 
               variant="outline" 
               size="icon"
-              onClick={() => navigateCourt(type, pairIndex, 'next')}
+              onClick={() => navigateCourt(key, 'next')}
               disabled={visibleCourtIndex === 1 || pair.length === 1}
               className="h-8 w-8 rounded-full bg-white/90 shadow-md pointer-events-auto"
             >

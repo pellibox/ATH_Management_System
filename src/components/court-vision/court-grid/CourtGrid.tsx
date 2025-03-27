@@ -6,9 +6,12 @@ import { GlobalControls } from "./GlobalControls";
 import { CourtTypeGroup } from "./CourtTypeGroup";
 import { EmptyCourtMessage } from "./EmptyCourtMessage";
 import { CourtGridProps } from "./types";
+import { CourtProps } from "../types";
 
 const CourtGrid = forwardRef<HTMLDivElement, CourtGridProps>(({
   courts,
+  availablePeople,
+  availableActivities,
   timeSlots,
   onDrop,
   onActivityDrop,
@@ -73,8 +76,8 @@ const CourtGrid = forwardRef<HTMLDivElement, CourtGridProps>(({
             onChangeCourtType={onChangeCourtType}
             onChangeCourtNumber={onChangeCourtNumber}
             activeHoursByGroup={activeHoursByGroup}
-            visibleCourtIndices={visibleCourtIndices}
-            handleHourChangeForGroup={handleHourChangeForGroup}
+            visibleCourtIndices={visibleCourtIndices || {}}
+            handleHourChangeForGroup={(hour: string, groupId: string) => handleHourChangeForGroup(groupId, hour)}
             navigateCourt={navigateCourt}
             isMobile={isMobile}
             getGroupId={getGroupId}
