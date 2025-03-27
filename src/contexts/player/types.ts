@@ -1,57 +1,36 @@
-
-import { Player } from "@/types/player";
+import React from "react";
+import { Player } from "@/types/player/interfaces";
 
 export interface PlayerContextType {
-  // State
   players: Player[];
-  searchQuery: string;
-  levelFilter: string;
-  coachFilter: string;
-  programFilter: string;
-  editingPlayer: Player | null;
-  messagePlayer: Player | null;
-  messageContent: string;
-  scheduleType: "day" | "week" | "month";
-  objectives: {
-    daily: string;
-    weekly: string;
-    monthly: string;
-    seasonal: string;
-  };
-  newPlayer: Player;
-  coaches: string[];
-  filteredPlayers: Player[];
-  extraActivities: any[];
-  selectedActivities: string[];
-
-  // State setters
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  setLevelFilter: React.Dispatch<React.SetStateAction<string>>;
-  setCoachFilter: React.Dispatch<React.SetStateAction<string>>;
-  setProgramFilter: React.Dispatch<React.SetStateAction<string>>;
-  setEditingPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
-  setMessagePlayer: React.Dispatch<React.SetStateAction<Player | null>>;
-  setMessageContent: React.Dispatch<React.SetStateAction<string>>;
-  setScheduleType: React.Dispatch<React.SetStateAction<"day" | "week" | "month">>;
-  setObjectives: React.Dispatch<React.SetStateAction<{
-    daily: string;
-    weekly: string;
-    monthly: string;
-    seasonal: string;
-  }>>;
-  setNewPlayer: (player: Player) => void;
-  setSelectedActivities: React.Dispatch<React.SetStateAction<string[]>>;
+  filteredPlayers: Player[];
+  filterTerm: string;
+  setFilterTerm: (term: string) => void;
+  filterProgram: string;
+  setFilterProgram: (program: string) => void;
+  filterStatus: 'all' | 'active' | 'inactive';
+  setFilterStatus: (status: 'all' | 'active' | 'inactive') => void;
+  editingPlayer: Player | null;
+  setEditingPlayer: (player: Player | null) => void;
+  messagePlayer: Player | null;
+  setMessagePlayer: (player: Player | null) => void;
+  messageContent: string;
+  setMessageContent: (content: string) => void;
+  selectedActivities: string[];
+  setSelectedActivities: (activities: string[]) => void;
+  extraActivities: Record<string, any[]>;
+  availablePrograms: string[];  // Add this property
   
-  // Actions
-  resetFilters: () => void;
+  // Action methods
   handleAddPlayer: (player: Player) => void;
   handleUpdatePlayer: (player: Player) => void;
   handleDeletePlayer: (id: string) => void;
-  handleEditPlayer: (id: string) => void;
-  handleSendMessage: (id: string) => void;
-  handleSetObjectives: (playerID: string, objectives: any) => void;
-  handleRegisterActivity: (player: Player, activityIds: string[]) => void;
-  // Update this signature to match implementation
-  handleRegisterForActivities: (playerId: string, name?: string) => void;
+  handleSendMessage: (type: 'WhatsApp' | 'Email' | 'SMS') => void;
+  handleRecordActivity: (playerId: string, activity: string) => void;
+  handleUpdateObjectives: (playerId: string, objectives: Player['objectives']) => void;
+}
+
+export interface PlayerProviderProps {
+  children: React.ReactNode;
 }

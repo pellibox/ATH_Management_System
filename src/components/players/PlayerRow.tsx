@@ -1,19 +1,34 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Pencil, MessageSquare, Trash } from "lucide-react";
+import { Pencil, MessageSquare, Trash, Tag } from "lucide-react";
 import { formatDate } from '@/lib/utils';
 import { Player } from '@/types/player/interfaces';
 import ProgramBadge from './components/ProgramBadge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PlayerRowProps {
   player: Player;
   onEdit: (player: Player) => void;
   onDelete: (playerId: string) => void;
   onMessage: (player: Player) => void;
+  onChangeProgram?: (player: Player, program: string) => void;
+  availablePrograms?: string[];
 }
 
-const PlayerRow = ({ player, onEdit, onDelete, onMessage }: PlayerRowProps) => {
+const PlayerRow = ({ 
+  player, 
+  onEdit, 
+  onDelete, 
+  onMessage, 
+  onChangeProgram, 
+  availablePrograms = [] 
+}: PlayerRowProps) => {
   // Format level as a nicely styled badge
   const getLevelBadge = (level: string) => {
     let bgColor = 'bg-gray-100';
@@ -62,17 +77,56 @@ const PlayerRow = ({ player, onEdit, onDelete, onMessage }: PlayerRowProps) => {
         {player.level ? getLevelBadge(player.level) : 'N/A'}
       </td>
       <td className="p-4 whitespace-nowrap text-sm">
-        <div className="flex flex-wrap gap-1">
-          {player.programs && player.programs.map(program => (
-            <ProgramBadge key={program} programId={program} />
-          ))}
-          {!player.programs && player.program && (
-            <ProgramBadge programId={player.program} />
-          )}
-        </div>
+        {onChangeProgram && availablePrograms.length > 0 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 px-2 flex items-center">
+                {player.program ? (
+                  <ProgramBadge programId={player.program} />
+                ) : (
+                  <span className="text-gray-500 text-xs">Nessun programma</span>
+                )}
+                <Tag className="ml-1 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {availablePrograms.map(program => (
+                <DropdownMenuItem 
+                  key={program} 
+                  onClick={() => onChangeProgram(player, program)}
+                >
+                  <ProgramBadge programId={program} />
+                </DropdownMenuItem>
+              ))}
+              {player.program && (
+                <DropdownMenuItem
+                  onClick={() => onChangeProgram(player, "")}
+                  className="text-red-500"
+                >
+                  Rimuovi programma
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {player.programs && player.programs.length > 0 ? (
+              player.programs.map(program => (
+                <ProgramBadge key={program} programId={program} />
+              ))
+            ) : player.program ? (
+              <ProgramBadge programId={player.program} />
+            ) : (
+              <span className="text-gray-500 text-xs">Nessun programma</span>
+            )}
+          </div>
+        )}
       </td>
       <td className="p-4 whitespace-nowrap text-sm">
         {player.phone || 'N/A'}
+      </td>
+      <td className="p-4 whitespace-nowrap text-sm">
+        {player.email || 'N/A'}
       </td>
       <td className="p-4 whitespace-nowrap text-sm">
         {player.joinDate ? formatDate(player.joinDate) : 'N/A'}

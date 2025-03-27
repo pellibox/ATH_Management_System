@@ -12,9 +12,11 @@ import { PlayerDetailCard } from "./detail";
 import { PlayerTableHeader } from "./components/PlayerTableHeader";
 import { PlayerRow } from "./components/PlayerRow";
 import { NoPlayersFound } from "./components/NoPlayersFound";
+import { ListView } from "./views/ListView";
 
 // Memorizziamo PlayerRow per evitare re-render inutili
 const MemoizedPlayerRow = memo(PlayerRow);
+const MemoizedListView = memo(ListView);
 
 export function PlayerList() {
   const { 
@@ -81,48 +83,10 @@ export function PlayerList() {
     }, 20);
   }, []);
 
-  // Memorizziamo il render dei giocatori per evitare calcoli eccessivi
-  const playerRows = useMemo(() => {
-    if (sortedPlayers.length === 0) {
-      return <NoPlayersFound />;
-    }
-
-    return sortedPlayers.map((player) => (
-      <MemoizedPlayerRow
-        key={player.id}
-        player={player}
-        onViewDetails={handleViewDetails}
-        onRegisterActivity={handleRegisterActivity}
-      />
-    ));
-  }, [sortedPlayers, handleViewDetails, handleRegisterActivity]);
-
-  // Memorizziamo i dialoghi nascosti per evitare render inutili
-  const hiddenDialogs = useMemo(() => {
-    return filteredPlayers.map(player => (
-      <div key={player.id} className="hidden">
-        <Dialog>
-          <DialogTrigger data-player-id={player.id} />
-          <DialogContent className="sm:max-w-[600px]">
-            <ActivityRegistration playerId={player.id} playerName={player.name} />
-          </DialogContent>
-        </Dialog>
-      </div>
-    ));
-  }, [filteredPlayers]);
-
+  // Use the ListView component instead of direct table rendering
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-      <Table>
-        <PlayerTableHeader 
-          sortColumn={sortColumn}
-          sortDirection={sortDirection}
-          handleSort={handleSort}
-        />
-        <TableBody>
-          {playerRows}
-        </TableBody>
-      </Table>
+      <MemoizedListView players={sortedPlayers} />
 
       {selectedPlayer && (
         <Dialog 
@@ -139,7 +103,17 @@ export function PlayerList() {
         </Dialog>
       )}
 
-      {hiddenDialogs}
+      {/* Hidden dialogs for activity registration */}
+      <div className="hidden">
+        {filteredPlayers.map(player => (
+          <Dialog key={player.id}>
+            <DialogTrigger data-player-id={player.id} />
+            <DialogContent className="sm:max-w-[600px]">
+              <ActivityRegistration playerId={player.id} playerName={player.name} />
+            </DialogContent>
+          </Dialog>
+        ))}
+      </div>
     </div>
   );
 }

@@ -4,7 +4,6 @@ import { Player, mockPlayers } from "@/types/player";
 import { defaultObjectives, defaultNewPlayer, mockExtraActivities } from "./initialState";
 import { usePlayerActions } from "./actions";
 
-// Add the missing interface
 interface PlayerProviderProps {
   children: React.ReactNode;
 }
@@ -24,7 +23,6 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
   const [objectives, setObjectives] = useState(defaultObjectives);
   const [extraActivities, setExtraActivities] = useState(mockExtraActivities);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
-  
   const [newPlayer, setNewPlayer] = useState<Player>({
     ...defaultNewPlayer,
     id: "new-temp-id"
@@ -71,7 +69,6 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setObjectives
   });
 
-  // Fix the handleDeletePlayer function to match expected signature
   const handleDeletePlayer = (id: string) => {
     const player = players.find(p => p.id === id);
     if (player) {
@@ -79,7 +76,6 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     }
   };
 
-  // Fix the handleEditPlayer function to match expected signature
   const handleEditPlayer = (id: string) => {
     const player = players.find(p => p.id === id);
     if (player) {
@@ -87,7 +83,6 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     }
   };
 
-  // Fix the handleSetObjectives function to match expected signature
   const handleSetObjectives = (playerID: string, objectives: any) => {
     console.log("Setting objectives for player", playerID, objectives);
     const updatedPlayers = players.map(player => 
@@ -98,14 +93,20 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setPlayers(updatedPlayers);
   };
 
-  // This stays unchanged
   const handleRegisterForActivities = (playerId: string, name: string) => {
     console.log("Registering player for activities", playerId, name);
     playerActions.handleRegisterForActivities(playerId);
   };
 
+  const [availablePrograms, setAvailablePrograms] = useState<string[]>([
+    "Beginner", "Intermediate", "Advanced", "Professional",
+    "Junior", "Elite", "Academy", "Competition", "Recreational"
+  ]);
+
   const contextValue: PlayerContextType = {
     players,
+    setPlayers,
+    filteredPlayers,
     searchQuery,
     levelFilter,
     coachFilter,
@@ -117,15 +118,10 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     objectives,
     newPlayer,
     coaches,
-    filteredPlayers,
-    extraActivities,
     selectedActivities,
-
-    setPlayers,
-    setSearchQuery,
-    setLevelFilter,
-    setCoachFilter,
-    setProgramFilter,
+    setSelectedActivities,
+    extraActivities,
+    availablePrograms,
     setEditingPlayer,
     setMessagePlayer,
     setMessageContent,
