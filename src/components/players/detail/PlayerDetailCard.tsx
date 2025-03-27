@@ -118,7 +118,7 @@ export const PlayerDetailCard = memo(({ player, onClose, extraActivities = [] }:
   );
 
   return (
-    <Card className="w-full max-w-4xl">
+    <Card className="w-full max-w-4xl bg-white">
       <PlayerHeader 
         player={editedPlayer}
         isEditing={isEditing}

@@ -14,9 +14,10 @@ import { PlayerRow } from "../components/PlayerRow";
 
 interface ListViewProps {
   players: Player[];
+  onViewDetails?: (player: Player) => void;
 }
 
-export function ListView({ players }: ListViewProps) {
+export function ListView({ players, onViewDetails }: ListViewProps) {
   const { 
     setEditingPlayer, 
     handleDeletePlayer, 
@@ -57,6 +58,7 @@ export function ListView({ players }: ListViewProps) {
                 onMessage={setMessagePlayer}
                 onChangeProgram={handleChangeProgram}
                 availablePrograms={availablePrograms}
+                onViewDetails={onViewDetails}
               />
             ))
           ) : (

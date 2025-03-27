@@ -49,6 +49,13 @@ export function PlayerRow({
   // Get program color for the border
   const programColor = player.program ? getProgramColor(player.program) : "#e0e0e0";
 
+  // Default empty function if onViewDetails is not provided
+  const handleViewDetails = () => {
+    if (onViewDetails) {
+      onViewDetails(player);
+    }
+  };
+
   return (
     <TableRow 
       key={player.id} 
@@ -113,7 +120,7 @@ export function PlayerRow({
           onEdit={onEdit ? () => onEdit(player) : undefined}
           onMessage={onMessage ? () => onMessage(player) : undefined}
           onRegisterActivity={onRegisterActivity ? () => onRegisterActivity(player.id) : undefined}
-          onViewDetails={onViewDetails ? () => onViewDetails(player) : undefined}
+          onViewDetails={handleViewDetails}
         />
       </TableCell>
     </TableRow>

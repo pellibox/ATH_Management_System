@@ -49,6 +49,7 @@ export function PlayerList() {
   const handleViewDetails = useCallback((player: Player) => {
     // Impostiamo un breve delay per evitare render troppo rapidi
     setTimeout(() => {
+      console.log("Opening player details:", player.name);
       setSelectedPlayer(player);
     }, 10);
   }, []);
@@ -73,6 +74,7 @@ export function PlayerList() {
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <MemoizedListView 
         players={sortedPlayers} 
+        onViewDetails={handleViewDetails}
       />
 
       {selectedPlayer && (

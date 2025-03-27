@@ -37,7 +37,9 @@ export function PlayerActionMenu({
       <DropdownMenuContent align="end" className="bg-white z-50">
         <DropdownMenuItem onClick={(e) => {
           e.stopPropagation();
-          onViewDetails();
+          if (onViewDetails) {
+            onViewDetails();
+          }
         }}>
           <div className="flex items-center w-full">
             <div className="h-4 w-4 mr-2">👁️</div>
