@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CourtProps, PersonData, ActivityData } from "./types";
@@ -71,7 +70,10 @@ export function Court({
     }
   };
 
-  // Adjust court height based on device type and sidebar state
+  const handleValidateCourt = () => {
+    console.log(`Validating court ${court.id}`);
+  };
+
   const courtHeight = isMobile 
     ? "h-[500px]" 
     : (isSidebarCollapsed ? "h-[675px]" : "h-[600px]");
@@ -94,6 +96,8 @@ export function Court({
               courtName={court.name} 
               courtNumber={court.number} 
               courtType={court.type}
+              occupants={court.occupants}
+              onValidate={handleValidateCourt}
               onChangeNumber={handleChangeNumber}
             />
 
