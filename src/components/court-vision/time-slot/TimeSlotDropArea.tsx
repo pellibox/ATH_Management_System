@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
 import { PERSON_TYPES } from "../constants";
@@ -8,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useCourtVision } from "../context/CourtVisionContext";
 import { useCoachValidation } from "../validation/CoachValidationManager";
 import { getProgramBasedDuration, getProgramBasedDailyLimit } from "../utils/personUtils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface TimeSlotDropAreaProps {
   children?: React.ReactNode;
@@ -29,10 +31,17 @@ export function TimeSlotDropArea({
     type: string;
     color?: string;
   } | null>(null);
+  const [showCoachConfirmDialog, setShowCoachConfirmDialog] = useState(false);
+  const [pendingCoach, setPendingCoach] = useState<PersonData | null>(null);
+  const [confirmationMessage, setConfirmationMessage] = useState("");
+  const [showPlayerLimitDialog, setShowPlayerLimitDialog] = useState(false);
+  const [pendingPlayer, setPendingPlayer] = useState<PersonData | null>(null);
+  const [playerLimitMessage, setPlayerLimitMessage] = useState("");
+  
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { courts } = useCourtVision();
-  const { showCoachConflictConfirmation, validateWithDelay } = useCoachValidation();
+  const { validateCoachAssignment, validateWithDelay } = useCoachValidation();
   
   const validationDelay = 5000;
 
@@ -40,36 +49,49 @@ export function TimeSlotDropArea({
     const currentCourt = courts.find(c => c.id === courtId);
     if (!currentCourt) return false;
     
-    return showCoachConflictConfirmation(
+    const validationResults = validateCoachAssignment(
       person, 
       currentCourt, 
       courts, 
-      time,
-      () => {
-        const personWithStatus = {
-          ...person,
-          status: "conflict" as const
-        };
-        onDrop(courtId, personWithStatus, undefined, time);
-        console.log("Coach conflict exception logged:", {
-          coach: person.name,
-          courtId,
-          time,
-          confirmedBy: "User",
-          timestamp: new Date().toISOString()
-        });
-        toast({
-          title: "Confermato",
-          description: "Coach assegnato nonostante il conflitto"
-        });
-      },
-      () => {
-        toast({
-          title: "Annullato",
-          description: "Assegnazione coach annullata"
-        });
-      }
+      time
     );
+    
+    if (validationResults.length > 0) {
+      setPendingCoach(person);
+      setConfirmationMessage(validationResults[0].message + " Confermare comunque?");
+      setShowCoachConfirmDialog(true);
+      return true;
+    }
+    
+    return false;
+  };
+  
+  const confirmCoachAssignment = () => {
+    if (!pendingCoach) return;
+    
+    const personWithStatus = {
+      ...pendingCoach,
+      status: "conflict" as const
+    };
+    onDrop(courtId, personWithStatus, undefined, time);
+    console.log("Coach conflict exception logged:", {
+      coach: pendingCoach.name,
+      courtId,
+      time,
+      confirmedBy: "User",
+      timestamp: new Date().toISOString()
+    });
+    toast({
+      title: "Confermato",
+      description: "Coach assegnato nonostante il conflitto"
+    });
+  };
+  
+  const cancelCoachAssignment = () => {
+    toast({
+      title: "Annullato",
+      description: "Assegnazione coach annullata"
+    });
   };
 
   const checkPlayerLimits = (person: PersonData): boolean => {
@@ -79,45 +101,34 @@ export function TimeSlotDropArea({
       const durationHours = person.durationHours || getProgramBasedDuration(person);
       
       if (currentHours + durationHours > dailyLimit) {
-        toast({
-          title: "Limite ore superato",
-          description: `${person.name} ha già raggiunto il limite di ore giornaliere (${currentHours}/${dailyLimit}h). Confermare comunque?`,
-          action: (
-            <div className="flex space-x-2">
-              <button 
-                className="px-3 py-1 text-xs rounded bg-green-500 text-white"
-                onClick={() => {
-                  const personWithStatus = {
-                    ...person,
-                    status: "pending" as const
-                  };
-                  onDrop(courtId, personWithStatus, undefined, time);
-                  toast({
-                    title: "Confermato",
-                    description: "Giocatore assegnato nonostante il limite superato"
-                  });
-                }}
-              >
-                Conferma
-              </button>
-              <button 
-                className="px-3 py-1 text-xs rounded bg-gray-300 text-gray-700"
-                onClick={() => {
-                  toast({
-                    title: "Annullato",
-                    description: "Assegnazione giocatore annullata"
-                  });
-                }}
-              >
-                Annulla
-              </button>
-            </div>
-          )
-        });
+        setPendingPlayer(person);
+        setPlayerLimitMessage(`${person.name} ha già raggiunto il limite di ore giornaliere (${currentHours}/${dailyLimit}h). Confermare comunque?`);
+        setShowPlayerLimitDialog(true);
         return true;
       }
     }
     return false;
+  };
+  
+  const confirmPlayerAssignment = () => {
+    if (!pendingPlayer) return;
+    
+    const personWithStatus = {
+      ...pendingPlayer,
+      status: "pending" as const
+    };
+    onDrop(courtId, personWithStatus, undefined, time);
+    toast({
+      title: "Confermato",
+      description: "Giocatore assegnato nonostante il limite superato"
+    });
+  };
+  
+  const cancelPlayerAssignment = () => {
+    toast({
+      title: "Annullato",
+      description: "Assegnazione giocatore annullata"
+    });
   };
 
   const [{ isOver }, drop] = useDrop(() => ({
@@ -225,26 +236,70 @@ export function TimeSlotDropArea({
   ) : null;
 
   return (
-    <div
-      ref={drop}
-      className="absolute inset-0 z-10"
-      onMouseLeave={() => setExtendedPreview(null)}
-    >
-      {isOver && extendedPreview && (
-        <div 
-          className={`absolute left-0 right-0 top-0 ${previewClass} rounded-md transition-all duration-200 flex items-center justify-center hw-accelerated`}
-          style={previewStyle}
-        >
-          <div className="flex items-center bg-white/80 px-2 py-1 rounded-full">
-            <Clock className="h-3 w-3 mr-1" />
-            <span className="text-xs font-medium">{extendedPreview.duration}h</span>
+    <>
+      <div
+        ref={drop}
+        className="absolute inset-0 z-10"
+        onMouseLeave={() => setExtendedPreview(null)}
+      >
+        {isOver && extendedPreview && (
+          <div 
+            className={`absolute left-0 right-0 top-0 ${previewClass} rounded-md transition-all duration-200 flex items-center justify-center hw-accelerated`}
+            style={previewStyle}
+          >
+            <div className="flex items-center bg-white/80 px-2 py-1 rounded-full">
+              <Clock className="h-3 w-3 mr-1" />
+              <span className="text-xs font-medium">{extendedPreview.duration}h</span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        
+        {isMobile && false && mobilePlacementView}
+        
+        {children}
+      </div>
       
-      {isMobile && false && mobilePlacementView}
+      {/* Coach Conflict Confirmation Dialog */}
+      <AlertDialog 
+        open={showCoachConfirmDialog} 
+        onOpenChange={setShowCoachConfirmDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conferma assegnazione coach</AlertDialogTitle>
+            <AlertDialogDescription>{confirmationMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelCoachAssignment}>
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmCoachAssignment}>
+              Conferma
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
-      {children}
-    </div>
+      {/* Player Limit Confirmation Dialog */}
+      <AlertDialog 
+        open={showPlayerLimitDialog} 
+        onOpenChange={setShowPlayerLimitDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limite ore superato</AlertDialogTitle>
+            <AlertDialogDescription>{playerLimitMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelPlayerAssignment}>
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmPlayerAssignment}>
+              Conferma
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
