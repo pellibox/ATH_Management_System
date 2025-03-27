@@ -134,6 +134,74 @@
   }
 }
 
+/* Enhanced time navigation */
+.horizontal-time-nav {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 0;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  position: relative;
+  z-index: 30;
+}
+
+.horizontal-time-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.time-nav-button {
+  min-width: 40px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background-color: #f9f9f9;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  text-align: center;
+  cursor: pointer;
+}
+
+.time-nav-button:hover {
+  background-color: #f0f0f0;
+}
+
+.time-nav-button.active {
+  background-color: var(--ath-clay);
+  color: white;
+  border-color: var(--ath-clay);
+}
+
+/* Court header with time nav */
+.court-header-with-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 10px 0 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.court-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #222;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* Time slots */
+.court-time-slot {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
 /* Fixed time selection styles */
 .time-selection-fixed {
   position: fixed;

@@ -4,12 +4,13 @@ import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HorizontalTimeNav } from "./HorizontalTimeNav";
 
 interface CourtScheduleViewProps {
   courtId: string;
   courtName: string;
   courtNumber: number;
-  courtType: string;  // Added the missing courtType prop
+  courtType: string;
   timeSlots: string[];
   occupants: PersonData[];
   activities: ActivityData[];
@@ -23,7 +24,7 @@ export function CourtScheduleView({
   courtId,
   courtName,
   courtNumber,
-  courtType,  // Added the missing courtType parameter
+  courtType,
   timeSlots,
   occupants,
   activities,
@@ -33,7 +34,7 @@ export function CourtScheduleView({
   onRemoveActivity
 }: CourtScheduleViewProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [activeRange, setActiveRange] = useState<string | null>(null);
+  const [activeHour, setActiveHour] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const getOccupantsForTimeSlot = (time: string) => {
@@ -52,30 +53,10 @@ export function CourtScheduleView({
     );
   };
 
-  // Generate time ranges (8-10, 11-13, etc)
-  const getTimeRanges = () => {
-    if (!timeSlots.length) return [];
-    
-    const hours = timeSlots.map(slot => parseInt(slot.split(':')[0]));
-    const uniqueHours = [...new Set(hours)].sort((a, b) => a - b);
-    
-    const ranges = [];
-    for (let i = 0; i < uniqueHours.length; i += 2) {
-      if (i + 1 < uniqueHours.length) {
-        ranges.push(`${uniqueHours[i]}-${uniqueHours[i + 1]}`);
-      } else {
-        // Handle odd number of hours
-        ranges.push(`${uniqueHours[i]}-${uniqueHours[i] + 2}`);
-      }
-    }
-    return ranges;
-  };
-
-  const scrollToTimeRange = (range: string) => {
-    const [start] = range.split('-');
-    if (scrollContainerRef.current && start) {
-      const startHour = parseInt(start);
-      const matchingSlots = timeSlots.filter(slot => parseInt(slot.split(':')[0]) === startHour);
+  // Scroll to a specific hour
+  const scrollToHour = (hour: string) => {
+    if (scrollContainerRef.current) {
+      const matchingSlots = timeSlots.filter(slot => slot.startsWith(hour));
       if (matchingSlots.length > 0) {
         const firstSlot = matchingSlots[0];
         const slotIndex = timeSlots.indexOf(firstSlot);
@@ -86,34 +67,40 @@ export function CourtScheduleView({
         }
       }
     }
-    setActiveRange(range);
+    setActiveHour(hour);
   };
 
-  const timeRanges = getTimeRanges();
+  // Get all unique hours from the time slots
+  const getUniqueHours = () => {
+    return [...new Set(timeSlots.map(slot => slot.split(':')[0]))];
+  };
+
+  // Get compact representation of time ranges
+  const getCompactTimeRanges = () => {
+    const hours = getUniqueHours().map(h => parseInt(h));
+    return hours.map((hour, index) => {
+      if (index % 2 === 0 && index < hours.length - 1) {
+        return `${hour}-${hours[index + 1]}`;
+      }
+      return null;
+    }).filter(Boolean);
+  };
 
   return (
     <div className="flex-1 flex flex-col relative h-full overflow-hidden">
-      {/* Court name header - more space and prominence */}
-      <div className="py-2 px-3 bg-white bg-opacity-90 z-30 border-b border-gray-200 text-center mb-1">
-        <h3 className="font-bold text-lg truncate">
+      {/* Court name header with improved styling */}
+      <div className="py-3 px-4 bg-white bg-opacity-95 z-30 border-b border-gray-200 text-center shadow-sm">
+        <h3 className="font-bold text-xl text-gray-800">
           {courtName} #{courtNumber} - {getCourtLabel(courtType)}
         </h3>
-      </div>
-      
-      {/* Floating time navigation - positioned absolutely within the court */}
-      <div className="absolute right-2 top-12 z-40">
-        <div className="time-nav-floating">
-          {timeRanges.map((range) => (
-            <button
-              key={`range-${range}`}
-              className={`time-range-button ${
-                activeRange === range ? 'active-time-range' : ''
-              }`}
-              onClick={() => scrollToTimeRange(range)}
-            >
-              {range}
-            </button>
-          ))}
+        
+        {/* Horizontal time navigation that always stays visible */}
+        <div className="mt-2">
+          <HorizontalTimeNav 
+            timeSlots={timeSlots}
+            activeHour={activeHour}
+            onHourSelect={scrollToHour}
+          />
         </div>
       </div>
       
