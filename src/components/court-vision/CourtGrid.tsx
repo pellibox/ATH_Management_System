@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { CourtProps, PersonData, ActivityData } from './types';
 import { Court } from './Court';
@@ -18,6 +17,7 @@ interface CourtGridProps {
   onRenameCourt: (courtId: string, name: string) => void;
   onChangeCourtType: (courtId: string, type: string) => void;
   onChangeCourtNumber: (courtId: string, number: number) => void;
+  activeHour?: string | null; // Added the activeHour prop
 }
 
 export default function CourtGrid({
@@ -29,7 +29,8 @@ export default function CourtGrid({
   onRemoveActivity,
   onRenameCourt,
   onChangeCourtType,
-  onChangeCourtNumber
+  onChangeCourtNumber,
+  activeHour
 }: CourtGridProps) {
   const isMobile = useIsMobile();
   const [activeHour, setActiveHour] = useState<string | null>(null);

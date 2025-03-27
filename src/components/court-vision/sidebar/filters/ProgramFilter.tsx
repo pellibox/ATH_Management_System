@@ -42,7 +42,7 @@ export function ProgramFilter({ programs, programFilter, setProgramFilter }: Pro
   );
 }
 
-// Helper function to group programs by category
+// Helper function to group programs by category without relying on the category property
 function groupProgramsByCategory(programs: Program[]): Record<string, Program[]> {
   const result: Record<string, Program[]> = {
     "Performance": [],
@@ -55,48 +55,22 @@ function groupProgramsByCategory(programs: Program[]): Record<string, Program[]>
   };
   
   programs.forEach(program => {
-    // Check if program has a category property
-    if (program.category) {
-      switch (program.category.toLowerCase()) {
-        case 'performance':
-          result["Performance"].push(program);
-          break;
-        case 'junior':
-          result["Junior"].push(program);
-          break;
-        case 'adult':
-          result["Adult"].push(program);
-          break;
-        case 'personal':
-          result["Personal"].push(program);
-          break;
-        case 'coach':
-          result["Coach"].push(program);
-          break;
-        case 'padel':
-          result["Padel"].push(program);
-          break;
-        default:
-          result["Altri"].push(program);
-      }
+    // Infer category from program name since Program type doesn't have a category property
+    const name = program.name.toLowerCase();
+    if (name.includes('performance') || name.includes('perf') || name.includes('elite')) {
+      result["Performance"].push(program);
+    } else if (name.includes('junior') || name.includes('sit') || name.includes('sat')) {
+      result["Junior"].push(program);
+    } else if (name.includes('adult') || name.includes('senior')) {
+      result["Adult"].push(program);
+    } else if (name.includes('coach') || name.includes('allenator')) {
+      result["Coach"].push(program);
+    } else if (name.includes('padel')) {
+      result["Padel"].push(program);
+    } else if (name.includes('personal') || name.includes('private')) {
+      result["Personal"].push(program);
     } else {
-      // Infer category from program name
-      const name = program.name.toLowerCase();
-      if (name.includes('performance') || name.includes('perf') || name.includes('elite')) {
-        result["Performance"].push(program);
-      } else if (name.includes('junior') || name.includes('sit') || name.includes('sat')) {
-        result["Junior"].push(program);
-      } else if (name.includes('adult') || name.includes('senior')) {
-        result["Adult"].push(program);
-      } else if (name.includes('coach') || name.includes('allenator')) {
-        result["Coach"].push(program);
-      } else if (name.includes('padel')) {
-        result["Padel"].push(program);
-      } else if (name.includes('personal') || name.includes('private')) {
-        result["Personal"].push(program);
-      } else {
-        result["Altri"].push(program);
-      }
+      result["Altri"].push(program);
     }
   });
   
