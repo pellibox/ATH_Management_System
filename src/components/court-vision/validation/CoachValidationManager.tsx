@@ -107,11 +107,7 @@ export function useCoachValidation() {
       toast({
         title: "Conferma assegnazione coach",
         description: validationResults[0].message + " Confermare comunque?",
-        action: (
-          <ToastAction altText="Conferma" onClick={onConfirm}>
-            Conferma
-          </ToastAction>
-        )
+        action: <ToastAction altText="Conferma" onClick={onConfirm}>Conferma</ToastAction>
       });
 
       // Instead of JSX, we trigger the actions programmatically
