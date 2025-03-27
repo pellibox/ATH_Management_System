@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import { PersonData } from "../../types";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
@@ -16,7 +17,7 @@ export function useInitialization(
   const lastPlayerCountRef = useRef<number>(0);
   
   // Get the shared players context to sync changes back
-  const { syncHours } = useSharedPlayers();
+  const { syncHours, updateSharedPlayerList, sharedPlayers } = useSharedPlayers();
 
   // Helper function to calculate daily limit based on program
   const calculateDailyLimit = (player: PersonData): number => {
@@ -54,11 +55,18 @@ export function useInitialization(
     return programDurations[player.programId] || 1;
   };
 
-  // Sync with initialPlayers whenever it changes
+  // First check if we have initialPlayers, otherwise try sharedPlayers
   useEffect(() => {
-    if (initialPlayers && initialPlayers.length > 0) {
+    const players = initialPlayers.length > 0 ? initialPlayers : sharedPlayers;
+    
+    if (players && players.length > 0) {
       const now = Date.now();
-      const playerCount = initialPlayers.length;
+      const playerCount = players.length;
+      
+      console.log("useInitialization: Processing players", {
+        count: playerCount,
+        source: initialPlayers.length > 0 ? 'initialPlayers' : 'sharedPlayers'
+      });
       
       // Prevent duplicate processing of the same data
       if (playerCount === lastPlayerCountRef.current && now - lastSyncRef.current < 3000) {
@@ -70,7 +78,7 @@ export function useInitialization(
       lastPlayerCountRef.current = playerCount;
       
       // Map player data to include necessary properties for court vision
-      const mappedPlayers = initialPlayers.map(player => {
+      const mappedPlayers = players.map(player => {
         // Calculate programColor based on program if not already set
         let programColor = player.programColor;
         if (!programColor && player.programId) {
@@ -97,6 +105,7 @@ export function useInitialization(
       // Only include active players in the playersList (status !== "pending")
       const activePlayers = mappedPlayers.filter(player => player.status !== "pending");
       
+      console.log("useInitialization: Setting player list with", activePlayers.length, "active players");
       setPlayersList(activePlayers);
       setIsInitialized(true);
       
@@ -107,8 +116,12 @@ export function useInitialization(
         // Add mapped active players
         return [...nonPlayerPeople, ...activePlayers];
       });
+    } else if (!isInitialized) {
+      // If no players available, request update from shared context
+      console.log("useInitialization: No players available, requesting update from shared context");
+      updateSharedPlayerList();
     }
-  }, [initialPlayers, programs, setPlayersList, setPeople]);
+  }, [initialPlayers, sharedPlayers, programs, setPlayersList, setPeople, isInitialized, updateSharedPlayerList]);
 
   return {
     isInitialized,

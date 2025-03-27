@@ -36,11 +36,17 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Initialize with mock data on first load
   useEffect(() => {
     if (!isInitializedRef.current) {
-      setSharedPlayers(mockPlayers.map(convertPlayerToPerson));
+      const initialPlayers = mockPlayers.map(convertPlayerToPerson);
+      setSharedPlayers(initialPlayers);
       isInitializedRef.current = true;
-      console.log("SharedPlayerContext initialized with", mockPlayers.length, "players");
+      console.log("SharedPlayerContext initialized with", initialPlayers.length, "players");
     }
   }, [setSharedPlayers]);
+
+  // Log current state for debugging
+  useEffect(() => {
+    console.log("SharedPlayerContext: Current state has", sharedPlayers.length, "players");
+  }, [sharedPlayers.length]);
 
   return (
     <SharedPlayerContext.Provider

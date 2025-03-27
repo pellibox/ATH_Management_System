@@ -1,5 +1,5 @@
 
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import { usePlayerContext } from "@/contexts/player/PlayerContext";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
@@ -24,7 +24,7 @@ const getAvailablePrograms = () => {
 };
 
 // Limitiamo la frequenza di sincronizzazione
-const SYNC_THROTTLE_MS = 300;
+const SYNC_THROTTLE_MS = 500;
 
 export const PlayerDataSync = memo(() => {
   const { 
@@ -48,15 +48,27 @@ export const PlayerDataSync = memo(() => {
     setAvailablePrograms(programs);
   }, [setAvailablePrograms]);
   
+  // Force shared context to refresh when component mounts
+  useEffect(() => {
+    console.log("PlayerDataSync: Component mounted, forcing shared context update");
+    updateSharedPlayerList();
+  }, [updateSharedPlayerList]);
+  
+  // Memoize sync function to prevent recreating it on each render
+  const syncPlayerToShared = useCallback((player) => {
+    console.log("Syncing player to shared context:", player.name, player.status);
+    updatePlayer(player);
+  }, [updatePlayer]);
+  
   // Force initial sync from Players to shared context - only do this once
   useEffect(() => {
-    if (!initialSyncDone) {
+    if (!initialSyncDone && players.length > 0) {
       console.log("Players page: Performing initial sync TO shared context");
       
       // Force sync all players to shared context
       players.forEach(player => {
         console.log("Initial sync of player to shared context:", player.name, player.status);
-        updatePlayer(player);
+        syncPlayerToShared(player);
       });
       
       // Mark initial sync as done
@@ -66,7 +78,7 @@ export const PlayerDataSync = memo(() => {
         description: `${players.length} giocatori caricati correttamente`
       });
     }
-  }, [players, initialSyncDone, updatePlayer]);
+  }, [players, initialSyncDone, syncPlayerToShared]);
   
   // Sync players with shared context
   useEffect(() => {
@@ -79,14 +91,12 @@ export const PlayerDataSync = memo(() => {
       
       // Sync ALL players rather than just the last 3
       players.forEach(player => {
-        // Track which players are actually processed to detect issues
-        console.log("Syncing player to shared context:", player.name, player.status);
-        updatePlayer(player);
+        syncPlayerToShared(player);
       });
     }, SYNC_THROTTLE_MS);
     
     return () => clearTimeout(timeoutId);
-  }, [players, updatePlayer, initialSyncDone]);
+  }, [players, initialSyncDone, syncPlayerToShared]);
 
   // This is a utility component that doesn't render anything visible
   return null;
