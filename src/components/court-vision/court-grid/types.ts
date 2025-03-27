@@ -1,47 +1,49 @@
 
-import { ReactNode } from "react";
-import { PersonData, ActivityData, CourtProps } from "../types";
+import { CourtProps, PersonData, ActivityData } from "../types";
 
 export interface CourtGridProps {
   courts: CourtProps[];
+  timeSlots: string[];
   availablePeople: PersonData[];
   availableActivities: ActivityData[];
-  timeSlots: string[];
-  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
+  onDrop: (courtId: string, person: PersonData, position?: { x: number; y: number }, timeSlot?: string) => void;
   onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
-  onRemovePerson: (personId: string, timeSlot?: string, courtId?: string) => void;
-  onRemoveActivity: (activityId: string, timeSlot?: string, courtId?: string) => void;
-  onAddCourt?: () => void;
-  onDeleteCourt?: (courtId: string) => void;
-  onRenameCourt?: (courtId: string, newName: string) => void;
-  onChangeCourtType?: (courtId: string, newType: string) => void;
-  onChangeCourtNumber?: (courtId: string, newNumber: number) => void;
-  onScheduleExport?: () => void;
-  children?: ReactNode;
+  onRemovePerson: (personId: string, timeSlot?: string) => void;
+  onRemoveActivity: (activityId: string, timeSlot?: string) => void;
+  onRenameCourt: (courtId: string, name: string) => void;
+  onChangeCourtType: (courtId: string, type: string) => void;
+  onChangeCourtNumber: (courtId: string, number: number) => void;
   activeHour?: string;
-  onHourChange?: (hour: string) => void;
-  visibleCourtIndices?: number[];
-  defaultActiveHour?: string;
-  ref?: React.ForwardedRef<HTMLDivElement>;
+}
+
+export interface GlobalControlsProps {
+  timeSlots: string[];
+  syncAllSliders: (hour: number) => void;
+  currentBusinessHour: number | null;
+  diagnosticMode: boolean;
+  setDiagnosticMode: (value: boolean) => void;
+  showOnlyConflicts?: boolean;
+  setShowOnlyConflicts?: (value: boolean) => void;
+  conflictsCount?: number;
 }
 
 export interface CourtGroupProps {
   type: string;
   courts: CourtProps[];
   timeSlots: string[];
-  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
+  onDrop: (courtId: string, person: PersonData, position?: { x: number; y: number }, timeSlot?: string) => void;
   onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
-  onRemovePerson: (personId: string, timeSlot?: string, courtId?: string) => void;
-  onRemoveActivity: (activityId: string, timeSlot?: string, courtId?: string) => void;
-  onRenameCourt?: (courtId: string, newName: string) => void;
-  onChangeCourtType?: (courtId: string, newType: string) => void;
-  onChangeCourtNumber?: (courtId: string, newNumber: number) => void;
+  onRemovePerson: (personId: string, timeSlot?: string) => void;
+  onRemoveActivity: (activityId: string, timeSlot?: string) => void;
+  onRenameCourt: (courtId: string, name: string) => void;
+  onChangeCourtType: (courtId: string, type: string) => void;
+  onChangeCourtNumber: (courtId: string, number: number) => void;
   activeHoursByGroup: Record<string, string | null>;
-  visibleCourtIndices: Record<string, number>;
-  handleHourChangeForGroup: (groupId: string, hour: string) => void;
-  navigateCourt: (type: string, pairIndex: number, direction: 'next' | 'prev') => void;
+  visibleCourtIndices: Record<string, number[]>;
+  handleHourChangeForGroup: (type: string, hour: string) => void;
+  navigateCourt: (type: string, pairIndex: number, direction: "next" | "prev") => void;
   isMobile: boolean;
-  getGroupId: (type: string, pairIndex?: number) => string;
+  getGroupId: (type: string) => string;
 }
 
 export interface CourtPairProps {
@@ -49,25 +51,17 @@ export interface CourtPairProps {
   type: string;
   pairIndex: number;
   timeSlots: string[];
-  onDrop: (courtId: string, person: PersonData, position?: { x: number, y: number }, timeSlot?: string) => void;
+  onDrop: (courtId: string, person: PersonData, position?: { x: number; y: number }, timeSlot?: string) => void;
   onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
-  onRemovePerson: (personId: string, timeSlot?: string, courtId?: string) => void;
-  onRemoveActivity: (activityId: string, timeSlot?: string, courtId?: string) => void;
-  onRenameCourt?: (courtId: string, newName: string) => void;
-  onChangeCourtType?: (courtId: string, newType: string) => void;
-  onChangeCourtNumber?: (courtId: string, newNumber: number) => void;
+  onRemovePerson: (personId: string, timeSlot?: string) => void;
+  onRemoveActivity: (activityId: string, timeSlot?: string) => void;
+  onRenameCourt: (courtId: string, name: string) => void;
+  onChangeCourtType: (courtId: string, type: string) => void;
+  onChangeCourtNumber: (courtId: string, number: number) => void;
   activeHoursByGroup: Record<string, string | null>;
-  visibleCourtIndices: Record<string, number>;
-  handleHourChangeForGroup: (groupId: string, hour: string) => void;
-  navigateCourt: (type: string, pairIndex: number, direction: 'next' | 'prev') => void;
+  visibleCourtIndices: Record<string, number[]>;
+  handleHourChangeForGroup: (type: string, hour: string) => void;
+  navigateCourt: (type: string, pairIndex: number, direction: "next" | "prev") => void;
   isMobile: boolean;
-  getGroupId: (type: string, pairIndex?: number) => string;
-}
-
-export interface GlobalControlsProps {
-  timeSlots: string[];
-  syncAllSliders: (hour: string) => void;
-  currentBusinessHour: string | null;
-  diagnosticMode: boolean;
-  setDiagnosticMode: (mode: boolean) => void;
+  getGroupId: (type: string) => string;
 }
