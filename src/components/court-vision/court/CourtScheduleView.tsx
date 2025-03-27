@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
@@ -35,6 +35,7 @@ export function CourtScheduleView({
 }: CourtScheduleViewProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeHour, setActiveHour] = useState<string | null>(null);
+  const [scrollTop, setScrollTop] = useState(0);
   const isMobile = useIsMobile();
 
   const getOccupantsForTimeSlot = (time: string) => {
@@ -70,6 +71,21 @@ export function CourtScheduleView({
     setActiveHour(hour);
   };
 
+  // Update scroll position to position time nav
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        setScrollTop(scrollContainerRef.current.scrollTop);
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
   // Get all unique hours from the time slots
   const getUniqueHours = () => {
     return [...new Set(timeSlots.map(slot => slot.split(':')[0]))];
@@ -93,15 +109,6 @@ export function CourtScheduleView({
         <h3 className="font-bold text-xl text-gray-800">
           {courtName} #{courtNumber} - {getCourtLabel(courtType)}
         </h3>
-        
-        {/* Horizontal time navigation that always stays visible */}
-        <div className="mt-2">
-          <HorizontalTimeNav 
-            timeSlots={timeSlots}
-            activeHour={activeHour}
-            onHourSelect={scrollToHour}
-          />
-        </div>
       </div>
       
       <div className="flex flex-1 relative">
@@ -116,24 +123,37 @@ export function CourtScheduleView({
           ))}
         </div>
 
-        <div 
-          ref={scrollContainerRef} 
-          className="flex-1 overflow-auto h-full relative ml-1 md:ml-2 position-relative"
-        >
-          <div className="min-h-full pb-16">
-            {timeSlots.map((time) => (
-              <TimeSlot
-                key={`${courtId}-${time}`}
-                courtId={courtId}
-                time={time}
-                occupants={getOccupantsForTimeSlot(time)}
-                activities={getActivitiesForTimeSlot(time)}
-                onDrop={onDrop}
-                onActivityDrop={onActivityDrop}
-                onRemovePerson={onRemovePerson || (() => {})}
-                onRemoveActivity={onRemoveActivity || (() => {})}
-              />
-            ))}
+        <div className="flex-1 relative ml-1 md:ml-2">
+          {/* Floating time navigation that follows scroll */}
+          <div 
+            className="sticky top-0 bg-white bg-opacity-95 z-30 border-b border-gray-200 shadow-sm py-2 px-2"
+          >
+            <HorizontalTimeNav 
+              timeSlots={timeSlots}
+              activeHour={activeHour}
+              onHourSelect={scrollToHour}
+            />
+          </div>
+
+          <div 
+            ref={scrollContainerRef} 
+            className="overflow-auto h-full relative"
+          >
+            <div className="min-h-full pb-16">
+              {timeSlots.map((time) => (
+                <TimeSlot
+                  key={`${courtId}-${time}`}
+                  courtId={courtId}
+                  time={time}
+                  occupants={getOccupantsForTimeSlot(time)}
+                  activities={getActivitiesForTimeSlot(time)}
+                  onDrop={onDrop}
+                  onActivityDrop={onActivityDrop}
+                  onRemovePerson={onRemovePerson || (() => {})}
+                  onRemoveActivity={onRemoveActivity || (() => {})}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

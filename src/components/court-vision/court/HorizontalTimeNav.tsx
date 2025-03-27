@@ -56,18 +56,25 @@ export function HorizontalTimeNav({
         className="w-full"
       >
         <CarouselContent className="-ml-0.5">
-          {hours.map((hour) => (
-            <CarouselItem key={`hour-nav-${hour}`} className="pl-0.5 basis-auto">
-              <Button
-                onClick={() => onHourSelect(hour)}
-                variant={activeHour === hour ? "default" : "outline"}
-                size="sm"
-                className={`${isMobile ? 'h-6 min-w-8 text-xs px-1.5' : 'h-7 min-w-10 text-sm px-2'} font-medium`}
-              >
-                {hour}
-              </Button>
-            </CarouselItem>
-          ))}
+          {hourPairs.map((range, index) => {
+            const [start, end] = range.split('-');
+            const isActive = activeHour && (activeHour === start || 
+                              (parseInt(activeHour) >= parseInt(start) && 
+                               parseInt(activeHour) < parseInt(end || "24")));
+            
+            return (
+              <CarouselItem key={`hour-nav-${range}`} className="pl-0.5 basis-auto">
+                <Button
+                  onClick={() => onHourSelect(start)}
+                  variant={isActive ? "default" : "outline"}
+                  size="sm"
+                  className={`${isMobile ? 'h-7 min-w-12 text-xs px-2' : 'h-8 min-w-16 text-sm px-3'} font-medium`}
+                >
+                  {range}
+                </Button>
+              </CarouselItem>
+            );
+          })}
         </CarouselContent>
         <CarouselPrevious className={`${isMobile ? 'h-5 w-5 -left-1' : 'h-6 w-6 -left-2'}`} />
         <CarouselNext className={`${isMobile ? 'h-5 w-5 -right-1' : 'h-6 w-6 -right-2'}`} />
