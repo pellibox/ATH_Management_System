@@ -12,6 +12,7 @@ import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useCallback, memo, useMemo } from "react";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
+import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 
 // Memorizziamo i componenti per evitare re-render inutili
 const MemoizedPlayerFilters = memo(PlayerFilters);
@@ -19,6 +20,24 @@ const MemoizedPlayerList = memo(PlayerList);
 
 // Limitiamo la frequenza di sincronizzazione
 const SYNC_THROTTLE_MS = 300;
+
+// Extract program names from the TENNIS_PROGRAMS constant
+const getAvailablePrograms = () => {
+  const programNames: string[] = [];
+  
+  // Flatten all categories into a single array of names
+  Object.values(TENNIS_PROGRAMS).forEach(categoryPrograms => {
+    if (Array.isArray(categoryPrograms)) {
+      categoryPrograms.forEach(program => {
+        if (program.name) {
+          programNames.push(program.name);
+        }
+      });
+    }
+  });
+  
+  return programNames;
+};
 
 function PlayersContent() {
   const { 
@@ -28,11 +47,18 @@ function PlayersContent() {
     handleUpdatePlayer,
     setEditingPlayer,
     setMessagePlayer,
-    players
+    players,
+    setAvailablePrograms
   } = usePlayerContext();
   
   // Get shared player context
   const { addPlayer, updatePlayer } = useSharedPlayers();
+  
+  // Set available programs from TENNIS_PROGRAMS
+  useEffect(() => {
+    const programs = getAvailablePrograms();
+    setAvailablePrograms(programs);
+  }, [setAvailablePrograms]);
   
   // Memorizziamo questa funzione per evitare sincronizzazioni eccessive
   const syncPlayersWithSharedContext = useCallback(() => {

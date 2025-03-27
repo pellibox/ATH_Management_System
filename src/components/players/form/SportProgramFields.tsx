@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Player } from "@/types/player";
-import { PROGRAM_CATEGORIES } from "@/contexts/programs/constants";
+import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
 import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 
 interface SportProgramFieldsProps {
@@ -29,13 +29,13 @@ export function SportProgramFields({
     if (selectedSport) {
       const sportPrograms: {name: string, category: string}[] = [];
       
-      // Combine all program categories into a structured array for the selected sport
-      Object.keys(PROGRAM_CATEGORIES).forEach(categoryKey => {
-        const category = PROGRAM_CATEGORIES[categoryKey];
+      // Flatten all program categories from TENNIS_PROGRAMS
+      Object.keys(TENNIS_PROGRAMS).forEach(categoryKey => {
+        const categoryPrograms = TENNIS_PROGRAMS[categoryKey];
         
         // Check if category.programs exists before iterating
-        if (category && category.programs && Array.isArray(category.programs)) {
-          category.programs.forEach(program => {
+        if (categoryPrograms && Array.isArray(categoryPrograms)) {
+          categoryPrograms.forEach(program => {
             // Only include programs for the selected sport that aren't excluded
             if (
               (!program.sport || program.sport === selectedSport) && 
@@ -93,7 +93,7 @@ export function SportProgramFields({
               <SelectItem value="no-program">Nessun programma</SelectItem>
               {availablePrograms.map(program => (
                 <SelectItem key={program.name} value={program.name}>
-                  {program.name} ({program.category})
+                  {program.name}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -99,9 +99,6 @@ export function PlayerRow({
         )}
       </TableCell>
       <TableCell>
-        <span className="text-sm">{player.level}</span>
-      </TableCell>
-      <TableCell>
         <span className="text-sm">{player.coach || "Non assegnato"}</span>
       </TableCell>
       <TableCell>

@@ -1,201 +1,154 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Player } from '@/types/player';
-import { ExtraActivity } from '@/types/extra-activities';
-import { PlayerContextType, PlayerProviderProps } from './types';
-import { defaultNewPlayer, defaultObjectives, mockExtraActivities } from './initialState';
-import { useToast } from '@/hooks/use-toast';
-import { mockPlayers } from '@/types/player';
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { Player } from "@/types/player";
+import { generateId } from "@/lib/utils";
+import { getAvailablePlayers } from "./initialState";
+import { useToast } from "@/hooks/use-toast";
+import { EXCLUDED_PROGRAM_NAMES } from "@/contexts/programs/useProgramsState";
 
-// Create context
-const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
+interface PlayerContextProps {
+  players: Player[];
+  filteredPlayers: Player[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  programFilter: string;
+  setProgramFilter: (filter: string) => void;
+  handleAddPlayer: (player: Player) => void;
+  handleUpdatePlayer: (player: Player) => void;
+  handleDeletePlayer: (playerId: string) => void;
+  editingPlayer: Player | null;
+  setEditingPlayer: (player: Player | null) => void;
+  messagePlayer: Player | null;
+  setMessagePlayer: (player: Player | null) => void;
+  newPlayer: Player;
+  availablePrograms: string[];
+  setAvailablePrograms: (programs: string[]) => void;
+  resetFilters: () => void;
+}
 
-// Custom hook for accessing the context
-export const usePlayerContext = () => {
-  const context = useContext(PlayerContext);
-  if (!context) {
-    throw new Error('usePlayerContext must be used within a PlayerProvider');
-  }
-  return context;
-};
+const PlayerContext = createContext<PlayerContextProps | undefined>(undefined);
 
-// Provider component
-export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
+export const PlayerProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const { toast } = useToast();
-
-  // State
-  const [players, setPlayers] = useState<Player[]>(mockPlayers);
-  const [filterTerm, setFilterTerm] = useState('');
-  const [filterProgram, setFilterProgram] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [players, setPlayers] = useState<Player[]>(getAvailablePlayers());
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [programFilter, setProgramFilter] = useState<string>("all");
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [messagePlayer, setMessagePlayer] = useState<Player | null>(null);
-  const [messageContent, setMessageContent] = useState('');
-  const [extraActivities, setExtraActivities] = useState<ExtraActivity[]>(mockExtraActivities);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
+  const [availablePrograms, setAvailablePrograms] = useState<string[]>([]);
   
-  // New state properties for the enhanced capabilities
-  const [searchQuery, setSearchQuery] = useState('');
-  const [programFilter, setProgramFilter] = useState('');
-  const [scheduleType, setScheduleType] = useState<"day" | "week" | "month">("week");
-  const [newPlayer, setNewPlayer] = useState<Player>({ ...defaultNewPlayer, id: '' } as Player);
-
-  // Get unique programs from all players
-  const availablePrograms = Array.from(
-    new Set(players.filter(p => p.program).map(p => p.program))
-  );
-
-  // Filter players based on search, program, and status
+  // Create a new player template
+  const newPlayer: Player = {
+    id: generateId(),
+    name: "",
+    email: "",
+    phone: "",
+    level: "",
+    status: "active",
+  };
+  
+  // Filter players based on search query and program filter
   const filteredPlayers = players.filter(player => {
-    const matchesSearch = player.name.toLowerCase().includes(filterTerm.toLowerCase()) ||
-      (player.email && player.email.toLowerCase().includes(filterTerm.toLowerCase())) ||
-      (player.phone && player.phone.toLowerCase().includes(filterTerm.toLowerCase()));
+    const matchesSearch = player.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        player.email.toLowerCase().includes(searchQuery.toLowerCase());
+                        
+    const matchesProgram = programFilter === "all" || player.program === programFilter;
     
-    const matchesProgram = !filterProgram || player.program === filterProgram;
-    
-    const matchesStatus = filterStatus === 'all' || player.status === filterStatus;
-    
-    return matchesSearch && matchesProgram && matchesStatus;
+    return matchesSearch && matchesProgram;
   });
-
-  // Action handlers
-  const handleAddPlayer = (player: Player) => {
-    setPlayers([...players, player]);
-    toast({
-      title: "Player Added",
-      description: `${player.name} has been added successfully`,
-    });
-  };
-
-  const handleUpdatePlayer = (player: Player) => {
-    setPlayers(players.map(p => p.id === player.id ? player : p));
-    setEditingPlayer(null);
-    toast({
-      title: "Player Updated",
-      description: `${player.name}'s information has been updated`,
-    });
-  };
-
-  const handleDeletePlayer = (id: string) => {
-    setPlayers(players.filter(p => p.id !== id));
-    toast({
-      title: "Player Deleted",
-      description: "The player has been removed from the system",
-      variant: "destructive",
-    });
-  };
-
-  const handleSendMessage = () => {
-    if (!messagePlayer) return;
+  
+  // Add a new player
+  const handleAddPlayer = useCallback((player: Player) => {
+    const newPlayer = {
+      ...player,
+      id: generateId()
+    };
+    
+    setPlayers(prev => [...prev, newPlayer]);
     
     toast({
-      title: "Schedule Sent",
-      description: `Schedule has been sent to ${messagePlayer.name}`,
+      title: "Giocatore aggiunto",
+      description: `${newPlayer.name} è stato aggiunto con successo.`,
     });
     
-    setMessagePlayer(null);
-    setMessageContent('');
-  };
-
-  const handleRegisterActivity = (player: Player, activityIds: string[]) => {
-    // Update the activities with the player's ID
-    const updatedActivities = extraActivities.map(activity => {
-      if (activityIds.includes(activity.id)) {
-        return {
-          ...activity,
-          participants: [...activity.participants, player.id]
-        };
+    return newPlayer;
+  }, [toast]);
+  
+  // Update an existing player
+  const handleUpdatePlayer = useCallback((updatedPlayer: Player) => {
+    setPlayers(prev => 
+      prev.map(player => 
+        player.id === updatedPlayer.id ? updatedPlayer : player
+      )
+    );
+    
+    toast({
+      title: "Giocatore aggiornato",
+      description: `${updatedPlayer.name} è stato aggiornato con successo.`,
+    });
+    
+    return updatedPlayer;
+  }, [toast]);
+  
+  // Delete a player
+  const handleDeletePlayer = useCallback((playerId: string) => {
+    const playerToDelete = players.find(p => p.id === playerId);
+    
+    setPlayers(prev => prev.filter(player => player.id !== playerId));
+    
+    if (playerToDelete) {
+      toast({
+        title: "Giocatore eliminato",
+        description: `${playerToDelete.name} è stato eliminato con successo.`,
+      });
+    }
+  }, [players, toast]);
+  
+  // Reset all filters
+  const resetFilters = useCallback(() => {
+    setSearchQuery("");
+    setProgramFilter("all");
+  }, []);
+  
+  useEffect(() => {
+    // Auto-update editing player when players array changes (e.g., after updates)
+    if (editingPlayer) {
+      const updated = players.find(p => p.id === editingPlayer.id);
+      if (updated) {
+        setEditingPlayer(updated);
       }
-      return activity;
-    });
-    
-    setExtraActivities(updatedActivities);
-    
-    toast({
-      title: "Activities Registered",
-      description: `${player.name} has been registered for ${activityIds.length} activities`,
-    });
-  };
-
-  const handleRegisterForActivities = () => {
-    if (!messagePlayer) return;
-    
-    handleRegisterActivity(messagePlayer, selectedActivities);
-    setSelectedActivities([]);
-    setMessagePlayer(null);
-  };
-
-  const handleSetObjectives = (playerId: string, objectives: any) => {
-    setPlayers(players.map(p => {
-      if (p.id === playerId) {
-        return {
-          ...p,
-          objectives: {
-            ...p.objectives,
-            ...objectives
-          }
-        };
-      }
-      return p;
-    }));
-    
-    toast({
-      title: "Objectives Updated",
-      description: "The player's objectives have been updated",
-    });
-  };
-
-  // Clear filters handler
-  const resetFilters = () => {
-    setSearchQuery('');
-    setProgramFilter('');
-    setFilterTerm('');
-    setFilterProgram('');
-    setFilterStatus('all');
-  };
-
-  // Build context value
-  const contextValue: PlayerContextType = {
-    players,
-    setPlayers,
-    filteredPlayers,
-    filterTerm,
-    setFilterTerm,
-    filterProgram,
-    setFilterProgram,
-    filterStatus,
-    setFilterStatus,
-    editingPlayer,
-    setEditingPlayer,
-    messagePlayer,
-    setMessagePlayer,
-    messageContent,
-    setMessageContent,
-    selectedActivities,
-    setSelectedActivities,
-    extraActivities,
-    availablePrograms,
-    searchQuery,
-    setSearchQuery,
-    programFilter,
-    setProgramFilter,
-    resetFilters,
-    scheduleType,
-    setScheduleType,
-    newPlayer,
-    setNewPlayer,
-    handleAddPlayer,
-    handleUpdatePlayer,
-    handleDeletePlayer,
-    handleSendMessage,
-    handleRegisterActivity,
-    handleRegisterForActivities,
-    handleSetObjectives
-  };
-
+    }
+  }, [players, editingPlayer]);
+  
   return (
-    <PlayerContext.Provider value={contextValue}>
+    <PlayerContext.Provider value={{
+      players,
+      filteredPlayers,
+      searchQuery,
+      setSearchQuery,
+      programFilter,
+      setProgramFilter,
+      handleAddPlayer,
+      handleUpdatePlayer,
+      handleDeletePlayer,
+      editingPlayer,
+      setEditingPlayer,
+      messagePlayer,
+      setMessagePlayer,
+      newPlayer,
+      availablePrograms,
+      setAvailablePrograms,
+      resetFilters,
+    }}>
       {children}
     </PlayerContext.Provider>
   );
+};
+
+export const usePlayerContext = () => {
+  const context = useContext(PlayerContext);
+  if (context === undefined) {
+    throw new Error("usePlayerContext must be used within a PlayerProvider");
+  }
+  return context;
 };

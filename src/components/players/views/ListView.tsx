@@ -41,7 +41,6 @@ export function ListView({ players }: ListViewProps) {
           <TableRow>
             <TableHead>Nome</TableHead>
             <TableHead>Programma</TableHead>
-            <TableHead>Livello</TableHead>
             <TableHead>Coach</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Azioni</TableHead>
@@ -62,7 +61,7 @@ export function ListView({ players }: ListViewProps) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                 Nessun giocatore trovato con questi criteri di ricerca
               </TableCell>
             </TableRow>
