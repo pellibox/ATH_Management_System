@@ -1,4 +1,3 @@
-
 import { PersonData, ActivityData, CourtProps, ValidationRule, ValidationResult } from "../types";
 import { hasExceededDailyLimit, isCoachAssignmentValid, calculateHealthScore } from "../utils/personUtils";
 import { useToast } from "@/hooks/use-toast";
