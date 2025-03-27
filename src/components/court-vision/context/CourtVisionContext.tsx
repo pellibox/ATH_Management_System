@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { CourtVisionContextType } from "./CourtVisionTypes";
 import { useCourtVisionState } from "./useCourtVisionState";
 import { useCourtVisionActions } from "./CourtVisionActions";
@@ -15,9 +14,7 @@ export const CourtVisionContext = createContext<CourtVisionContextType | undefin
 
 export const useCourtVision = () => {
   const context = useContext(CourtVisionContext);
-  console.log("useCourtVision called, context exists:", !!context);
   if (!context) {
-    console.error("useCourtVision called outside of provider");
     throw new Error("useCourtVision must be used within a CourtVisionProvider");
   }
   return context;
@@ -31,13 +28,6 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   children, 
   initialPlayers = [] 
 }) => {
-  console.log("CourtVisionProvider rendering with initialPlayers:", initialPlayers.length);
-  
-  // Log each initial player for debugging
-  initialPlayers.forEach(player => {
-    console.log(`CourtVisionProvider: Initial player ${player.id}: ${player.name}, status: ${player.status}`);
-  });
-  
   // Get state from hook
   const initialState = useCourtVisionState();
   
@@ -64,20 +54,28 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
 
   // Track initialization state
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Keep track of last sync time to avoid too frequent notifications
+  const lastSyncRef = useRef<number>(0);
+  const lastPlayerCountRef = useRef<number>(0);
 
   // Sync with initialPlayers whenever it changes
   useEffect(() => {
     if (initialPlayers && initialPlayers.length > 0) {
-      console.log("Court Vision: Setting playersList from initialPlayers:", initialPlayers.length);
+      const now = Date.now();
+      const playerCount = initialPlayers.length;
       
-      // Always update players - removing the isDifferent check to ensure all players are always loaded
+      // Prevent duplicate processing of the same data
+      if (playerCount === lastPlayerCountRef.current && now - lastSyncRef.current < 3000) {
+        return;
+      }
+      
+      // Update the refs
+      lastSyncRef.current = now;
+      lastPlayerCountRef.current = playerCount;
+      
       // Map player data to include necessary properties for court vision
       const mappedPlayers = initialPlayers.map(player => {
-        // Filter out any players with status = "pending" as they shouldn't be visible
-        if (player.status === "pending") {
-          console.log(`Filtering out pending player: ${player.name}`);
-        }
-        
         // Calculate programColor based on program if not already set
         let programColor = player.programColor;
         if (!programColor && player.programId) {
@@ -101,11 +99,8 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
         };
       });
       
-      console.log(`Court Vision: Mapped ${mappedPlayers.length} players`);
-      
       // Only include active players in the playersList (status !== "pending")
       const activePlayers = mappedPlayers.filter(player => player.status !== "pending");
-      console.log(`Court Vision: Filtered to ${activePlayers.length} active players`);
       
       setPlayersList(activePlayers);
       setIsInitialized(true);
@@ -117,16 +112,8 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
         // Add mapped active players
         return [...nonPlayerPeople, ...activePlayers];
       });
-      
-      // Show toast for debug purposes
-      if (isInitialized) {
-        toast.info("Dati giocatori aggiornati", {
-          description: `${activePlayers.length} giocatori aggiornati nella Visione Campo`,
-          duration: 3000
-        });
-      }
     }
-  }, [initialPlayers, programs, isInitialized]);
+  }, [initialPlayers, programs]);
 
   // Sync back court assignments to shared context
   useEffect(() => {
@@ -135,8 +122,7 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
       // When courts or people change, sync hours back to shared context
       playersList.forEach(player => {
         if (player.id) {
-          // Always sync hours, even if zero
-          console.log(`Syncing player ${player.name} hours: completed=${player.completedHours || 0}, missed=${player.missedHours || 0}`);
+          // Sync hours only when necessary, to avoid excessive updates
           syncHours(player.id, player.completedHours || 0, player.missedHours || 0);
         }
       });
@@ -250,11 +236,6 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
     ...programHandlers,
     ...actions
   };
-
-  console.log("CourtVisionProvider rendering with context:", { 
-    filteredCourtsCount: contextValue.filteredCourts.length,
-    playersCount: contextValue.playersList.length
-  });
 
   return (
     <CourtVisionContext.Provider value={contextValue}>

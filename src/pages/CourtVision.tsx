@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import CourtVisionHeader from "@/components/court-vision/CourtVisionHeader";
@@ -11,31 +11,33 @@ import { toast } from "sonner";
 
 export default function CourtVision() {
   const { sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
+  const [syncComplete, setSyncComplete] = useState(false);
   
-  // Log the shared players for debugging
+  // Sync players once when the component mounts
   useEffect(() => {
-    console.log("CourtVision: Received sharedPlayers count:", sharedPlayers.length);
-    
-    // Let's see which players are actually in the shared context
-    sharedPlayers.forEach(player => {
-      console.log(`CourtVision: Player ${player.id}: ${player.name}, status: ${player.status}`);
-    });
-    
-    // Force a refresh of the shared player list when Court Vision loads
+    console.log("CourtVision: Initial load - requesting player update");
     updateSharedPlayerList();
-  }, [sharedPlayers.length]);
-
-  // Always show a notification with the current player count
-  useEffect(() => {
-    // Give a moment for the DOM to settle
+    
+    // Show a notification only once after initial load
     const timeoutId = setTimeout(() => {
-      toast.info("Dati dei giocatori sincronizzati", {
-        description: `${sharedPlayers.length} giocatori caricati correttamente`
-      });
-    }, 300);
+      if (sharedPlayers.length > 0 && !syncComplete) {
+        toast.info("Dati dei giocatori sincronizzati", {
+          description: `${sharedPlayers.length} giocatori caricati correttamente`,
+          id: "player-sync-toast" // Use an ID to prevent duplicate toasts
+        });
+        setSyncComplete(true);
+      }
+    }, 500);
     
     return () => clearTimeout(timeoutId);
-  }, []); 
+  }, []);
+  
+  // Log player count when it changes, but don't show notification
+  useEffect(() => {
+    if (sharedPlayers.length > 0) {
+      console.log("CourtVision: Player count updated:", sharedPlayers.length);
+    }
+  }, [sharedPlayers.length]);
   
   return (
     <DndProvider backend={HTML5Backend}>
@@ -43,7 +45,6 @@ export default function CourtVision() {
         <div className="mx-auto py-4 relative flex flex-col h-[calc(100vh-theme(spacing.16))]">
           <h1 className="text-2xl font-bold mb-4">Visione Campo</h1>
           
-          {/* Make sure CourtVisionHeader is inside the CourtVisionProvider */}
           <CourtVisionHeader />
           
           {/* Main content area with sidebar layout */}

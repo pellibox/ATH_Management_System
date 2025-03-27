@@ -8,8 +8,8 @@ import { useCourtVision } from "@/components/court-vision/context/CourtVisionCon
 export function CourtVisionSidebar() {
   const isMobile = useIsMobile();
   
-  // Add this line to verify that the context is available
-  console.log("CourtVisionSidebar: useCourtVision hook available:", !!useCourtVision);
+  // Use the context to verify it's available (without console.log for production)
+  const { playersList } = useCourtVision();
   
   return (
     <div className={`${isMobile ? 'w-full' : 'w-64 md:w-72 lg:w-80'} flex-shrink-0 flex flex-col`}>

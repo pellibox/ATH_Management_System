@@ -4,16 +4,11 @@ import { AvailableActivities } from "../AvailableActivities";
 import { useCourtVision } from "../context/CourtVisionContext";
 
 export function ActivitiesPanel() {
-  // Add console.log to debug
-  console.log("ActivitiesPanel: Attempting to use useCourtVision hook");
-  
   const { 
     activities,
     handleActivityDrop,
     handleAddActivity
   } = useCourtVision();
-  
-  console.log("ActivitiesPanel: Successfully used useCourtVision hook");
   
   return (
     <div className="bg-white rounded-lg shadow-sm p-3 mt-4">

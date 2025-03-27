@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { PersonData } from "@/components/court-vision/types";
 import { Player } from "@/types/player";
 import { PERSON_TYPES } from "@/components/court-vision/constants";
@@ -7,7 +7,6 @@ import { mockPlayers } from "@/types/player";
 
 // Convert Player type to PersonData type
 const convertPlayerToPerson = (player: Player): PersonData => {
-  console.log("Converting player to PersonData:", player.name, player.status);
   return {
     id: player.id,
     name: player.name,
@@ -34,7 +33,6 @@ const convertPlayerToPerson = (player: Player): PersonData => {
 
 // Convert PersonData back to Player
 const convertPersonToPlayer = (person: PersonData): Player => {
-  console.log("Converting PersonData back to Player:", person.name);
   return {
     id: person.id,
     name: person.name,
@@ -119,51 +117,53 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [sharedPlayers, setSharedPlayers] = useState<PersonData[]>(
     mockPlayers.map(convertPlayerToPerson)
   );
+  
+  // Track last update to prevent excessive updates
+  const lastUpdateRef = useRef<Record<string, number>>({});
 
   // Log initial state
   useEffect(() => {
     console.log("SharedPlayerContext initialized with", sharedPlayers.length, "players");
-    // Log each player to ensure we're starting with the correct data
-    sharedPlayers.forEach(player => {
-      console.log(`Player in shared context: ${player.name}, status: ${player.status}`);
-    });
   }, []);
 
   // Add a new player
   const addPlayer = (player: Player) => {
-    console.log("SharedPlayerContext: Adding player", player.name, player.status);
     const newPerson = convertPlayerToPerson(player);
     setSharedPlayers((prevPlayers) => {
       // Check if player already exists to avoid duplicates
       const exists = prevPlayers.some(p => p.id === player.id);
       if (exists) {
-        console.log("Player already exists, updating instead");
         return prevPlayers.map(p => p.id === player.id ? newPerson : p);
       }
-      console.log("Adding new player to shared context");
       return [...prevPlayers, newPerson];
     });
   };
 
   // Update an existing player
   const updatePlayer = (player: Player) => {
-    console.log("SharedPlayerContext: Updating player", player.name, player.status);
+    // Implement throttling to prevent excessive updates
+    const now = Date.now();
+    if (now - (lastUpdateRef.current[player.id] || 0) < 1000) {
+      // Skip updates that are too frequent for the same player
+      return;
+    }
+    
+    // Update timestamp
+    lastUpdateRef.current[player.id] = now;
+    
     const updatedPerson = convertPlayerToPerson(player);
     setSharedPlayers((prevPlayers) => {
       // Check if player exists
       const exists = prevPlayers.some(p => p.id === player.id);
       if (!exists) {
-        console.log("Player doesn't exist, adding instead");
         return [...prevPlayers, updatedPerson];
       }
-      console.log("Updating existing player in shared context");
       return prevPlayers.map((p) => (p.id === player.id ? updatedPerson : p));
     });
   };
 
   // Remove a player
   const removePlayer = (id: string) => {
-    console.log("SharedPlayerContext: Removing player with ID", id);
     setSharedPlayers((prevPlayers) => prevPlayers.filter((p) => p.id !== id));
   };
 
@@ -174,7 +174,17 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
   
   // Sync hours between Court Vision and Players page
   const syncHours = (id: string, completedHours: number, missedHours: number) => {
-    console.log("SharedPlayerContext: Syncing hours for player", id, completedHours, missedHours);
+    // Implement throttling to prevent excessive updates
+    const now = Date.now();
+    const syncKey = `hours-${id}`;
+    if (now - (lastUpdateRef.current[syncKey] || 0) < 1000) {
+      // Skip updates that are too frequent for the same hours sync
+      return;
+    }
+    
+    // Update timestamp
+    lastUpdateRef.current[syncKey] = now;
+    
     setSharedPlayers((prevPlayers) => 
       prevPlayers.map((p) => {
         if (p.id === id) {
@@ -193,12 +203,8 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Force a refresh of the shared player list (useful when switching between pages)
   const updateSharedPlayerList = () => {
-    console.log("SharedPlayerContext: Forcing refresh of shared player list - count:", sharedPlayers.length);
-    // This effectively re-applies all data transformations and triggers dependents to update
-    setSharedPlayers(prev => {
-      console.log("Refreshed players count:", prev.length);
-      return [...prev];
-    });
+    // This refreshes the shared player list without creating duplicate notifications
+    setSharedPlayers(prev => [...prev]);
   };
 
   return (
