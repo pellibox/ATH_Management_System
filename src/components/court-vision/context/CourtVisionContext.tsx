@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CourtVisionContextType } from "./CourtVisionTypes";
 import { useCourtVisionState } from "./useCourtVisionState";
@@ -8,6 +9,7 @@ import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
 import { CourtVisionProviderProps } from "./types";
 import { CourtProps, PersonData } from "../types";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
+import { toast } from "sonner";
 
 export const CourtVisionContext = createContext<CourtVisionContextType | undefined>(undefined);
 
@@ -41,7 +43,7 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   const [courts, setCourts] = useState(initialState.courts);
   const [people, setPeople] = useState(initialState.people);
   const [activities, setActivities] = useState(initialState.activities);
-  const [playersList, setPlayersList] = useState(initialPlayers.length > 0 ? initialPlayers : initialState.playersList);
+  const [playersList, setPlayersList] = useState<PersonData[]>([]);
   const [coachesList, setCoachesList] = useState(initialState.coachesList);
   const [programs, setPrograms] = useState(initialState.programs);
   const [templates, setTemplates] = useState(initialState.templates);
@@ -55,57 +57,81 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   const [filteredPlayers, setFilteredPlayers] = useState(initialState.filteredPlayers);
   const [filteredCoaches, setFilteredCoaches] = useState(initialState.filteredCoaches);
 
+  // Track initialization state
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Sync with initialPlayers whenever it changes
   useEffect(() => {
     if (initialPlayers && initialPlayers.length > 0) {
       console.log("Court Vision: Setting playersList from initialPlayers:", initialPlayers.length);
       
-      // Map player data to include necessary properties for court vision
-      const mappedPlayers = initialPlayers.map(player => {
-        // Calculate programColor based on program if not already set
-        let programColor = player.programColor;
-        if (!programColor && player.programId) {
-          const program = programs.find(p => p.id === player.programId);
-          if (program) {
-            programColor = program.color;
+      // Check if data has actually changed to avoid unnecessary re-renders
+      const isDifferent = !isInitialized || 
+        playersList.length !== initialPlayers.length || 
+        JSON.stringify(playersList.map(p => p.id)) !== JSON.stringify(initialPlayers.map(p => p.id));
+      
+      if (isDifferent) {
+        // Map player data to include necessary properties for court vision
+        const mappedPlayers = initialPlayers.map(player => {
+          // Calculate programColor based on program if not already set
+          let programColor = player.programColor;
+          if (!programColor && player.programId) {
+            const program = programs.find(p => p.id === player.programId);
+            if (program) {
+              programColor = program.color;
+            }
           }
-        }
+          
+          // Ensure hours tracking properties are preserved
+          return {
+            ...player,
+            programColor,
+            // Preserve hours data
+            completedHours: player.completedHours || 0,
+            trainingHours: player.trainingHours || 0,
+            extraHours: player.extraHours || 0,
+            missedHours: player.missedHours || 0,
+            dailyLimit: player.dailyLimit || calculateDailyLimit(player),
+            durationHours: player.durationHours || calculateDefaultDuration(player),
+          };
+        });
         
-        // Ensure hours tracking properties are preserved
-        return {
-          ...player,
-          programColor,
-          // Preserve hours data
-          completedHours: player.completedHours || 0,
-          trainingHours: player.trainingHours || 0,
-          extraHours: player.extraHours || 0,
-          missedHours: player.missedHours || 0,
-          dailyLimit: player.dailyLimit || calculateDailyLimit(player),
-          durationHours: player.durationHours || calculateDefaultDuration(player),
-        };
-      });
-      
-      setPlayersList(mappedPlayers);
-      
-      // Also update people list to include these players
-      setPeople(prevPeople => {
-        // Filter out existing players
-        const nonPlayerPeople = prevPeople.filter(p => p.type !== "player");
-        // Add mapped players
-        return [...nonPlayerPeople, ...mappedPlayers];
-      });
+        setPlayersList(mappedPlayers);
+        setIsInitialized(true);
+        
+        // Also update people list to include these players
+        setPeople(prevPeople => {
+          // Filter out existing players
+          const nonPlayerPeople = prevPeople.filter(p => p.type !== "player");
+          // Add mapped players
+          return [...nonPlayerPeople, ...mappedPlayers];
+        });
+        
+        // Show toast for debug purposes
+        if (isInitialized) {
+          toast.info("Dati giocatori aggiornati", {
+            description: `${mappedPlayers.length} giocatori aggiornati nella Visione Campo`,
+            duration: 3000
+          });
+        }
+      }
     }
-  }, [initialPlayers, programs]);
+  }, [initialPlayers, programs, isInitialized, playersList.length]);
 
   // Sync back court assignments to shared context
   useEffect(() => {
-    // When courts or people change, sync hours back to shared context
-    playersList.forEach(player => {
-      if (player.completedHours !== undefined && player.missedHours !== undefined) {
-        syncHours(player.id, player.completedHours, player.missedHours || 0);
-      }
-    });
-  }, [courts, playersList, syncHours]);
+    // Only sync when playersList has values and we're initialized
+    if (playersList.length > 0 && isInitialized) {
+      // When courts or people change, sync hours back to shared context
+      playersList.forEach(player => {
+        if (player.id) {
+          // Always sync hours, even if zero
+          console.log(`Syncing player ${player.name} hours: completed=${player.completedHours || 0}, missed=${player.missedHours || 0}`);
+          syncHours(player.id, player.completedHours || 0, player.missedHours || 0);
+        }
+      });
+    }
+  }, [courts, playersList, syncHours, isInitialized]);
 
   // Helper function to calculate daily limit based on program
   const calculateDailyLimit = (player: PersonData): number => {
@@ -216,7 +242,8 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   };
 
   console.log("CourtVisionProvider rendering with context:", { 
-    filteredCourtsCount: contextValue.filteredCourts.length
+    filteredCourtsCount: contextValue.filteredCourts.length,
+    playersCount: contextValue.playersList.length
   });
 
   return (

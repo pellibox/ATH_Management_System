@@ -27,8 +27,30 @@ const convertPlayerToPerson = (player: Player): PersonData => {
     // Program-based metrics
     dailyLimit: calculateDailyLimit(player),
     durationHours: calculateDefaultDuration(player),
-    // Status
-    status: "confirmed"
+    // Status - always use value from player object if available
+    status: player.status === 'inactive' ? "pending" : "confirmed"
+  };
+};
+
+// Convert PersonData back to Player
+const convertPersonToPlayer = (person: PersonData): Player => {
+  console.log("Converting PersonData back to Player:", person.name);
+  return {
+    id: person.id,
+    name: person.name,
+    email: person.email || "",
+    phone: person.phone || "",
+    level: "",
+    program: person.programId,
+    programs: person.programIds,
+    sports: person.sportTypes,
+    notes: person.notes,
+    status: person.status === "pending" ? 'inactive' : 'active',
+    // Hours tracking
+    completedHours: person.completedHours,
+    trainingHours: person.trainingHours,
+    extraHours: person.extraHours,
+    missedHours: person.missedHours
   };
 };
 
@@ -76,6 +98,7 @@ interface SharedPlayerContextType {
   removePlayer: (id: string) => void;
   getPlayerById: (id: string) => PersonData | undefined;
   syncHours: (id: string, completedHours: number, missedHours: number) => void;
+  updateSharedPlayerList: () => void;
 }
 
 // Create context with default values
@@ -86,6 +109,7 @@ const SharedPlayerContext = createContext<SharedPlayerContextType>({
   removePlayer: () => {},
   getPlayerById: () => undefined,
   syncHours: () => {},
+  updateSharedPlayerList: () => {},
 });
 
 // Create provider component
@@ -160,6 +184,13 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
     );
   };
 
+  // Force a refresh of the shared player list (useful when switching between pages)
+  const updateSharedPlayerList = () => {
+    console.log("SharedPlayerContext: Forcing refresh of shared player list");
+    // This effectively re-applies all data transformations
+    setSharedPlayers(prev => [...prev]);
+  };
+
   return (
     <SharedPlayerContext.Provider
       value={{
@@ -168,7 +199,8 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
         updatePlayer,
         removePlayer,
         getPlayerById,
-        syncHours
+        syncHours,
+        updateSharedPlayerList
       }}
     >
       {children}

@@ -10,9 +10,10 @@ import { ScheduleMessage } from "@/components/players/ScheduleMessage";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { PlayerObjectives } from "@/components/players/PlayerObjectives";
 import { DialogTrigger } from "@/components/ui/dialog";
-import { useEffect, useCallback, memo, useMemo } from "react";
+import { useEffect, useCallback, memo, useMemo, useState } from "react";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
+import { toast } from "sonner";
 
 // Memorizziamo i componenti per evitare re-render inutili
 const MemoizedPlayerFilters = memo(PlayerFilters);
@@ -52,7 +53,10 @@ function PlayersContent() {
   } = usePlayerContext();
   
   // Get shared player context
-  const { addPlayer, updatePlayer, sharedPlayers } = useSharedPlayers();
+  const { addPlayer, updatePlayer, sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
+  
+  // State to track if we've synced on load
+  const [initialSyncDone, setInitialSyncDone] = useState(false);
   
   // Log shared players count for debugging
   console.log("Players page: SharedPlayers count:", sharedPlayers.length);
@@ -63,25 +67,43 @@ function PlayersContent() {
     setAvailablePrograms(programs);
   }, [setAvailablePrograms]);
   
+  // Initial sync from shared context to player context - only do this once
+  useEffect(() => {
+    if (!initialSyncDone && sharedPlayers.length > 0) {
+      console.log("Players page: Performing initial sync from shared context");
+      updateSharedPlayerList();
+      setInitialSyncDone(true);
+      
+      toast.info("Dati dei giocatori sincronizzati", {
+        description: `${sharedPlayers.length} giocatori caricati correttamente`
+      });
+    }
+  }, [sharedPlayers, initialSyncDone, updateSharedPlayerList]);
+  
   // Memorizziamo questa funzione per evitare sincronizzazioni eccessive
   const syncPlayersWithSharedContext = useCallback(() => {
     console.log("PlayersContent: Syncing ALL players with shared context", players.length);
     
     // Sync ALL players rather than just the last 3
     players.forEach(player => {
+      // Track which players are actually processed to detect issues
+      console.log("Syncing player to shared context:", player.name, player.status);
       updatePlayer(player);
     });
   }, [players, updatePlayer]);
   
   // Usiamo uno stato più stabile riducendo ulteriormente la frequenza degli aggiornamenti
   useEffect(() => {
+    // Skip if we haven't done initial sync yet
+    if (!initialSyncDone) return;
+    
     // Aumentiamo il delay per ridurre la frequenza di aggiornamento
     const timeoutId = setTimeout(() => {
       syncPlayersWithSharedContext();
     }, SYNC_THROTTLE_MS);
     
     return () => clearTimeout(timeoutId);
-  }, [syncPlayersWithSharedContext]);
+  }, [syncPlayersWithSharedContext, initialSyncDone]);
   
   // Memorizziamo queste funzioni per evitare la creazione di nuove ad ogni render
   const handleAddPlayerWithSync = useCallback((player) => {

@@ -7,9 +7,10 @@ import { CourtVisionSidebar } from "@/components/court-vision/sidebar/CourtVisio
 import { CourtVisionContent } from "@/components/court-vision/content/CourtVisionContent";
 import { CourtVisionProvider } from "@/components/court-vision/context/CourtVisionContext";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
+import { toast } from "sonner";
 
 export default function CourtVision() {
-  const { sharedPlayers } = useSharedPlayers();
+  const { sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
   
   // Log the shared players for debugging
   useEffect(() => {
@@ -18,6 +19,18 @@ export default function CourtVision() {
       console.log("CourtVision: First shared player:", sharedPlayers[0].name);
     }
   }, [sharedPlayers]);
+
+  // Ensure data consistency on page load
+  useEffect(() => {
+    if (sharedPlayers.length > 0) {
+      // Force a refresh of shared player data when Court Vision loads
+      updateSharedPlayerList();
+      
+      toast.info("Dati dei giocatori sincronizzati", {
+        description: `${sharedPlayers.length} giocatori caricati correttamente`
+      });
+    }
+  }, []);
   
   return (
     <DndProvider backend={HTML5Backend}>
