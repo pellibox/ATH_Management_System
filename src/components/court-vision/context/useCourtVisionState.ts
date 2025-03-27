@@ -50,8 +50,14 @@ export function useCourtVisionState(): CourtVisionState {
       console.log("Setting courts from schedule:", existingSchedule.courts);
       setCourts(existingSchedule.courts);
     } else {
-      console.log("No schedule found, using default courts");
-      setCourts(DEFAULT_COURTS);
+      console.log("No schedule found, using empty courts with default structure");
+      // Creiamo campi vuoti ma con la stessa struttura di DEFAULT_COURTS
+      const emptyCourts = DEFAULT_COURTS.map(court => ({
+        ...court,
+        occupants: [], // Nessun occupante
+        activities: [] // Nessuna attività
+      }));
+      setCourts(emptyCourts);
     }
   }, [selectedDate, dateSchedules]);
 
@@ -62,17 +68,24 @@ export function useCourtVisionState(): CourtVisionState {
     console.log("Saving schedule for date:", dateString);
     console.log("Current courts state:", courts);
     
-    setDateSchedules(prevSchedules => {
-      const existingIndex = prevSchedules.findIndex(schedule => schedule.date === dateString);
-      
-      if (existingIndex >= 0) {
-        const updatedSchedules = [...prevSchedules];
-        updatedSchedules[existingIndex] = { date: dateString, courts };
-        return updatedSchedules;
-      } else {
-        return [...prevSchedules, { date: dateString, courts }];
-      }
-    });
+    // Verifichiamo se ci sono occupanti o attività prima di salvare
+    const hasContent = courts.some(court => 
+      court.occupants.length > 0 || (court.activities && court.activities.length > 0)
+    );
+    
+    if (hasContent) {
+      setDateSchedules(prevSchedules => {
+        const existingIndex = prevSchedules.findIndex(schedule => schedule.date === dateString);
+        
+        if (existingIndex >= 0) {
+          const updatedSchedules = [...prevSchedules];
+          updatedSchedules[existingIndex] = { date: dateString, courts };
+          return updatedSchedules;
+        } else {
+          return [...prevSchedules, { date: dateString, courts }];
+        }
+      });
+    }
   }, [courts, selectedDate]);
 
   return {

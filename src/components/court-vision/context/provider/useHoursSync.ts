@@ -24,7 +24,7 @@ export function useHoursSync(
       let totalAssignedHours = 0;
       let totalMissedHours = player.missedHours || 0; // Preserve missed hours
       
-      // Count how many hours this player is assigned
+      // Only count assignments for today's courts (not from other days)
       courts.forEach(court => {
         court.occupants.forEach((occupant: PersonData) => {
           if (occupant.id === player.id && occupant.timeSlot) {

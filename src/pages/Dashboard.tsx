@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { CourtProps } from "@/components/court-vision/types";
@@ -79,7 +80,8 @@ export default function Dashboard() {
       </div>
     );
   }
-
+  
+  // Creiamo campi vuoti per la dashboard
   const emptyCourts: CourtProps[] = [];
   
   return (

@@ -18,7 +18,7 @@ export default function CourtVision() {
     if (sharedPlayers.length > 0) {
       updateSharedPlayerList();
     }
-  }, []);
+  }, [updateSharedPlayerList, sharedPlayers.length]);
   
   // Show notification when players are loaded
   useEffect(() => {
