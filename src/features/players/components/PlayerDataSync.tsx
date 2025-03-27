@@ -1,3 +1,4 @@
+
 import { useEffect, memo, useRef, useState } from "react";
 import { usePlayerContext } from "@/contexts/player/PlayerContext";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
@@ -119,12 +120,14 @@ export const PlayerDataSync = memo(() => {
             if (!currentPlayerIds.has(playerId)) {
               console.log(`PlayerDataSync: Player ${playerId} was deleted, removing from shared context`);
               // Player was deleted from Players section, update with inactive status
+              // Fix: Add the required 'level' property to the deleted player object
               updatePlayer({
                 id: playerId,
                 name: "Deleted Player",
                 status: 'inactive',
                 email: "",
-                phone: ""
+                phone: "",
+                level: "" // Add the required level property
               });
             }
           });
@@ -164,12 +167,14 @@ export const PlayerDataSync = memo(() => {
         if (!currentPlayerIds.has(playerId)) {
           console.log(`PlayerDataSync: Player ${playerId} was deleted, removing from shared context`);
           // Player was deleted from Players section, update with inactive status
+          // Fix: Add the required 'level' property to the deleted player object
           updatePlayer({
             id: playerId,
             name: "Deleted Player",
             status: 'inactive',
             email: "",
-            phone: ""
+            phone: "",
+            level: "" // Add the required level property
           });
         }
       });
