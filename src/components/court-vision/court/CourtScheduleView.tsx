@@ -1,10 +1,7 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { HorizontalTimeNav } from "./HorizontalTimeNav";
-import { useToast } from "@/hooks/use-toast";
 import { TimelineLabels } from "./TimelineLabels";
 import { TimeSlotGrid } from "./TimeSlotGrid";
 import { CourtHeader } from "./CourtHeader";
@@ -21,6 +18,7 @@ interface CourtScheduleViewProps {
   onActivityDrop: (courtId: string, activity: ActivityData, timeSlot?: string) => void;
   onRemovePerson: (personId: string, timeSlot?: string) => void;
   onRemoveActivity: (activityId: string, timeSlot?: string) => void;
+  activeHour?: string | null;
 }
 
 export function CourtScheduleView({
@@ -34,38 +32,13 @@ export function CourtScheduleView({
   onDrop,
   onActivityDrop,
   onRemovePerson,
-  onRemoveActivity
+  onRemoveActivity,
+  activeHour
 }: CourtScheduleViewProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [activeHour, setActiveHour] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Record<string, string[]>>({});
   const isMobile = useIsMobile();
-  const { toast } = useToast();
-
-  // Initialize activeHour from the first time slot on component mount
-  useEffect(() => {
-    if (timeSlots.length > 0 && !activeHour) {
-      const firstHour = timeSlots[0].split(':')[0];
-      setActiveHour(firstHour);
-    }
-  }, [timeSlots, activeHour]);
-
-  const getOccupantsForTimeSlot = (time: string) => {
-    return occupants.filter(person => 
-      isTimeSlotOccupied(person, time, timeSlots) || 
-      (person.timeSlot === time) || 
-      (!person.timeSlot && time === timeSlots[0])
-    );
-  };
-
-  const getActivitiesForTimeSlot = (time: string) => {
-    return activities.filter(activity => 
-      isTimeSlotOccupied(activity, time, timeSlots) ||
-      (activity.startTime === time) || 
-      (!activity.startTime && time === timeSlots[0])
-    );
-  };
-
+  
   // Find coach conflicts (same coach assigned to multiple courts at the same time)
   const detectCoachConflicts = () => {
     const newConflicts: Record<string, string[]> = {};
@@ -111,34 +84,24 @@ export function CourtScheduleView({
     }
   };
 
-  // Scroll to a specific hour
-  const scrollToHour = (hour: string) => {
-    if (scrollContainerRef.current) {
-      const matchingSlots = timeSlots.filter(slot => slot.startsWith(hour));
-      if (matchingSlots.length > 0) {
-        const firstSlot = matchingSlots[0];
-        const slotIndex = timeSlots.indexOf(firstSlot);
-        
-        const timeSlotElements = scrollContainerRef.current.querySelectorAll('.border-b');
-        if (timeSlotElements[slotIndex]) {
-          timeSlotElements[slotIndex].scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    }
-    setActiveHour(hour);
+  const getOccupantsForTimeSlot = (time: string) => {
+    return occupants.filter(person => 
+      isTimeSlotOccupied(person, time, timeSlots) || 
+      (person.timeSlot === time) || 
+      (!person.timeSlot && time === timeSlots[0])
+    );
+  };
+
+  const getActivitiesForTimeSlot = (time: string) => {
+    return activities.filter(activity => 
+      isTimeSlotOccupied(activity, time, timeSlots) ||
+      (activity.startTime === time) || 
+      (!activity.startTime && time === timeSlots[0])
+    );
   };
 
   return (
     <div className="flex-1 flex flex-col relative h-full overflow-hidden">
-      {/* Time navigation - always visible at the top */}
-      <div className="sticky top-0 bg-white bg-opacity-95 z-20 border-b border-gray-200 shadow-sm pt-1 px-2">
-        <HorizontalTimeNav 
-          timeSlots={timeSlots}
-          activeHour={activeHour}
-          onHourSelect={scrollToHour}
-        />
-      </div>
-      
       <div className="flex flex-1 relative">
         {/* Time labels column */}
         <TimelineLabels timeSlots={timeSlots} />
@@ -157,6 +120,7 @@ export function CourtScheduleView({
           onRemoveActivity={onRemoveActivity}
           getOccupantsForTimeSlot={getOccupantsForTimeSlot}
           getActivitiesForTimeSlot={getActivitiesForTimeSlot}
+          activeHour={activeHour}
         />
       </div>
     </div>

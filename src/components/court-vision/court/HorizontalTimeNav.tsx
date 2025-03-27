@@ -1,4 +1,5 @@
 
+// This component is now integrated into CourtGrid.tsx
 import React from "react";
 import { 
   Carousel,

@@ -1,5 +1,5 @@
 
-import React, { forwardRef } from "react";
+import React, { forwardRef, useEffect, useRef } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 
@@ -15,6 +15,7 @@ interface TimeSlotGridProps {
   onRemoveActivity: (activityId: string, timeSlot?: string) => void;
   getOccupantsForTimeSlot: (time: string) => PersonData[];
   getActivitiesForTimeSlot: (time: string) => ActivityData[];
+  activeHour?: string | null;
 }
 
 // Use forwardRef to properly pass the ref from parent component
@@ -29,17 +30,35 @@ export const TimeSlotGrid = forwardRef<HTMLDivElement, TimeSlotGridProps>(({
   onRemovePerson,
   onRemoveActivity,
   getOccupantsForTimeSlot,
-  getActivitiesForTimeSlot
+  getActivitiesForTimeSlot,
+  activeHour
 }, ref) => {
   // Create a set of unique hour values to prevent duplication
   const uniqueTimeSlots = [...new Set(timeSlots)];
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to active hour when it changes
+  useEffect(() => {
+    if (activeHour && containerRef.current) {
+      const matchingSlots = uniqueTimeSlots.filter(slot => slot.startsWith(activeHour));
+      if (matchingSlots.length > 0) {
+        const firstSlot = matchingSlots[0];
+        const slotIndex = uniqueTimeSlots.indexOf(firstSlot);
+        
+        const timeSlotElements = containerRef.current.querySelectorAll('.border-b');
+        if (timeSlotElements[slotIndex]) {
+          timeSlotElements[slotIndex].scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+  }, [activeHour, uniqueTimeSlots]);
   
   return (
     <div 
       ref={ref}
       className="overflow-auto flex-1 h-full relative"
     >
-      <div className="min-h-full pb-16">
+      <div ref={containerRef} className="min-h-full pb-16">
         {uniqueTimeSlots.map((time, index) => {
           const hasConflicts = conflicts[time] && conflicts[time].length > 0;
           // Determine if this time slot starts a new hour

@@ -22,7 +22,7 @@ export function CourtVisionContent() {
   });
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col">
+    <div className="flex-1 overflow-hidden flex flex-col ml-0">
       <div className="py-4 px-4 bg-white border-b border-gray-200">
         <h2 className="text-xl font-bold">Pianificazione Campi</h2>
         <p className="text-sm text-gray-500">
@@ -30,21 +30,19 @@ export function CourtVisionContent() {
         </p>
       </div>
       
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          <CourtGrid
-            courts={filteredCourts}
-            timeSlots={timeSlots}
-            onDrop={handleDrop}
-            onActivityDrop={handleActivityDrop}
-            onRemovePerson={handleRemovePerson}
-            onRemoveActivity={handleRemoveActivity}
-            onRenameCourt={handleRenameCourt}
-            onChangeCourtType={handleChangeCourtType}
-            onChangeCourtNumber={handleChangeCourtNumber}
-          />
-        </div>
-      </ScrollArea>
+      <div className="flex-1 overflow-hidden">
+        <CourtGrid
+          courts={filteredCourts}
+          timeSlots={timeSlots}
+          onDrop={handleDrop}
+          onActivityDrop={handleActivityDrop}
+          onRemovePerson={handleRemovePerson}
+          onRemoveActivity={handleRemoveActivity}
+          onRenameCourt={handleRenameCourt}
+          onChangeCourtType={handleChangeCourtType}
+          onChangeCourtNumber={handleChangeCourtNumber}
+        />
+      </div>
     </div>
   );
 }

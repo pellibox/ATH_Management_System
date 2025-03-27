@@ -29,6 +29,7 @@ interface CourtComponentProps {
   people?: PersonData[];
   activities?: ActivityData[];
   programs?: any[];
+  activeHour?: string | null;
 }
 
 export function Court({ 
@@ -43,7 +44,8 @@ export function Court({
   onChangeType,
   onChangeNumber,
   onCourtRemove,
-  isSidebarCollapsed = false
+  isSidebarCollapsed = false,
+  activeHour
 }: CourtComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -151,6 +153,7 @@ export function Court({
               onActivityDrop={onActivityDrop}
               onRemovePerson={onRemovePerson || (() => {})}
               onRemoveActivity={onRemoveActivity || (() => {})}
+              activeHour={activeHour}
             />
           </div>
 
