@@ -1,5 +1,5 @@
 
-import { PersonData, Program } from "../types";
+import { PersonData, Program, ActivityData } from "../types";
 
 // Program color map for consistent colors
 const PROGRAM_COLORS: Record<string, string> = {
