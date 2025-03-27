@@ -1,36 +1,17 @@
-
+// Enhance the ExtraActivity interface to ensure it has all required properties
 export interface ExtraActivity {
   id: string;
-  title?: string;
-  name: string;
-  description?: string;
-  date?: string;
-  time: string;
-  startTime?: string;
-  endTime?: string;
-  duration: number;
-  location: string;
-  type: string;
-  days: number[];
-  maxParticipants: number;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
   participants: string[];
-  coach: string;
-  cost?: number;
+  
+  // Additional properties needed by the components
+  days: number[];
+  name?: string;
   notes?: string;
-  status?: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  time?: string;
+  duration?: number;
+  type?: string;
 }
-
-// Utility function to generate a unique ID
-export const generateId = (): string => {
-  return Math.random().toString(36).substring(2, 11);
-};
-
-// Activity types definition
-export const ACTIVITY_TYPES = [
-  { id: "athletic", name: "Preparazione Atletica" },
-  { id: "mental", name: "Preparazione Mentale" },
-  { id: "technical", name: "Tecnica" },
-  { id: "tactical", name: "Tattica" },
-  { id: "analysis", name: "Analisi Video" },
-  { id: "other", name: "Altro" }
-];

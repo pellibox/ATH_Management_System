@@ -22,3 +22,7 @@ export function formatDate(dateString: string): string {
     return dateString;
   }
 }
+
+export function generateId(): string {
+  return Math.random().toString(36).substring(2, 11);
+}
