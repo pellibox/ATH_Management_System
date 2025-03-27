@@ -1,5 +1,5 @@
 
-import { useEffect, useState, memo, useCallback } from "react";
+import { useEffect, memo, useRef, useState } from "react";
 import { usePlayerContext } from "@/contexts/player/PlayerContext";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 import { TENNIS_PROGRAMS } from "@/components/court-vision/constants";
@@ -23,8 +23,8 @@ const getAvailablePrograms = () => {
   return programNames;
 };
 
-// Limitiamo la frequenza di sincronizzazione
-const SYNC_THROTTLE_MS = 500;
+// Throttle sync operations
+const SYNC_THROTTLE_MS = 1000;
 
 export const PlayerDataSync = memo(() => {
   const { 
@@ -33,10 +33,14 @@ export const PlayerDataSync = memo(() => {
   } = usePlayerContext();
   
   // Get shared player context
-  const { updatePlayer, sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
+  const { updatePlayer, sharedPlayers } = useSharedPlayers();
   
   // State to track if we've synced on load
   const [initialSyncDone, setInitialSyncDone] = useState(false);
+  
+  // Refs to prevent excessive syncs
+  const syncTimeoutRef = useRef<number | null>(null);
+  const lastSyncTimeRef = useRef<number>(0);
   
   // Log shared players count for debugging
   console.log("Players page: SharedPlayers count:", sharedPlayers.length);
@@ -48,55 +52,63 @@ export const PlayerDataSync = memo(() => {
     setAvailablePrograms(programs);
   }, [setAvailablePrograms]);
   
-  // Force shared context to refresh when component mounts
+  // One-way sync: Players → Shared Context (only when players array changes)
   useEffect(() => {
-    console.log("PlayerDataSync: Component mounted, forcing shared context update");
-    updateSharedPlayerList();
-  }, [updateSharedPlayerList]);
-  
-  // Memoize sync function to prevent recreating it on each render
-  const syncPlayerToShared = useCallback((player) => {
-    console.log("Syncing player to shared context:", player.name, player.status);
-    updatePlayer(player);
-  }, [updatePlayer]);
-  
-  // Force initial sync from Players to shared context - only do this once
-  useEffect(() => {
-    if (!initialSyncDone && players.length > 0) {
-      console.log("Players page: Performing initial sync TO shared context");
+    // Skip if we don't have players
+    if (players.length === 0) return;
+    
+    // Prevent excessive syncs
+    const now = Date.now();
+    if (now - lastSyncTimeRef.current < SYNC_THROTTLE_MS) {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
       
-      // Force sync all players to shared context
-      players.forEach(player => {
-        console.log("Initial sync of player to shared context:", player.name, player.status);
-        syncPlayerToShared(player);
-      });
+      // Schedule a sync after throttle period
+      syncTimeoutRef.current = window.setTimeout(() => {
+        players.forEach(player => {
+          updatePlayer(player);
+        });
+        lastSyncTimeRef.current = Date.now();
+        
+        if (!initialSyncDone) {
+          setInitialSyncDone(true);
+          toast.info("Dati dei giocatori sincronizzati", {
+            description: `${players.length} giocatori caricati correttamente`
+          });
+        }
+      }, SYNC_THROTTLE_MS);
       
-      // Mark initial sync as done
+      return () => {
+        if (syncTimeoutRef.current) {
+          clearTimeout(syncTimeoutRef.current);
+        }
+      };
+    }
+    
+    // If we're outside the throttle period, sync immediately
+    console.log("Players page: Syncing players to shared context");
+    players.forEach(player => {
+      updatePlayer(player);
+    });
+    lastSyncTimeRef.current = now;
+    
+    if (!initialSyncDone) {
       setInitialSyncDone(true);
-      
       toast.info("Dati dei giocatori sincronizzati", {
         description: `${players.length} giocatori caricati correttamente`
       });
     }
-  }, [players, initialSyncDone, syncPlayerToShared]);
-  
-  // Sync players with shared context
+  }, [players, updatePlayer, initialSyncDone]);
+
+  // Cleanup on unmount
   useEffect(() => {
-    // Skip if we haven't done initial sync yet
-    if (!initialSyncDone) return;
-    
-    // Aumentiamo il delay per ridurre la frequenza di aggiornamento
-    const timeoutId = setTimeout(() => {
-      console.log("PlayersContent: Syncing ALL players with shared context", players.length);
-      
-      // Sync ALL players rather than just the last 3
-      players.forEach(player => {
-        syncPlayerToShared(player);
-      });
-    }, SYNC_THROTTLE_MS);
-    
-    return () => clearTimeout(timeoutId);
-  }, [players, initialSyncDone, syncPlayerToShared]);
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // This is a utility component that doesn't render anything visible
   return null;

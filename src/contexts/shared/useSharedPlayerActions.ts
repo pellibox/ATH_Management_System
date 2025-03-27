@@ -12,6 +12,18 @@ export function useSharedPlayerActions() {
   const lastUpdateRef = useRef<Record<string, number>>({});
   const isInitializedRef = useRef(false);
 
+  // Helper to remove duplicates from players array
+  const removeDuplicates = useCallback((players: PersonData[]): PersonData[] => {
+    const uniquePlayers = new Map<string, PersonData>();
+    
+    // Use Map to automatically keep only the latest version of each player
+    players.forEach(player => {
+      uniquePlayers.set(player.id, player);
+    });
+    
+    return Array.from(uniquePlayers.values());
+  }, []);
+
   // Add a new player
   const addPlayer = useCallback((player: Player) => {
     const newPerson = convertPlayerToPerson(player);
@@ -20,12 +32,13 @@ export function useSharedPlayerActions() {
       const exists = prevPlayers.some(p => p.id === player.id);
       if (exists) {
         console.log(`SharedPlayerContext: Updating existing player ${player.name} (${player.id})`);
-        return prevPlayers.map(p => p.id === player.id ? newPerson : p);
+        const updated = prevPlayers.map(p => p.id === player.id ? newPerson : p);
+        return removeDuplicates(updated);
       }
       console.log(`SharedPlayerContext: Adding new player ${player.name} (${player.id})`);
-      return [...prevPlayers, newPerson];
+      return removeDuplicates([...prevPlayers, newPerson]);
     });
-  }, []);
+  }, [removeDuplicates]);
 
   // Update an existing player
   const updatePlayer = useCallback((player: Player) => {
@@ -47,11 +60,12 @@ export function useSharedPlayerActions() {
       console.log(`SharedPlayerContext: ${exists ? 'Updating' : 'Adding'} player ${player.name} (${player.id}), status: ${player.status}`);
       
       if (!exists) {
-        return [...prevPlayers, updatedPerson];
+        return removeDuplicates([...prevPlayers, updatedPerson]);
       }
-      return prevPlayers.map((p) => (p.id === player.id ? updatedPerson : p));
+      const updated = prevPlayers.map((p) => (p.id === player.id ? updatedPerson : p));
+      return removeDuplicates(updated);
     });
-  }, []);
+  }, [removeDuplicates]);
 
   // Remove a player
   const removePlayer = useCallback((id: string) => {
@@ -68,6 +82,7 @@ export function useSharedPlayerActions() {
   }, [sharedPlayers]);
   
   // Sync hours between Court Vision and Players page
+  // NOTE: This only syncs hours, not other player data
   const syncHours = useCallback((id: string, completedHours: number, missedHours: number) => {
     // Implement throttling to prevent excessive updates
     const now = Date.now();
@@ -107,16 +122,21 @@ export function useSharedPlayerActions() {
   const updateSharedPlayerList = useCallback(() => {
     if (sharedPlayers.length === 0 && isInitializedRef.current) {
       // If we have no players but we're initialized, reload from mock data
-      const refreshedPlayers = mockPlayers.map(convertPlayerToPerson);
+      // First remove duplicates from mock data
+      const uniquePlayers = Array.from(
+        new Map(mockPlayers.map(player => [player.id, player])).values()
+      );
+      const refreshedPlayers = uniquePlayers.map(convertPlayerToPerson);
       setSharedPlayers(refreshedPlayers);
       console.log("SharedPlayerContext: Reloaded players from mock data");
       return;
     }
     
     // Otherwise just trigger a refresh with current data
+    // and ensure no duplicates
     console.log("SharedPlayerContext: Refreshing player list with", sharedPlayers.length, "players");
-    setSharedPlayers(prev => [...prev]);
-  }, [sharedPlayers]);
+    setSharedPlayers(prev => removeDuplicates([...prev]));
+  }, [sharedPlayers, removeDuplicates]);
 
   return {
     sharedPlayers,

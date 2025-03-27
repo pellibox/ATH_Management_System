@@ -1,9 +1,11 @@
+
 import { useEffect, useRef } from "react";
 import { PersonData } from "../../types";
 import { CourtProps } from "../../types";
 
 /**
  * Hook to sync hours between Court Vision and Players context
+ * Only syncs completed and missed hours, nothing else
  */
 export function useHoursSync(
   playersList: PersonData[],
@@ -32,13 +34,10 @@ export function useHoursSync(
       // Get current timestamp
       const now = Date.now();
       
-      // Skip if we've synced this player recently (1 second throttle)
-      if (now - (lastSyncRef.current[player.id] || 0) < 1000) {
+      // Skip if we've synced this player recently (2 second throttle)
+      if (now - (lastSyncRef.current[player.id] || 0) < 2000) {
         return;
       }
-      
-      // Update timestamp for this player
-      lastSyncRef.current[player.id] = now;
       
       // Calculate hours from court assignments
       let assignedHours = 0;
@@ -58,13 +57,19 @@ export function useHoursSync(
       // Convert assignedHours to completedHours (simple mapping for now)
       const completedHours = assignedHours;
       
-      console.log(`useHoursSync: Syncing hours for player ${player.name}`, {
-        completedHours,
-        missedHours
-      });
-      
-      // Sync hours back to shared context
-      syncHours(player.id, completedHours, missedHours);
+      // Only sync if hours have changed to avoid unnecessary updates
+      if (completedHours !== player.completedHours || missedHours !== player.missedHours) {
+        console.log(`useHoursSync: Syncing hours for player ${player.name}`, {
+          completedHours,
+          missedHours
+        });
+        
+        // Update timestamp for this player
+        lastSyncRef.current[player.id] = now;
+        
+        // Sync ONLY hours back to shared context
+        syncHours(player.id, completedHours, missedHours);
+      }
     });
   }, [courts, playersList, isInitialized, syncHours]);
 }

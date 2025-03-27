@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { PersonData } from "@/components/court-vision/types";
 import { Player } from "@/types/player";
 import { useSharedPlayerActions } from "./useSharedPlayerActions";
@@ -36,30 +36,30 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Initialize with mock data on first load
   useEffect(() => {
     if (!isInitializedRef.current) {
-      const initialPlayers = mockPlayers.map(convertPlayerToPerson);
+      // Remove duplicates from mock data before initializing
+      const uniquePlayers = Array.from(
+        new Map(mockPlayers.map(player => [player.id, player])).values()
+      );
+      const initialPlayers = uniquePlayers.map(convertPlayerToPerson);
       setSharedPlayers(initialPlayers);
       isInitializedRef.current = true;
       console.log("SharedPlayerContext initialized with", initialPlayers.length, "players");
     }
   }, [setSharedPlayers]);
 
-  // Log current state for debugging
-  useEffect(() => {
-    console.log("SharedPlayerContext: Current state has", sharedPlayers.length, "players");
-  }, [sharedPlayers.length]);
+  // Create memoized context value to prevent unnecessary renders
+  const contextValue = useMemo(() => ({
+    sharedPlayers,
+    addPlayer,
+    updatePlayer,
+    removePlayer,
+    getPlayerById,
+    syncHours,
+    updateSharedPlayerList
+  }), [sharedPlayers, addPlayer, updatePlayer, removePlayer, getPlayerById, syncHours, updateSharedPlayerList]);
 
   return (
-    <SharedPlayerContext.Provider
-      value={{
-        sharedPlayers,
-        addPlayer,
-        updatePlayer,
-        removePlayer,
-        getPlayerById,
-        syncHours,
-        updateSharedPlayerList
-      }}
-    >
+    <SharedPlayerContext.Provider value={contextValue}>
       {children}
     </SharedPlayerContext.Provider>
   );

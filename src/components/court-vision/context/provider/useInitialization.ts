@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { PersonData } from "../../types";
 import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
@@ -17,7 +16,7 @@ export function useInitialization(
   const lastPlayerCountRef = useRef<number>(0);
   
   // Get the shared players context to sync changes back
-  const { syncHours, updateSharedPlayerList, sharedPlayers } = useSharedPlayers();
+  const { syncHours, sharedPlayers } = useSharedPlayers();
 
   // Helper function to calculate daily limit based on program
   const calculateDailyLimit = (player: PersonData): number => {
@@ -57,7 +56,9 @@ export function useInitialization(
 
   // First check if we have initialPlayers, otherwise try sharedPlayers
   useEffect(() => {
-    const players = initialPlayers.length > 0 ? initialPlayers : sharedPlayers;
+    // Get players from sharedPlayers first, then initialPlayers as fallback
+    // This ensures we always use the Players section's data
+    const players = sharedPlayers.length > 0 ? sharedPlayers : initialPlayers;
     
     if (players && players.length > 0) {
       const now = Date.now();
@@ -65,7 +66,7 @@ export function useInitialization(
       
       console.log("useInitialization: Processing players", {
         count: playerCount,
-        source: initialPlayers.length > 0 ? 'initialPlayers' : 'sharedPlayers'
+        source: sharedPlayers.length > 0 ? 'sharedPlayers' : 'initialPlayers'
       });
       
       // Prevent duplicate processing of the same data
@@ -78,6 +79,7 @@ export function useInitialization(
       lastPlayerCountRef.current = playerCount;
       
       // Map player data to include necessary properties for court vision
+      // Do NOT modify original player data structure
       const mappedPlayers = players.map(player => {
         // Calculate programColor based on program if not already set
         let programColor = player.programColor;
@@ -88,7 +90,7 @@ export function useInitialization(
           }
         }
         
-        // Ensure hours tracking properties are preserved
+        // Create new object with court vision properties, preserving original data
         return {
           ...player,
           programColor,
@@ -116,12 +118,8 @@ export function useInitialization(
         // Add mapped active players
         return [...nonPlayerPeople, ...activePlayers];
       });
-    } else if (!isInitialized) {
-      // If no players available, request update from shared context
-      console.log("useInitialization: No players available, requesting update from shared context");
-      updateSharedPlayerList();
     }
-  }, [initialPlayers, sharedPlayers, programs, setPlayersList, setPeople, isInitialized, updateSharedPlayerList]);
+  }, [initialPlayers, sharedPlayers, programs, setPlayersList, setPeople]);
 
   return {
     isInitialized,
