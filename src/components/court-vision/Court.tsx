@@ -74,15 +74,36 @@ export function Court({
   };
 
   const handleValidateCourt = () => {
-    console.log(`Validating court ${court.id}`);
+    // Find any coach conflicts or overlaps
+    const occupantsByTimeSlot: Record<string, PersonData[]> = {};
+    
+    timeSlots.forEach(slot => {
+      const occupantsInSlot = court.occupants.filter(p => 
+        p.timeSlot === slot || 
+        (p.timeSlot && p.endTimeSlot && slot >= p.timeSlot && slot <= p.endTimeSlot)
+      );
+      
+      if (occupantsInSlot.length > 0) {
+        occupantsByTimeSlot[slot] = occupantsInSlot;
+      }
+    });
+    
+    console.log(`Validating court ${court.id}`, occupantsByTimeSlot);
   };
 
-  const courtHeight = isMobile 
-    ? "h-[500px]" 
-    : (isSidebarCollapsed ? "h-[675px]" : "h-[600px]");
+  // Determine appropriate court height based on device and sidebar state
+  let courtHeight;
+  if (isMobile) {
+    courtHeight = "h-[500px]"; // Mobile height
+  } else if (isSidebarCollapsed) {
+    courtHeight = "h-[700px]"; // Expanded view when sidebar is collapsed
+  } else {
+    courtHeight = "h-[650px]"; // Desktop height with sidebar
+  }
 
   return (
     <div className="relative">
+      {/* Settings button */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div 
@@ -120,6 +141,7 @@ export function Court({
         </PopoverContent>
       </Popover>
 
+      {/* Court container */}
       <div
         id={`court-${court.id}`}
         className={`relative rounded-lg border-2 ${getCourtStyles(court.type)} 
@@ -131,6 +153,7 @@ export function Court({
           onDrop={onDrop}
           onActivityDrop={onActivityDrop}
         >
+          {/* Court header with court info */}
           <NewCourtHeader 
             courtName={court.name} 
             courtNumber={court.number} 
@@ -140,6 +163,7 @@ export function Court({
             onChangeNumber={handleChangeNumber}
           />
 
+          {/* Main court schedule view */}
           <div className="flex-1 overflow-hidden relative">
             <CourtScheduleView
               courtId={court.id}
@@ -157,6 +181,7 @@ export function Court({
             />
           </div>
 
+          {/* Court footer with summary */}
           <CourtFooter occupants={court.occupants} />
         </CourtDrop>
       </div>

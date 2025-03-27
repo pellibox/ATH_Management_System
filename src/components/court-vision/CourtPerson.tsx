@@ -1,6 +1,6 @@
 
 import React from "react";
-import { X, Clock, AlertCircle } from "lucide-react";
+import { X, Clock, AlertCircle, User, UserCog } from "lucide-react";
 import { PersonData } from "./types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -26,30 +26,40 @@ export function CourtPerson({
 }: CourtPersonProps) {
   const isCoach = person.type === "coach";
   
-  // Enhanced color-coding based on person type
+  // Enhanced color-coding based on person type and program
   let bgColor, textColor, borderColor, gradientStyle;
   
   if (isCoach) {
-    // Coaches get a more distinct coloring
-    bgColor = person.programColor || "bg-ath-red-clay";
+    // Coaches get a more distinct coloring with program influence
+    const baseColor = person.programColor || "#b00c20"; // Default coach color (red)
+    const bgOpacity = isSpanning ? '90' : '';  // Less opacity for spanning blocks
+    
+    bgColor = `bg-[${baseColor}${bgOpacity}]`;
     textColor = "text-white";
     borderColor = "border-white/30";
     
     // Add gradient effect for spanning blocks
     gradientStyle = isSpanning 
-      ? { backgroundImage: `linear-gradient(to bottom, ${person.programColor || "#b00c20"}, ${person.programColor || "#b00c20"}80)` }
-      : { backgroundColor: person.programColor || "#b00c20" };
+      ? { backgroundImage: `linear-gradient(to bottom, ${baseColor}, ${baseColor}80)` }
+      : { backgroundColor: baseColor };
   } else {
-    // Players get a lighter background with darker text
-    bgColor = person.programColor ? `${person.programColor}20` : "bg-blue-100";
-    textColor = person.programColor ? `text-blue-700` : "text-blue-700";
-    borderColor = person.programColor ? `border-${person.programColor}` : "border-blue-300";
+    // Players get program-colored styling
+    const baseColor = person.programColor || "#3b82f6"; // Default player color (blue)
+    
+    bgColor = `bg-[${baseColor}20]`; // Light background with program color
+    textColor = "text-gray-800";
+    borderColor = `border-[${baseColor}]`;
     
     // Add gradient effect for spanning blocks
     gradientStyle = isSpanning 
-      ? { backgroundImage: `linear-gradient(to bottom, ${person.programColor ? `${person.programColor}30` : "#e6f0ff"}, ${person.programColor ? `${person.programColor}10` : "#f0f7ff"})` }
-      : { backgroundColor: person.programColor ? `${person.programColor}20` : "#e6f0ff" };
+      ? { backgroundImage: `linear-gradient(to bottom, ${baseColor}30, ${baseColor}10)` }
+      : { backgroundColor: `${baseColor}20` };
   }
+  
+  // Add prominent left border with program color
+  const programBorder = person.programColor 
+    ? { borderLeftColor: person.programColor, borderLeftWidth: '4px' }
+    : {};
   
   // Special styling for time slots that span multiple periods
   const spanningStyles = isSpanning 
@@ -61,6 +71,9 @@ export function CourtPerson({
   const usedHours = person.hoursAssigned || 0;
   const remainingHours = Math.max(0, programLimit - usedHours);
   
+  // Status indicators (pending, confirmed, conflict)
+  const statusClass = '';
+  
   return (
     <TooltipProvider>
       <Tooltip>
@@ -68,22 +81,34 @@ export function CourtPerson({
           <div 
             className={`
               relative px-2 py-1 rounded-md text-xs font-medium
-              ${textColor}
-              ${className} ${spanningStyles} border border-${borderColor}
+              ${textColor} ${className} ${spanningStyles} 
+              border ${borderColor}
               flex-shrink-0 flex items-center justify-between
               shadow-sm hover:shadow-md transition-shadow
+              ${statusClass}
             `}
             style={{ 
               minWidth: '90px',
               maxWidth: '100%',
               ...gradientStyle,
+              ...programBorder,
               position: 'relative'
             }}
           >
             <div className="flex justify-between items-center w-full truncate">
-              <span className="truncate mr-1">
-                {person.name}
-              </span>
+              <div className="flex items-center space-x-1">
+                {/* Type icon */}
+                <span className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
+                  {isCoach ? 
+                    <UserCog className="h-3 w-3" /> : 
+                    <User className="h-3 w-3" />
+                  }
+                </span>
+                
+                <span className="truncate">
+                  {person.name}
+                </span>
+              </div>
               
               <div className="flex items-center flex-shrink-0">
                 {onRemove && (
@@ -99,6 +124,14 @@ export function CourtPerson({
                 )}
               </div>
             </div>
+            
+            {/* Program indicator dot */}
+            {person.programColor && !isSpanning && (
+              <div 
+                className="absolute left-0 top-0 w-1.5 h-1.5 rounded-full" 
+                style={{ backgroundColor: person.programColor }}
+              />
+            )}
             
             {/* Duration badge */}
             {!isSpanning && (

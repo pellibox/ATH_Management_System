@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
@@ -5,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { TimelineLabels } from "./TimelineLabels";
 import { TimeSlotGrid } from "./TimeSlotGrid";
 import { CourtHeader } from "./CourtHeader";
+import { toast } from "@/hooks/use-toast";
 
 interface CourtScheduleViewProps {
   courtId: string;

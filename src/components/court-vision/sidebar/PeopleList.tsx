@@ -5,6 +5,7 @@ import { useCourtVision } from "../context/CourtVisionContext";
 import { PeopleTabsList } from "./PeopleTabsList";
 import { PeopleFilters } from "./PeopleFilters";
 import { PeopleTabContent } from "./PeopleTabContent";
+import { ProgramLegend } from "../ProgramLegend";
 
 export function PeopleList() {
   const { 
@@ -22,6 +23,9 @@ export function PeopleList() {
   
   return (
     <div className="bg-white rounded-lg shadow-sm p-3">
+      {/* Add program legend at the top */}
+      <ProgramLegend programs={programs} />
+      
       <Tabs defaultValue="players" onValueChange={setActiveTab} value={activeTab}>
         <PeopleTabsList activeTab={activeTab} />
         

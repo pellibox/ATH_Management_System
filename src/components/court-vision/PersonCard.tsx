@@ -12,7 +12,7 @@ import { ProgramBadges } from "./person-card/ProgramBadges";
 import { AbsenceIndicator } from "./person-card/AbsenceIndicator";
 import { CardActions } from "./person-card/CardActions";
 import { PersonContextMenu } from "./person-card/PersonContextMenu";
-import { Clock } from "lucide-react";
+import { Clock, User, UserCog } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface PersonCardProps {
@@ -53,7 +53,7 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
     }
   };
   
-  // Get program color for the card border - use the same function as PlayerRow
+  // Get program color for the card border
   const programColor = getPersonProgramColor(person);
 
   // Get assigned programs
@@ -106,19 +106,26 @@ export function PersonCard({ person, programs = [], onRemove, onAddToDragArea }:
               : "bg-gray-50 hover:bg-gray-100"
           } rounded-md border border-gray-200 ${
             isDragging ? "opacity-50" : ""
-          } transition-colors ${isUnavailable ? "cursor-not-allowed" : "cursor-grab"}`}
+          } transition-colors cursor-grab`}
           style={{ 
             borderLeftWidth: '4px', 
-            borderLeftColor: programColor 
+            borderLeftColor: programColor || (person.type === "coach" ? "#b00c20" : "#3b82f6")
           }}
         >
           <div className="flex items-center space-x-2">
-            {/* Avatar with color from primary program */}
-            <PersonAvatar 
-              person={person} 
-              hasProgram={hasProgram} 
-              programColor={validPrograms[0]?.color} 
-            />
+            {/* Icon based on person type */}
+            <div 
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
+                person.type === "coach" ? "bg-red-500" : "bg-blue-500"
+              }`}
+              style={{ backgroundColor: programColor || (person.type === "coach" ? "#b00c20" : "#3b82f6") }}
+            >
+              {person.type === "coach" ? (
+                <UserCog className="h-4 w-4" />
+              ) : (
+                <User className="h-4 w-4" />
+              )}
+            </div>
             
             <div className="flex flex-col">
               <span className="text-sm font-medium truncate max-w-[150px]">{person.name}</span>

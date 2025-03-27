@@ -55,6 +55,11 @@ export function TimeSlotOccupants({
           // For continuation slots, add special styling
           const personClass = isContinuationSlot ? `${continuationStyle} border-t border-dashed border-gray-300` : '';
           
+          // Status style - confirmed, pending, conflict
+          const statusStyle = coach.isPresent === false 
+            ? 'opacity-50' // Unavailable coach
+            : '';
+          
           return (
             <div key={`coach-${coach.id}-${index}-${time}`} className="relative">
               <CourtPerson
@@ -62,7 +67,7 @@ export function TimeSlotOccupants({
                 index={index}
                 total={coaches.length}
                 onRemove={showRemoveButton ? () => onRemovePerson(coach.id, time) : undefined}
-                className={`${personClass} z-10`}
+                className={`${personClass} ${statusStyle} z-10`}
                 isSpanning={isContinuationSlot}
               />
               
@@ -94,6 +99,10 @@ export function TimeSlotOccupants({
           // Calculate remaining hours for the player
           const remainingHours = getRemainingHours(player);
           
+          // Program-based styling
+          const programStyle = player.programColor ? 
+            `border-l-4 border-l-[${player.programColor}]` : '';
+          
           return (
             <div key={`player-${player.id}-${index}-${time}`} className="relative">
               <CourtPerson
@@ -101,7 +110,7 @@ export function TimeSlotOccupants({
                 index={index}
                 total={players.length}
                 onRemove={showRemoveButton ? () => onRemovePerson(player.id, time) : undefined}
-                className={personClass}
+                className={`${personClass} ${programStyle}`}
                 isSpanning={isContinuationSlot}
               />
               
