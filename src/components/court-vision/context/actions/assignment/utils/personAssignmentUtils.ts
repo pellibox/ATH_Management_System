@@ -15,8 +15,7 @@ export const preparePersonAssignment = (
   const personWithCourtInfo: PersonData = {
     ...person,
     courtId,
-    x: position?.x,
-    y: position?.y
+    position: position // Store position as a single property
   };
 
   // Handle time slot assignment
