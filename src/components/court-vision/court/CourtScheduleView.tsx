@@ -7,8 +7,6 @@ import { TimelineLabels } from "./TimelineLabels";
 import { TimeSlotGrid } from "./TimeSlotGrid";
 import { CourtHeader } from "./CourtHeader";
 import { toast } from "@/hooks/use-toast";
-import { useCourtVision } from "../context/CourtVisionContext";
-import { useCoachValidation } from "../validation/CoachValidationManager";
 
 interface CourtScheduleViewProps {
   courtId: string;
@@ -42,44 +40,49 @@ export function CourtScheduleView({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [conflicts, setConflicts] = useState<Record<string, string[]>>({});
   const isMobile = useIsMobile();
-  const { courts } = useCourtVision();
-  const { getCoachConflicts } = useCoachValidation();
-  
-  // Update conflicts whenever courts change
-  useEffect(() => {
-    const allConflicts = getCoachConflicts(courts, timeSlots);
-    setConflicts(allConflicts[courtId] || {});
-  }, [courts, courtId, timeSlots]);
   
   // Find coach conflicts (same coach assigned to multiple courts at the same time)
   const detectCoachConflicts = () => {
-    const newConflicts = getCoachConflicts(courts, timeSlots);
-    setConflicts(newConflicts[courtId] || {});
+    const newConflicts: Record<string, string[]> = {};
     
-    // Calculate total conflicts
-    const totalConflicts = Object.values(newConflicts).reduce((sum, courtConflicts) => {
-      return sum + Object.values(courtConflicts).reduce((innerSum, conflictsArray) => {
-        return innerSum + conflictsArray.length;
-      }, 0);
-    }, 0);
-    
-    // Show toast with validation results
-    if (totalConflicts > 0) {
-      toast({
-        title: "Rilevati conflitti coach",
-        description: `${totalConflicts} conflitti coach rilevati negli orari`,
-        variant: "destructive"
+    // Group occupants by time slot
+    timeSlots.forEach(slot => {
+      const coachesInSlot: Record<string, string[]> = {};
+      
+      // Check all courts for coaches in this time slot
+      occupants.forEach(person => {
+        if (person.type === "coach" && isTimeSlotOccupied(person, slot, timeSlots)) {
+          if (!coachesInSlot[person.id]) {
+            coachesInSlot[person.id] = [];
+          }
+          coachesInSlot[person.id].push(courtId);
+        }
       });
       
-      return totalConflicts;
+      // Find coaches assigned to multiple courts
+      Object.entries(coachesInSlot).forEach(([coachId, courts]) => {
+        if (courts.length > 1) {
+          newConflicts[slot] = [...(newConflicts[slot] || []), coachId];
+        }
+      });
+    });
+    
+    setConflicts(newConflicts);
+    
+    // Show toast for conflicts
+    const conflictCount = Object.values(newConflicts).flat().length;
+    if (conflictCount > 0) {
+      toast({
+        title: "Rilevati conflitti",
+        description: `${conflictCount} conflitti rilevati nell'assegnazione degli orari`,
+        variant: "destructive"
+      });
     } else {
       toast({
         title: "Validazione completata",
-        description: "Nessun conflitto coach rilevato",
+        description: "Nessun conflitto rilevato",
         variant: "default"
       });
-      
-      return 0;
     }
   };
 

@@ -4,9 +4,8 @@ import { PersonData, ActivityData } from "../types";
 import { TimeSlotOccupants } from "./TimeSlotOccupants";
 import { TimeSlotActivities } from "./TimeSlotActivities";
 import { TimeSlotDropArea } from "./TimeSlotDropArea";
-import { AlertTriangle, Clock, Info } from "lucide-react";
+import { AlertTriangle, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TimeSlotProps {
   courtId: string;
@@ -49,26 +48,15 @@ export function TimeSlot({
   const pendingAssignments = occupants.filter(p => p.status === "pending").length + 
                             activities.filter(a => a.status === "pending").length;
                             
-  const conflictAssignments = occupants.filter(p => p.status === "conflict").length + 
-                             activities.filter(a => a.status === "conflict").length;
-                             
   const totalAssignments = occupants.length + activities.length;
-  
-  // Get coach conflicts
-  const coachConflicts = occupants.filter(
-    p => p.type === "coach" && conflicts[time] && conflicts[time].includes(p.id)
-  );
   
   // Determine background color based on state and confirmation status
   let bgColor = "";
   let borderStyle = "";
   
-  if (hasConflicts || coachConflicts.length > 0) {
+  if (hasConflicts) {
     bgColor = "bg-orange-50"; 
     borderStyle = "animate-pulse-border border-orange-400";
-  } else if (conflictAssignments > 0) {
-    bgColor = "bg-orange-50/70";
-    borderStyle = "border-orange-300";
   } else if (hasPrimaryAssignments) {
     if (pendingAssignments > 0 && totalAssignments === pendingAssignments) {
       // All assignments are pending
@@ -87,23 +75,6 @@ export function TimeSlot({
 
   const slotHeight = isMobile ? 'h-[90px]' : 'h-[110px]';
 
-  // Prepare conflict tooltip content
-  const conflictTooltipContent = coachConflicts.length > 0 ? (
-    <>
-      <h4 className="font-semibold text-orange-600 mb-1">Conflitti Coach rilevati:</h4>
-      <ul className="space-y-1 text-xs">
-        {coachConflicts.map(coach => (
-          <li key={coach.id} className="flex items-center">
-            <AlertTriangle className="h-3 w-3 text-orange-500 mr-1" />
-            {coach.name} è assegnato a più campi alle {time}
-          </li>
-        ))}
-      </ul>
-    </>
-  ) : (
-    "Nessun conflitto rilevato"
-  );
-
   return (
     <div 
       className={`relative flex border-b ${
@@ -112,19 +83,10 @@ export function TimeSlot({
         isHourStart ? 'border-t-2 border-t-gray-300' : ''
       }`}
     >
-      {(hasConflicts || coachConflicts.length > 0) && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="absolute right-2 top-1 z-30 cursor-help">
-                <AlertTriangle className="h-4 w-4 text-orange-500" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-[250px] p-2">
-              {conflictTooltipContent}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      {hasConflicts && (
+        <div className="absolute right-2 top-1 z-30">
+          <AlertTriangle className="h-4 w-4 text-orange-500" />
+        </div>
       )}
       
       <div className="flex-1 px-1 relative">

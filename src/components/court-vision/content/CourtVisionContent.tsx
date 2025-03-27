@@ -2,6 +2,7 @@
 import { useState } from "react";
 import CourtGrid from "@/components/court-vision/CourtGrid";
 import { useCourtVision } from "../context/CourtVisionContext";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import { Clock } from "lucide-react";
 import "../TimeSlotStyles.css";
@@ -17,9 +18,7 @@ export function CourtVisionContent() {
     handleRemoveActivity,
     handleRenameCourt,
     handleChangeCourtType,
-    handleChangeCourtNumber,
-    playersList,
-    activities
+    handleChangeCourtNumber
   } = useCourtVision();
   
   const [activeHour, setActiveHour] = useState<string | null>(new Date().getHours() + ":00");
@@ -77,8 +76,6 @@ export function CourtVisionContent() {
       <div className="flex-1 overflow-hidden">
         <CourtGrid
           courts={filteredCourts}
-          availablePeople={playersList}
-          availableActivities={activities}
           timeSlots={timeSlots}
           onDrop={handleDrop}
           onActivityDrop={handleActivityDrop}
@@ -87,7 +84,7 @@ export function CourtVisionContent() {
           onRenameCourt={handleRenameCourt}
           onChangeCourtType={handleChangeCourtType}
           onChangeCourtNumber={handleChangeCourtNumber}
-          activeHour={activeHour || undefined}
+          activeHour={activeHour}
         />
       </div>
     </div>

@@ -1,99 +1,83 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Clock, AlertTriangle } from "lucide-react";
+import { SkipBack } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { GlobalControlsProps } from "./types";
-import { ConflictFilterSwitch } from "./ConflictFilterSwitch";
 
-export function GlobalControls({ 
-  timeSlots, 
-  syncAllSliders, 
+export function GlobalControls({
+  timeSlots,
+  syncAllSliders,
   currentBusinessHour,
   diagnosticMode,
-  setDiagnosticMode,
-  showOnlyConflicts,
-  setShowOnlyConflicts,
-  conflictsCount
+  setDiagnosticMode
 }: GlobalControlsProps) {
-  // Get unique hours from time slots for slider marks 
-  const hours = Array.from(new Set(timeSlots.map(slot => parseInt(slot.split(':')[0])))).sort();
-  
-  // Calculate day progress as percentage
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const startHour = Math.min(...hours);
-  const endHour = Math.max(...hours);
-  
-  const hourProgress = (currentHour - startHour) / (endHour - startHour) * 100;
-  const minuteProgress = (currentMinute / 60) / (endHour - startHour) * 100;
-  
-  // Total progress relative to business hours
-  const dayProgress = Math.min(Math.max(hourProgress + minuteProgress, 0), 100);
-  
+  const { toast } = useToast();
+
   return (
-    <div className="px-4 space-y-3">
-      <div className="text-sm font-medium mb-1">Orari</div>
-      <div className="flex items-center space-x-3">
-        <Clock className="h-4 w-4 text-muted-foreground" />
-        <div className="flex-1 relative h-5">
-          <Slider 
-            min={0} 
-            max={hours.length - 1}
-            step={1}
-            onValueChange={(value) => {
-              // Convert the numeric index to the actual hour string
-              syncAllSliders(hours[value[0]].toString());
-            }}
-          />
-          {/* Current time indicator */}
-          {dayProgress >= 0 && dayProgress <= 100 && (
-            <div
-              className="absolute h-5 w-0.5 bg-blue-500 top-0 z-10 transform -translate-x-1/2"
-              style={{ left: `${dayProgress}%` }}
-            >
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-[10px] rounded px-1">
-                Ora
-              </div>
-            </div>
-          )}
-        </div>
+    <div className="flex justify-between px-4 mb-2">
+      <div className="flex items-center space-x-2">
         <Button
           variant="outline"
           size="sm"
           className="text-xs"
           onClick={() => {
-            if (currentBusinessHour !== null) {
-              syncAllSliders(currentBusinessHour);
+            // Find earliest hour and sync all
+            if (timeSlots.length > 0) {
+              const firstHour = timeSlots[0].split(':')[0];
+              syncAllSliders(firstHour);
             }
           }}
+          title="Vai all'inizio della giornata"
         >
-          Vai a ora corrente
+          <SkipBack className="h-3 w-3 mr-1" />
+          <span>Inizio</span>
         </Button>
+        
+        {currentBusinessHour && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => syncAllSliders(currentBusinessHour)}
+            title="Vai all'ora corrente"
+          >
+            Ora
+          </Button>
+        )}
+        
+        {/* Diagnostic mode toggle - only in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`text-xs ${diagnosticMode ? 'bg-amber-100' : ''}`}
+            onClick={() => setDiagnosticMode(!diagnosticMode)}
+          >
+            {diagnosticMode ? "Debug On" : "Debug Off"}
+          </Button>
+        )}
       </div>
       
-      <div className="flex justify-between items-center pt-2">
-        {/* Conflict filter toggle */}
-        <ConflictFilterSwitch 
-          showOnlyConflicts={showOnlyConflicts}
-          setShowOnlyConflicts={setShowOnlyConflicts}
-          conflictsCount={conflictsCount}
-        />
-        
-        {/* Diagnostic mode toggle */}
-        <div className="flex items-center space-x-2">
-          <label className="text-sm">
-            <input
-              type="checkbox"
-              checked={diagnosticMode}
-              onChange={(e) => setDiagnosticMode(e.target.checked)}
-              className="mr-1"
-            />
-            Modalità diagnostica
-          </label>
-        </div>
-      </div>
+      {/* Test button for generating random assignments */}
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-xs bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+        onClick={() => {
+          toast({
+            title: "TEST - Generazione casuale",
+            description: "Funzionalità di test attivata - generazione in corso",
+            duration: 2000,
+          });
+          
+          // This would call some test function to generate random assignments
+          // Implementation would depend on your test data generation approach
+        }}
+        title="Funzionalità temporanea solo per testing"
+      >
+        TEST - Genera Assegnazioni Casuali
+      </Button>
     </div>
   );
 }
