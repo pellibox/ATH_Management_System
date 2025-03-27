@@ -9,6 +9,7 @@ interface CourtScheduleViewProps {
   courtId: string;
   courtName: string;
   courtNumber: number;
+  courtType: string;  // Added the missing courtType prop
   timeSlots: string[];
   occupants: PersonData[];
   activities: ActivityData[];
@@ -22,6 +23,7 @@ export function CourtScheduleView({
   courtId,
   courtName,
   courtNumber,
+  courtType,  // Added the missing courtType parameter
   timeSlots,
   occupants,
   activities,

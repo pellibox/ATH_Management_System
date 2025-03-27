@@ -102,6 +102,7 @@ export function Court({
                 courtId={court.id}
                 courtName={court.name}
                 courtNumber={court.number}
+                courtType={court.type}  // Added the courtType prop
                 timeSlots={timeSlots}
                 occupants={court.occupants}
                 activities={court.activities}
