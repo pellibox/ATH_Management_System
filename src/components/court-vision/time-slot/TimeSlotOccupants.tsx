@@ -1,144 +1,115 @@
 
 import React from "react";
 import { PersonData } from "../types";
-import { CourtPerson } from "../CourtPerson";
-import { isTimeSlotOccupied, getTimeSlotContinuationStyle } from "../court/CourtStyleUtils";
-import { calculateProgramDuration, calculateTimeSlotSpan } from "./utils";
+import { X, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Clock } from "lucide-react";
+import { getPersonProgramColor, isPersonUnavailable } from "../utils/personUtils";
+import { cn } from "@/lib/utils";
 
 interface TimeSlotOccupantsProps {
   occupants: PersonData[];
-  onRemovePerson: (personId: string, timeSlot?: string) => void;
-  time: string;
+  onRemovePerson: (personId: string, time?: string) => void;
+  time?: string;
   conflicts?: Record<string, string[]>;
 }
 
-export function TimeSlotOccupants({ 
-  occupants, 
+export function TimeSlotOccupants({
+  occupants,
   onRemovePerson,
   time,
   conflicts = {}
 }: TimeSlotOccupantsProps) {
-  // Define timeSlots array for this component
-  const timeSlots = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", 
-                     "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
-                     "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", 
-                     "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"];
-  
-  if (!occupants || occupants.length === 0) {
-    return <div className="relative w-full h-full"></div>;
-  }
+  if (occupants.length === 0) return null;
 
-  // Group occupants by type for organization
-  const coaches = occupants.filter(p => p.type === "coach");
-  const players = occupants.filter(p => p.type === "player");
-
-  // Check if a person has a conflict in this time slot
-  const hasConflict = (person: PersonData): boolean => {
-    const timeConflicts = conflicts[time] || [];
-    return timeConflicts.includes(person.id);
-  };
-
-  // Calculate remaining hours for each player
-  const getRemainingHours = (player: PersonData): number => {
-    // Get daily limit based on program
-    const getDailyLimit = () => {
-      if (!player.programId) return 2;
-      // Different programs have different daily limits
-      const programLimits: Record<string, number> = {
-        "perf2": 3,
-        "perf3": 4.5,
-        "perf4": 6,
-        "elite": 7.5,
-        "elite-full": 10,
-        "junior-sit": 3,
-        "junior-sat": 1.5,
-      };
-      return programLimits[player.programId] || 2;
-    };
-    
-    const programLimit = getDailyLimit();
-    const usedHours = player.hoursAssigned || player.durationHours || 1;
-    return Math.max(0, programLimit - usedHours);
-  };
+  // Sort occupants: coaches first, then players, sorted by name within each group
+  const sortedOccupants = [...occupants].sort((a, b) => {
+    if (a.type === "coach" && b.type !== "coach") return -1;
+    if (a.type !== "coach" && b.type === "coach") return 1;
+    return (a.name || "").localeCompare(b.name || "");
+  });
 
   return (
-    <div className="relative w-full h-full">
-      <div className="flex flex-wrap gap-1 absolute left-0 top-1/2 transform -translate-y-1/2 ml-2">
-        {/* Display coaches first */}
-        {coaches.map((coach, index) => {
-          // Check if this is a continuation slot or the starting slot
-          const isContinuationSlot = coach.timeSlot !== time && isTimeSlotOccupied(coach, time, timeSlots);
-          const continuationStyle = getTimeSlotContinuationStyle(coach, time, timeSlots);
-          
-          // Only show remove button on the starting slot
-          const showRemoveButton = coach.timeSlot === time;
-          
-          // For continuation slots, add special styling
-          const personClass = isContinuationSlot ? `${continuationStyle} border-t border-dashed border-gray-300` : '';
-          
-          // Check for conflicts
-          const coachHasConflict = hasConflict(coach);
-          
-          // Status style - confirmed, pending, conflict
-          const statusStyle = coach.isPresent === false 
-            ? 'opacity-50' // Unavailable coach
-            : '';
-          
-          // Default to confirmed unless specified otherwise
-          const isConfirmed = coach.status !== "pending";
-          
-          return (
-            <div key={`coach-${coach.id}-${index}-${time}`} className="relative">
-              <CourtPerson
-                person={coach}
-                index={index}
-                total={coaches.length}
-                onRemove={showRemoveButton ? () => onRemovePerson(coach.id, time) : undefined}
-                className={`${personClass} ${statusStyle} z-10`}
-                isSpanning={isContinuationSlot}
-                hasConflict={coachHasConflict}
-                isConfirmed={isConfirmed}
-              />
-            </div>
-          );
-        })}
+    <div className="flex flex-wrap gap-1 max-w-full">
+      {sortedOccupants.map((person) => {
+        // Get program color for visual indicators
+        const programColor = getPersonProgramColor(person);
         
-        {/* Then display players */}
-        {players.map((player, index) => {
-          // Check if this is a continuation slot or the starting slot
-          const isContinuationSlot = player.timeSlot !== time && isTimeSlotOccupied(player, time, timeSlots);
-          const continuationStyle = getTimeSlotContinuationStyle(player, time, timeSlots);
-          
-          // Only show remove button on the starting slot
-          const showRemoveButton = player.timeSlot === time;
-          
-          // For continuation slots, add special styling
-          const personClass = isContinuationSlot ? `${continuationStyle} border-t border-dashed border-gray-300` : '';
-          
-          // Check for conflicts
-          const playerHasConflict = hasConflict(player);
-          
-          // Default to confirmed unless specified otherwise
-          const isConfirmed = player.status !== "pending";
-          
-          return (
-            <div key={`player-${player.id}-${index}-${time}`} className="relative">
-              <CourtPerson
-                person={player}
-                index={index}
-                total={players.length}
-                onRemove={showRemoveButton ? () => onRemovePerson(player.id, time) : undefined}
-                className={`${personClass}`}
-                isSpanning={isContinuationSlot}
-                hasConflict={playerHasConflict}
-                isConfirmed={isConfirmed}
-              />
+        // Check if this person has conflicts in this time slot
+        const hasConflict = time && conflicts[time] ? conflicts[time].includes(person.id) : false;
+        
+        // Determine status-based styling
+        let statusClasses = "";
+        let statusPattern = "";
+        
+        if (hasConflict) {
+          statusClasses = "border-orange-400 animate-pulse-border";
+        } else if (person.status === "pending") {
+          statusClasses = "border-amber-400";
+          statusPattern = "bg-stripes";
+        } else if (person.status === "confirmed") {
+          statusClasses = "border-green-400";
+        } else {
+          statusClasses = "border-gray-300";
+        }
+        
+        return (
+          <div
+            key={person.id}
+            className={cn(
+              "flex items-center p-1 pr-2 rounded-md text-xs border relative group transition-all",
+              statusClasses,
+              isPersonUnavailable(person) ? "bg-gray-100 text-gray-400" : "bg-white",
+              person.timeSlot === time ? "shadow-sm" : ""
+            )}
+            style={{
+              borderLeftWidth: "3px",
+              borderLeftColor: programColor
+            }}
+          >
+            {/* Program color indicator on the left */}
+            <div 
+              className="absolute top-0 bottom-0 left-0 w-1"
+              style={{ backgroundColor: programColor }}
+            />
+            
+            {/* Person info */}
+            <div className="ml-1 flex items-center gap-1">
+              {/* Person type indicator */}
+              {person.type === "coach" ? (
+                <span className="bg-red-100 text-red-800 rounded-full p-0.5 text-[10px] font-medium">C</span>
+              ) : (
+                <span className="bg-blue-100 text-blue-800 rounded-full p-0.5 text-[10px] font-medium">P</span>
+              )}
+              
+              {/* Person name */}
+              <span className="font-medium truncate max-w-[80px]">
+                {person.name}
+              </span>
+              
+              {/* Conflict indicator */}
+              {hasConflict && (
+                <AlertCircle className="h-3 w-3 text-orange-500" />
+              )}
             </div>
-          );
-        })}
-      </div>
+            
+            {/* Duration badge, if this is the starting time slot */}
+            {person.timeSlot === time && person.durationHours && (
+              <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0 h-4 bg-white">
+                {person.durationHours}h
+              </Badge>
+            )}
+            
+            {/* Remove button */}
+            <button
+              className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-gray-100 p-0.5"
+              onClick={() => onRemovePerson(person.id, time)}
+              aria-label={`Remove ${person.name}`}
+            >
+              <X className="h-3 w-3 text-gray-400" />
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }

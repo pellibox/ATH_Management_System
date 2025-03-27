@@ -1,12 +1,14 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CourtProps, PersonData, ActivityData } from './types';
 import { Court } from './Court';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, SkipBack } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { VerticalTimeSlotSelector } from './time-slot/VerticalTimeSlotSelector';
+import { useToast } from '@/hooks/use-toast';
+import { programDetailsMap } from '@/types/player/programs';
 
 interface CourtGridProps {
   courts: CourtProps[];
@@ -34,52 +36,138 @@ export default function CourtGrid({
   activeHour: propActiveHour
 }: CourtGridProps) {
   const isMobile = useIsMobile();
-  const [currentActiveHour, setCurrentActiveHour] = useState<string | null>(propActiveHour || null);
+  const { toast } = useToast();
   
-  // Map to store active hour for each court type group
-  const [activeHoursByType, setActiveHoursByType] = useState<Record<string, string | null>>({});
+  // Maintain independent hour for each court type group
+  const [activeHoursByGroup, setActiveHoursByGroup] = useState<Record<string, string | null>>({});
   
   // For mobile: track visible court in each pair
   const [visibleCourtIndices, setVisibleCourtIndices] = useState<Record<string, number>>({});
   
+  // For virtualization: track rendered courts to optimize performance
+  const renderedCourtsRef = useRef<Set<string>>(new Set());
+  
+  // For optimization: track scroll positions to restore when coming back to the page
+  const scrollPositionsByGroup = useRef<Record<string, number>>({});
+  
+  // For performance monitoring
+  const perfMetricsRef = useRef({
+    renderCount: 0,
+    lastRenderTime: Date.now(),
+    sliderMoveCount: 0,
+  });
+  
+  // Track diagnostic mode for troubleshooting
+  const [diagnosticMode, setDiagnosticMode] = useState(false);
+  
+  // Function to generate a unique ID for each court group
+  const getGroupId = (type: string, pairIndex: number) => `${type}-${pairIndex}`;
+  
   // Initialize currentActiveHour from the first time slot on component mount or when propActiveHour changes
   useEffect(() => {
     if (propActiveHour) {
-      setCurrentActiveHour(propActiveHour);
+      // Initialize all court type groups with the same hour if not set yet
+      const initialHoursByGroup: Record<string, string | null> = {};
       
-      // Also update all court type groups with the same hour
-      const initialHoursByType: Record<string, string | null> = {};
+      // Group courts by type
+      const courtsByType: Record<string, CourtProps[]> = {};
       courts.forEach(court => {
-        initialHoursByType[court.type] = propActiveHour;
+        if (!courtsByType[court.type]) {
+          courtsByType[court.type] = [];
+        }
+        courtsByType[court.type].push(court);
       });
-      setActiveHoursByType(initialHoursByType);
-    } else if (timeSlots.length > 0 && !currentActiveHour) {
+      
+      // Create pairs and initialize hours
+      Object.entries(courtsByType).forEach(([type, typeCourts]) => {
+        for (let i = 0; i < typeCourts.length; i += 2) {
+          const groupId = getGroupId(type, Math.floor(i / 2));
+          if (!activeHoursByGroup[groupId]) {
+            initialHoursByGroup[groupId] = propActiveHour;
+          }
+        }
+      });
+      
+      // Only update state if there are new values to set
+      if (Object.keys(initialHoursByGroup).length > 0) {
+        setActiveHoursByGroup(prev => ({
+          ...prev,
+          ...initialHoursByGroup
+        }));
+      }
+    } else if (timeSlots.length > 0) {
+      // If no active hour is provided, initialize with first hour from time slots
       const firstHour = timeSlots[0].split(':')[0];
-      setCurrentActiveHour(firstHour);
+      
+      // Group courts by type
+      const courtsByType: Record<string, CourtProps[]> = {};
+      courts.forEach(court => {
+        if (!courtsByType[court.type]) {
+          courtsByType[court.type] = [];
+        }
+        courtsByType[court.type].push(court);
+      });
+      
+      // Create pairs and initialize hours
+      const initialHoursByGroup: Record<string, string | null> = {};
+      Object.entries(courtsByType).forEach(([type, typeCourts]) => {
+        for (let i = 0; i < typeCourts.length; i += 2) {
+          const groupId = getGroupId(type, Math.floor(i / 2));
+          initialHoursByGroup[groupId] = firstHour;
+        }
+      });
+      
+      setActiveHoursByGroup(initialHoursByGroup);
     }
-  }, [timeSlots, currentActiveHour, propActiveHour, courts]);
+  }, [timeSlots, propActiveHour, courts]);
   
-  // Get unique hours from time slots
-  const getUniqueHours = (slots: string[]) => {
-    const uniqueHours = new Set(slots.map(slot => slot.split(':')[0]));
-    return Array.from(uniqueHours).sort((a, b) => parseInt(a) - parseInt(b));
-  };
-
-  // Get all hours for timeline
-  const hours = getUniqueHours(timeSlots);
-  
-  // Handle hour change for a specific court type - prevent scroll events from bubbling
-  const handleHourChangeForType = (type: string, hour: string) => {
-    // Update the specific court type's hour without affecting the scroll position
-    setActiveHoursByType(prev => ({
+  // Handle hour change for a specific court group
+  const handleHourChangeForGroup = (groupId: string, hour: string) => {
+    // Increment metrics for performance tracking
+    perfMetricsRef.current.sliderMoveCount++;
+    
+    // Update the specific court group's hour
+    setActiveHoursByGroup(prev => ({
       ...prev,
-      [type]: hour
+      [groupId]: hour
     }));
+    
+    // Save to session storage for persistence
+    try {
+      sessionStorage.setItem(`courtVision_hourByGroup_${groupId}`, hour);
+    } catch (e) {
+      console.warn('Failed to save hour to sessionStorage', e);
+    }
   };
   
-  // Get active hour for a court type
-  const getActiveHourForType = (type: string): string | null => {
-    return activeHoursByType[type] || currentActiveHour;
+  // Sync all sliders to the same hour
+  const syncAllSliders = (hour: string) => {
+    // Create a new object with the same hour for all groups
+    const syncedHours: Record<string, string> = {};
+    
+    // Apply to all existing groups
+    Object.keys(activeHoursByGroup).forEach(groupId => {
+      syncedHours[groupId] = hour;
+    });
+    
+    // Update state
+    setActiveHoursByGroup(syncedHours);
+    
+    // Show confirmation
+    toast({
+      title: "Sincronizzazione completata",
+      description: `Tutti i campi sincronizzati alle ${hour}:00`,
+      duration: 2000,
+    });
+    
+    // Broadcast through localStorage for other components
+    localStorage.setItem('courtVision_globalHour', hour);
+    localStorage.setItem('courtVision_globalSync_timestamp', Date.now().toString());
+  };
+  
+  // Get active hour for a specific court group
+  const getActiveHourForGroup = (groupId: string): string | null => {
+    return activeHoursByGroup[groupId] || null;
   };
   
   // Group courts by type for display
@@ -97,6 +185,11 @@ export default function CourtGrid({
     const key = `${type}-${pairIndex}`;
     const currentIndex = visibleCourtIndices[key] || 0;
     
+    // Add haptic feedback if available
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10); // Light vibration for navigation feedback
+    }
+    
     if (direction === 'next') {
       setVisibleCourtIndices({
         ...visibleCourtIndices,
@@ -110,13 +203,175 @@ export default function CourtGrid({
     }
   };
   
+  // Restore saved slider positions from session storage on component mount
+  useEffect(() => {
+    // Group courts by type
+    const courtsByType: Record<string, CourtProps[]> = {};
+    courts.forEach(court => {
+      if (!courtsByType[court.type]) {
+        courtsByType[court.type] = [];
+      }
+      courtsByType[court.type].push(court);
+    });
+    
+    // Check for saved positions
+    const savedPositions: Record<string, string | null> = {};
+    let hasRestoredPositions = false;
+    
+    Object.entries(courtsByType).forEach(([type, typeCourts]) => {
+      for (let i = 0; i < typeCourts.length; i += 2) {
+        const groupId = getGroupId(type, Math.floor(i / 2));
+        try {
+          const savedHour = sessionStorage.getItem(`courtVision_hourByGroup_${groupId}`);
+          if (savedHour) {
+            savedPositions[groupId] = savedHour;
+            hasRestoredPositions = true;
+          }
+        } catch (e) {
+          console.warn('Failed to restore hour from sessionStorage', e);
+        }
+      }
+    });
+    
+    // Only update state if we actually found saved positions
+    if (hasRestoredPositions) {
+      setActiveHoursByGroup(prev => ({
+        ...prev,
+        ...savedPositions
+      }));
+      
+      toast({
+        title: "Posizioni ripristinate",
+        description: "Le posizioni degli slider sono state ripristinate",
+        duration: 2000,
+      });
+    }
+    
+    // Clean up function to save scroll positions when leaving
+    return () => {
+      Object.entries(scrollPositionsByGroup.current).forEach(([groupId, position]) => {
+        try {
+          sessionStorage.setItem(`courtVision_scrollPosition_${groupId}`, position.toString());
+        } catch (e) {
+          console.warn('Failed to save scroll position to sessionStorage', e);
+        }
+      });
+    };
+  }, [courts, toast]);
+  
+  // Schedule periodic performance logging
+  useEffect(() => {
+    if (diagnosticMode) {
+      const interval = setInterval(() => {
+        console.log('Performance metrics:', {
+          renderCount: perfMetricsRef.current.renderCount,
+          lastRenderTime: perfMetricsRef.current.lastRenderTime,
+          timeSinceLastRender: Date.now() - perfMetricsRef.current.lastRenderTime,
+          sliderMoveCount: perfMetricsRef.current.sliderMoveCount,
+          visibleCourts: renderedCourtsRef.current.size
+        });
+        
+        // Reset metrics
+        perfMetricsRef.current.renderCount = 0;
+        perfMetricsRef.current.sliderMoveCount = 0;
+        perfMetricsRef.current.lastRenderTime = Date.now();
+      }, 10000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [diagnosticMode]);
+  
+  // Track render performance
+  useEffect(() => {
+    perfMetricsRef.current.renderCount++;
+    perfMetricsRef.current.lastRenderTime = Date.now();
+  });
+  
+  // Generate current time of day if in business hours for "jump to now" feature
+  const getCurrentBusinessHour = (): string | null => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Check if we're in business hours (8am to 10pm)
+    if (currentHour >= 8 && currentHour <= 22) {
+      return currentHour.toString();
+    }
+    
+    return null;
+  };
+  
+  const currentBusinessHour = getCurrentBusinessHour();
+  
   return (
     <ScrollArea className="h-full" scrollHideDelay={0}>
       <div className="space-y-6 md:space-y-8 pb-16 pt-4">
-        {Object.entries(courtsByType).map(([type, typeCourts]) => {
-          // Get active hour for this court type
-          const typeActiveHour = getActiveHourForType(type);
+        {/* Global navigation controls */}
+        <div className="flex justify-between px-4 mb-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                // Find earliest hour and sync all
+                if (timeSlots.length > 0) {
+                  const firstHour = timeSlots[0].split(':')[0];
+                  syncAllSliders(firstHour);
+                }
+              }}
+              title="Vai all'inizio della giornata"
+            >
+              <SkipBack className="h-3 w-3 mr-1" />
+              <span>Inizio</span>
+            </Button>
+            
+            {currentBusinessHour && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => syncAllSliders(currentBusinessHour)}
+                title="Vai all'ora corrente"
+              >
+                Ora
+              </Button>
+            )}
+            
+            {/* Diagnostic mode toggle - only in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`text-xs ${diagnosticMode ? 'bg-amber-100' : ''}`}
+                onClick={() => setDiagnosticMode(!diagnosticMode)}
+              >
+                {diagnosticMode ? "Debug On" : "Debug Off"}
+              </Button>
+            )}
+          </div>
           
+          {/* Test button for generating random assignments */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+            onClick={() => {
+              toast({
+                title: "TEST - Generazione casuale",
+                description: "Funzionalità di test attivata - generazione in corso",
+                duration: 2000,
+              });
+              
+              // This would call some test function to generate random assignments
+              // Implementation would depend on your test data generation approach
+            }}
+            title="Funzionalità temporanea solo per testing"
+          >
+            TEST - Genera Assegnazioni Casuali
+          </Button>
+        </div>
+        
+        {Object.entries(courtsByType).map(([type, typeCourts]) => {
           // Organize courts in pairs (or single if odd number)
           const courtPairs: CourtProps[][] = [];
           for (let i = 0; i < typeCourts.length; i += 2) {
@@ -132,9 +387,20 @@ export default function CourtGrid({
               <h3 className="text-base md:text-lg font-semibold px-4">{type}</h3>
               
               {courtPairs.map((pair, pairIndex) => {
+                // Get group ID for this pair of courts
+                const groupId = getGroupId(type, pairIndex);
+                
+                // Get active hour for this court group
+                const groupActiveHour = getActiveHourForGroup(groupId);
+                
                 // Get visible court index for this pair (mobile only)
                 const key = `${type}-${pairIndex}`;
                 const visibleCourtIndex = isMobile ? (visibleCourtIndices[key] || 0) : -1;
+                
+                // Track that these courts are being rendered for virtualization metrics
+                pair.forEach(court => {
+                  renderedCourtsRef.current.add(court.id);
+                });
                 
                 return (
                   <div key={`pair-${type}-${pairIndex}`} className="flex gap-4 md:gap-6 px-4">
@@ -142,8 +408,9 @@ export default function CourtGrid({
                     <div className="w-16 md:w-20">
                       <VerticalTimeSlotSelector
                         timeSlots={timeSlots}
-                        activeHour={typeActiveHour}
-                        onHourChange={(hour) => handleHourChangeForType(type, hour)}
+                        activeHour={groupActiveHour}
+                        onHourChange={(hour) => handleHourChangeForGroup(groupId, hour)}
+                        groupId={groupId}
                       />
                     </div>
                     
@@ -189,7 +456,7 @@ export default function CourtGrid({
                             onChangeType={onChangeCourtType}
                             onChangeNumber={onChangeCourtNumber}
                             isSidebarCollapsed={isMobile}
-                            activeHour={typeActiveHour}
+                            activeHour={groupActiveHour}
                           />
                         ) : (
                           // On desktop, show both courts
@@ -206,7 +473,7 @@ export default function CourtGrid({
                               onChangeType={onChangeCourtType}
                               onChangeNumber={onChangeCourtNumber}
                               isSidebarCollapsed={isMobile}
-                              activeHour={typeActiveHour}
+                              activeHour={groupActiveHour}
                             />
                           ))
                         )}

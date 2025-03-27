@@ -1,11 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
 import { PERSON_TYPES } from "../constants";
 import { PersonData, ActivityData } from "../types";
 import { useToast } from "@/hooks/use-toast";
 import { Clock, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useCourtVision } from "../context/CourtVisionContext";
+import { quickValidateAssignment } from "../validation/ValidationManager";
+import { getProgramBasedDuration, getProgramBasedDailyLimit } from "../utils/personUtils";
 
 interface TimeSlotDropAreaProps {
   children?: React.ReactNode;
@@ -29,78 +32,73 @@ export function TimeSlotDropArea({
   } | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { courts } = useCourtVision();
   
   // Set a validation timeout delay based on device type
   const validationDelay = isMobile ? 2000 : 5000; // 2 seconds on mobile, 5 on desktop
 
   // Helper to check if a coach is already assigned elsewhere
   const checkCoachAssignment = (person: PersonData): boolean => {
-    // This would check coach assignments across courts in a real implementation
-    // For now, we'll simply show a confirmation toast
-    if (person.type === PERSON_TYPES.COACH) {
-      // Simulate coach already assigned
-      if (Math.random() > 0.7) {
-        toast({
-          title: "Conferma assegnazione",
-          description: `${person.name} è già assegnato al Campo 3 in questo orario. Confermare comunque?`,
-          action: (
-            <div className="flex space-x-2">
-              <button 
-                className="px-3 py-1 text-xs rounded bg-green-500 text-white"
-                onClick={() => {
-                  onDrop(courtId, person, undefined, time);
-                  toast({
-                    title: "Confermato",
-                    description: "Coach assegnato nonostante il conflitto"
-                  });
-                }}
-              >
-                Conferma
-              </button>
-              <button 
-                className="px-3 py-1 text-xs rounded bg-gray-300 text-gray-700"
-                onClick={() => {
-                  toast({
-                    title: "Annullato",
-                    description: "Assegnazione coach annullata"
-                  });
-                }}
-              >
-                Annulla
-              </button>
-            </div>
-          )
-        });
-        return true;
-      }
+    // Check for actual conflicts using the validation system
+    const currentCourt = courts.find(c => c.id === courtId);
+    if (!currentCourt) return false;
+    
+    const validationResults = quickValidateAssignment(person, currentCourt, courts, time);
+    const conflicts = validationResults.filter(r => r.ruleId === "coach-conflict");
+    
+    if (conflicts.length > 0) {
+      toast({
+        title: "Conferma assegnazione",
+        description: conflicts[0].message + " Confermare comunque?",
+        action: (
+          <div className="flex space-x-2">
+            <button 
+              className="px-3 py-1 text-xs rounded bg-green-500 text-white"
+              onClick={() => {
+                // Mark this assignment with conflict status
+                const personWithStatus = {
+                  ...person,
+                  status: "conflict" as const
+                };
+                onDrop(courtId, personWithStatus, undefined, time);
+                toast({
+                  title: "Confermato",
+                  description: "Coach assegnato nonostante il conflitto"
+                });
+              }}
+            >
+              Conferma
+            </button>
+            <button 
+              className="px-3 py-1 text-xs rounded bg-gray-300 text-gray-700"
+              onClick={() => {
+                toast({
+                  title: "Annullato",
+                  description: "Assegnazione coach annullata"
+                });
+              }}
+            >
+              Annulla
+            </button>
+          </div>
+        )
+      });
+      return true;
     }
+    
     return false;
   };
 
   // Helper to check player daily limits
   const checkPlayerLimits = (person: PersonData): boolean => {
     if (person.type === PERSON_TYPES.PLAYER) {
-      // Get player daily limit from program
-      const getDailyLimit = () => {
-        if (!person.programId) return 2;
-        // Different programs have different daily limits
-        const programLimits: Record<string, number> = {
-          "perf2": 3,
-          "perf3": 4.5,
-          "perf4": 6,
-          "elite": 7.5,
-          "elite-full": 10,
-          "junior-sit": 3,
-          "junior-sat": 1.5,
-        };
-        return programLimits[person.programId] || 2;
-      };
-      
-      const dailyLimit = getDailyLimit();
+      // Calculate player daily limit from program
+      const dailyLimit = person.dailyLimit || getProgramBasedDailyLimit(person);
       const currentHours = person.hoursAssigned || 0;
+      const durationHours = person.durationHours || getProgramBasedDuration(person);
       
       // Check if adding more hours would exceed limit
-      if (currentHours + (person.durationHours || 1) > dailyLimit) {
+      if (currentHours + durationHours > dailyLimit) {
         toast({
           title: "Limite ore superato",
           description: `${person.name} ha già raggiunto il limite di ore giornaliere (${currentHours}/${dailyLimit}h). Confermare comunque?`,
@@ -109,7 +107,12 @@ export function TimeSlotDropArea({
               <button 
                 className="px-3 py-1 text-xs rounded bg-green-500 text-white"
                 onClick={() => {
-                  onDrop(courtId, person, undefined, time);
+                  // Mark as pending status for visual indication
+                  const personWithStatus = {
+                    ...person,
+                    status: "pending" as const
+                  };
+                  onDrop(courtId, personWithStatus, undefined, time);
                   toast({
                     title: "Confermato",
                     description: "Giocatore assegnato nonostante il limite superato"
@@ -142,22 +145,32 @@ export function TimeSlotDropArea({
   const validateWithDelay = (person: PersonData) => {
     // Set a timeout to validate the assignment after a delay
     setTimeout(() => {
-      // Check for conflicts and show toast if needed
-      const hasCoachConflict = person.type === PERSON_TYPES.COACH && Math.random() > 0.8;
-      const hasPlayerLimitExceeded = person.type === PERSON_TYPES.PLAYER && Math.random() > 0.8;
+      // Get current court for validation
+      const currentCourt = courts.find(c => c.id === courtId);
+      if (!currentCourt) return;
       
-      if (hasCoachConflict) {
-        toast({
-          title: "Conflitto rilevato",
-          description: `${person.name} è assegnato a più campi contemporaneamente. Correggere l'assegnazione.`,
-          variant: "destructive"
-        });
-      } else if (hasPlayerLimitExceeded) {
-        toast({
-          title: "Limite ore superato",
-          description: `${person.name} ha superato il limite di ore giornaliere. Correggere l'assegnazione.`,
-          variant: "destructive"
-        });
+      // Run validation
+      const validationResults = quickValidateAssignment(person, currentCourt, courts, time);
+      
+      // Show toast for any validation issues
+      if (validationResults.length > 0) {
+        // Group by severity
+        const errors = validationResults.filter(r => r.severity === "error");
+        const warnings = validationResults.filter(r => r.severity === "warning");
+        
+        if (errors.length > 0) {
+          toast({
+            title: "Conflitto rilevato",
+            description: errors[0].message,
+            variant: "destructive"
+          });
+        } else if (warnings.length > 0) {
+          toast({
+            title: "Avviso",
+            description: warnings[0].message,
+            variant: "default"
+          });
+        }
       }
     }, validationDelay);
   };
@@ -167,11 +180,13 @@ export function TimeSlotDropArea({
     hover: (item: any) => {
       // Show extended preview for multi-slot occupancy
       if ((item.type === PERSON_TYPES.PLAYER || item.type === PERSON_TYPES.COACH)) {
-        const duration = item.durationHours || 1;
+        const duration = item.durationHours || 
+                        (item.type === PERSON_TYPES.PLAYER ? getProgramBasedDuration(item) : 1);
+        
         setExtendedPreview({
           duration: duration,
           type: item.type,
-          color: item.programColor
+          color: item.programColor || (item.programId ? `var(--color-${item.programId})` : undefined)
         });
       } else if (item.type === "activity") {
         const duration = item.durationHours || 1;
@@ -187,18 +202,31 @@ export function TimeSlotDropArea({
       if (item.type === "activity") {
         // Handle activity drop
         const activity = item as ActivityData;
-        onActivityDrop(courtId, activity, time);
+        
+        // Set confirmed status by default
+        const activityWithStatus = {
+          ...activity,
+          status: "confirmed" as const
+        };
+        
+        onActivityDrop(courtId, activityWithStatus, time);
       } else {
         // Handle person drop with validation
         const person = item as PersonData;
         
         // Check if coach already assigned or player over limit
-        const hasCoachConflict = checkCoachAssignment(person);
-        const hasPlayerLimitExceeded = checkPlayerLimits(person);
+        const hasCoachConflict = person.type === PERSON_TYPES.COACH && checkCoachAssignment(person);
+        const hasPlayerLimitExceeded = person.type === PERSON_TYPES.PLAYER && checkPlayerLimits(person);
         
         // If no conflicts or user confirmed, proceed with drop
         if (!hasCoachConflict && !hasPlayerLimitExceeded) {
-          onDrop(courtId, person, undefined, time);
+          // Set confirmed status by default
+          const personWithStatus = {
+            ...person,
+            status: "confirmed" as const
+          };
+          
+          onDrop(courtId, personWithStatus, undefined, time);
           
           // Set up delayed validation
           validateWithDelay(person);
@@ -208,7 +236,7 @@ export function TimeSlotDropArea({
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
-  }), [courtId, time, onDrop, onActivityDrop]);
+  }), [courtId, time, onDrop, onActivityDrop, courts]);
 
   // Calculate preview style based on preview duration
   let previewStyle = {};
@@ -269,7 +297,7 @@ export function TimeSlotDropArea({
     >
       {isOver && extendedPreview && (
         <div 
-          className={`absolute left-0 right-0 top-0 ${previewClass} rounded-md transition-all duration-200 flex items-center justify-center`}
+          className={`absolute left-0 right-0 top-0 ${previewClass} rounded-md transition-all duration-200 flex items-center justify-center hw-accelerated`}
           style={previewStyle}
         >
           <div className="flex items-center bg-white/80 px-2 py-1 rounded-full">

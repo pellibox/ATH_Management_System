@@ -1,9 +1,175 @@
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+/* Base styles for court vision */
+.court-event {
+  @apply bg-white rounded-md shadow-sm p-2 text-xs overflow-hidden;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 0;
+  z-index: 10;
 }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+/* Court type specific styles */
+.court-clay {
+  @apply border-l-4 border-l-orange-600 bg-orange-50;
+}
+
+.court-grass {
+  @apply border-l-4 border-l-green-600 bg-green-50;
+}
+
+.court-hard {
+  @apply border-l-4 border-l-blue-600 bg-blue-50;
+}
+
+.court-central {
+  @apply border-l-4 border-l-purple-600 bg-purple-50;
+}
+
+/* Card hover effect */
+.card-hover {
+  @apply transition-all duration-200;
+}
+
+.card-hover:hover {
+  @apply shadow-md -translate-y-0.5;
+}
+
+/* Time slot visual states */
+.time-slot-confirmed {
+  @apply bg-green-50/50;
+}
+
+.time-slot-pending {
+  @apply bg-stripes-primary;
+}
+
+.time-slot-conflict {
+  @apply bg-orange-50;
+}
+
+/* Striped pattern backgrounds for pending status */
+.bg-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    rgba(0, 0, 0, 0.05) 5px,
+    rgba(0, 0, 0, 0.05) 10px
+  );
+}
+
+.bg-stripes-primary {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    rgba(59, 130, 246, 0.1) 5px,
+    rgba(59, 130, 246, 0.1) 10px
+  );
+}
+
+.bg-stripes-secondary {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    rgba(176, 12, 32, 0.1) 5px,
+    rgba(176, 12, 32, 0.1) 10px
+  );
+}
+
+.bg-stripes-warning {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    rgba(245, 158, 11, 0.1) 5px,
+    rgba(245, 158, 11, 0.1) 10px
+  );
+}
+
+/* Animated pulsing border for conflicts */
+@keyframes pulse-border {
+  0% {
+    border-color: rgba(249, 115, 22, 0.7);
+  }
+  50% {
+    border-color: rgba(249, 115, 22, 0.3);
+  }
+  100% {
+    border-color: rgba(249, 115, 22, 0.7);
+  }
+}
+
+.animate-pulse-border {
+  animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Add program color classes */
+.program-border-perf2 {
+  border-left-color: #3b82f6 !important;
+}
+.program-border-perf3 {
+  border-left-color: #8b5cf6 !important;
+}
+.program-border-perf4 {
+  border-left-color: #6366f1 !important;
+}
+.program-border-elite {
+  border-left-color: #ec4899 !important;
+}
+.program-border-elite-full {
+  border-left-color: #d946ef !important;
+}
+.program-border-junior-sit {
+  border-left-color: #f59e0b !important;
+}
+.program-border-junior-sat {
+  border-left-color: #84cc16 !important;
+}
+
+/* Slider visualization classes */
+.slider-thumb-active {
+  @apply bg-blue-600;
+}
+
+.slider-track-custom {
+  @apply bg-gray-200;
+}
+
+.slider-preview-dense {
+  @apply bg-red-400/50;
+}
+
+.slider-preview-medium {
+  @apply bg-amber-400/50;
+}
+
+.slider-preview-light {
+  @apply bg-blue-400/50;
+}
+
+/* Time slot navigation */
+.time-jump-button {
+  @apply px-1.5 py-0.5 rounded text-xs font-medium transition-colors;
+}
+
+.time-jump-morning {
+  @apply bg-blue-50 text-blue-600 hover:bg-blue-100;
+}
+
+.time-jump-afternoon {
+  @apply bg-amber-50 text-amber-600 hover:bg-amber-100;
+}
+
+.time-jump-evening {
+  @apply bg-indigo-50 text-indigo-600 hover:bg-indigo-100;
+}
+
+/* Optimize for hardware acceleration */
+.hw-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }

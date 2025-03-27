@@ -25,6 +25,10 @@ export interface PersonData {
   endTimeSlot?: string; // End time slot for spanning multiple slots
   date?: string; // ISO date string for the assignment day
   status?: "confirmed" | "pending" | "conflict"; // Confirmation status
+  dailyLimit?: number; // Maximum daily hours allowed based on program
+  programRecommendedDuration?: number; // Recommended duration based on program
+  validationState?: "valid" | "warning" | "error"; // State of validation rules
+  validationMessage?: string; // Message explaining validation issues
 }
 
 export interface ActivityHistoryEntry {
@@ -53,6 +57,10 @@ export interface ActivityData {
   sportType?: string; // Type of sport (tennis, padel, pickleball, touchtennis)
   participants?: string[]; // Array of player IDs who are part of this activity
   status?: "confirmed" | "pending" | "conflict"; // Confirmation status
+  programId?: string; // Associated program if applicable
+  programColor?: string; // Color from associated program
+  validationState?: "valid" | "warning" | "error"; // State of validation rules
+  validationMessage?: string; // Message explaining validation issues
 }
 
 export interface CourtProps {
@@ -62,6 +70,8 @@ export interface CourtProps {
   number: number;
   occupants: PersonData[];
   activities: ActivityData[];
+  healthScore?: number; // Percentage of assignments conforming to rules
+  validationState?: "valid" | "warning" | "error"; // Overall validation state
 }
 
 export interface ScheduleTemplate {
@@ -74,6 +84,7 @@ export interface ScheduleTemplate {
 export interface DateSchedule {
   date: string; // ISO date string
   courts: CourtProps[];
+  healthScore?: number; // Overall schedule health score
 }
 
 export interface Program {
@@ -84,4 +95,22 @@ export interface Program {
   totalWeeks?: number; // Total weeks for the program duration
   remainingWeeks?: number; // Remaining weeks in the program
   category?: string; // Category for grouping programs
+  recommendedDuration?: number; // Recommended session duration in hours
+  dailyLimit?: number; // Maximum daily hours allowed
+}
+
+export interface ValidationRule {
+  id: string;
+  name: string;
+  description: string;
+  severity: "info" | "warning" | "error";
+  checkFunction: (data: any) => boolean;
+  messageFunction: (data: any) => string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  severity: "info" | "warning" | "error";
+  message: string;
+  ruleId: string;
 }
