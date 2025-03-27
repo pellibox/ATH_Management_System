@@ -76,8 +76,8 @@ const CourtGrid = forwardRef<HTMLDivElement, CourtGridProps>(({
             onChangeCourtType={onChangeCourtType}
             onChangeCourtNumber={onChangeCourtNumber}
             activeHoursByGroup={activeHoursByGroup}
-            visibleCourtIndices={visibleCourtIndices || {}}
-            handleHourChangeForGroup={(hour: string, groupId: string) => handleHourChangeForGroup(groupId, hour)}
+            visibleCourtIndices={visibleCourtIndices}
+            handleHourChangeForGroup={handleHourChangeForGroup}
             navigateCourt={navigateCourt}
             isMobile={isMobile}
             getGroupId={getGroupId}

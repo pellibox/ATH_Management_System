@@ -23,7 +23,7 @@ import { ActivityRegistration } from "../ActivityRegistration";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { useNavigate } from "react-router-dom";
 import { getProgramColor } from "../utils/programUtils";
-import PlayerRow from "../../players/PlayerRow";
+import PlayerRow from "../PlayerRow";
 
 interface ListViewProps {
   players: Player[];

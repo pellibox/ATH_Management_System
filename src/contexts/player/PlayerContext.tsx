@@ -3,6 +3,7 @@ import { PlayerContextType } from "./types";
 import { Player, mockPlayers } from "@/types/player";
 import { defaultObjectives, defaultNewPlayer, mockExtraActivities } from "./initialState";
 import { usePlayerActions } from "./actions";
+import { ExtraActivity } from "@/types/extra-activities";
 
 interface PlayerProviderProps {
   children: React.ReactNode;
@@ -21,12 +22,16 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
   const [messageContent, setMessageContent] = useState("");
   const [scheduleType, setScheduleType] = useState<"day" | "week" | "month">("week");
   const [objectives, setObjectives] = useState(defaultObjectives);
-  const [extraActivities, setExtraActivities] = useState(mockExtraActivities);
+  const [extraActivities, setExtraActivities] = useState<ExtraActivity[]>(mockExtraActivities);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [newPlayer, setNewPlayer] = useState<Player>({
     ...defaultNewPlayer,
     id: "new-temp-id"
   });
+
+  const [filterTerm, setFilterTerm] = useState("");
+  const [filterProgram, setFilterProgram] = useState("all");
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
 
   const coaches: string[] = Array.from(
     new Set(players.filter(player => player.coach).map(player => player.coach as string))
@@ -93,8 +98,8 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setPlayers(updatedPlayers);
   };
 
-  const handleRegisterForActivities = (playerId: string, name: string) => {
-    console.log("Registering player for activities", playerId, name);
+  const handleRegisterForActivities = (playerId: string) => {
+    console.log("Registering player for activities", playerId);
     playerActions.handleRegisterForActivities(playerId);
   };
 
@@ -108,37 +113,52 @@ export const PlayerProvider: React.FC<PlayerProviderProps> = ({ children }) => {
     setPlayers,
     filteredPlayers,
     searchQuery,
-    levelFilter,
-    coachFilter,
+    setSearchQuery: (query: string) => setSearchQuery(query),
     programFilter,
+    setProgramFilter: (program: string) => setProgramFilter(program),
+    resetFilters,
+    scheduleType,
+    setScheduleType,
+    newPlayer,
+    setNewPlayer: (player: Player) => setNewPlayer({ 
+      ...player, 
+      id: player.id || "new-temp-id"
+    }),
+    
+    filterTerm,
+    setFilterTerm,
+    filterProgram,
+    setFilterProgram,
+    filterStatus,
+    setFilterStatus,
     editingPlayer,
     messagePlayer,
     messageContent,
-    scheduleType,
-    objectives,
-    newPlayer,
-    coaches,
     selectedActivities,
-    setSelectedActivities,
     extraActivities,
     availablePrograms,
     setEditingPlayer,
     setMessagePlayer,
     setMessageContent,
-    setScheduleType,
-    setObjectives,
-    setNewPlayer: (player: Player) => setNewPlayer({ 
-      ...player, 
-      id: player.id || "new-temp-id"
-    }),
     setSelectedActivities,
-    resetFilters,
     handleDeletePlayer,
-    handleEditPlayer,
-    handleSetObjectives,
-    handleRegisterActivity: playerActions.handleRegisterActivity,
     handleRegisterForActivities,
-    ...playerActions
+    handleSetObjectives,
+    
+    handleAddPlayer: playerActions.handleAddPlayer,
+    handleUpdatePlayer: playerActions.handleUpdatePlayer,
+    handleSendMessage: (playerId: string) => {
+      if (messagePlayer) {
+        const contactMethod = messagePlayer.preferredContactMethod || "WhatsApp";
+        if (contactMethod === "WhatsApp" || contactMethod === "Email" || contactMethod === "SMS") {
+          playerActions.handleSendMessage(contactMethod);
+        } else {
+          playerActions.handleSendMessage("WhatsApp");
+        }
+      }
+    },
+    handleRegisterActivity: playerActions.handleRegisterActivity,
+    handleUpdateObjectives: playerActions.handleUpdateObjectives
   };
 
   return (

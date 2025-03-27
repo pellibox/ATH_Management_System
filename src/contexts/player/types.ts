@@ -1,5 +1,7 @@
+
 import React from "react";
 import { Player } from "@/types/player/interfaces";
+import { ExtraActivity } from "@/types/extra-activities";
 
 export interface PlayerContextType {
   players: Player[];
@@ -19,16 +21,29 @@ export interface PlayerContextType {
   setMessageContent: (content: string) => void;
   selectedActivities: string[];
   setSelectedActivities: (activities: string[]) => void;
-  extraActivities: Record<string, any[]>;
-  availablePrograms: string[];  // Add this property
+  extraActivities: ExtraActivity[];
+  availablePrograms: string[];
+  
+  // Search and filter properties needed by components
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  programFilter: string;
+  setProgramFilter: (program: string) => void;
+  resetFilters: () => void;
+  scheduleType: "day" | "week" | "month";
+  setScheduleType: (type: "day" | "week" | "month") => void;
+  newPlayer: Player;
+  setNewPlayer: (player: Player) => void;
   
   // Action methods
   handleAddPlayer: (player: Player) => void;
   handleUpdatePlayer: (player: Player) => void;
   handleDeletePlayer: (id: string) => void;
-  handleSendMessage: (type: 'WhatsApp' | 'Email' | 'SMS') => void;
-  handleRecordActivity: (playerId: string, activity: string) => void;
+  handleSendMessage: (playerId: string) => void;
+  handleRegisterActivity: (playerId: string, activity: string) => void;
   handleUpdateObjectives: (playerId: string, objectives: Player['objectives']) => void;
+  handleRegisterForActivities: (playerId: string) => void;
+  handleSetObjectives: (playerId: string, objectives: any) => void;
 }
 
 export interface PlayerProviderProps {

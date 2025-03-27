@@ -54,8 +54,11 @@ export function ActivityRegistration({ playerId, playerName }: ActivityRegistrat
     }
   };
 
-  const isPlayerRegistered = (activity: ExtraActivity) => 
-    activity.participants.includes(playerId);
+  const isPlayerRegistered = (activity: ExtraActivity) => {
+    if (!activity.participants) return false;
+    // Check if participants is an array and if the player is in it
+    return Array.isArray(activity.participants) && activity.participants.includes(playerId);
+  };
 
   const handleRegistration = () => {
     handleRegisterForActivities(playerId);
@@ -84,7 +87,7 @@ export function ActivityRegistration({ playerId, playerName }: ActivityRegistrat
             Select the extra activities you want to register this player for:
           </p>
           
-          {extraActivities.length > 0 ? (
+          {extraActivities && extraActivities.length > 0 ? (
             <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
               {extraActivities.map((activity) => (
                 <div 
@@ -119,7 +122,8 @@ export function ActivityRegistration({ playerId, playerName }: ActivityRegistrat
                           </Badge>
                           <Badge variant="outline" className="bg-gray-100">
                             <Users className="h-3 w-3 mr-1" />
-                            {activity.participants.length}/{activity.maxParticipants}
+                            {activity.participants ? activity.participants.length : 0}/
+                            {activity.maxParticipants || 10}
                           </Badge>
                         </div>
                         {activity.notes && (

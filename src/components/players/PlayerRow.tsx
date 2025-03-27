@@ -2,9 +2,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Pencil, MessageSquare, Trash, Tag } from "lucide-react";
-import { formatDate } from '@/lib/utils';
 import { Player } from '@/types/player/interfaces';
-import ProgramBadge from './components/ProgramBadge';
+import { ProgramBadge } from './components/ProgramBadge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +59,14 @@ const PlayerRow = ({
     );
   };
 
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString();
+  };
+
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
       <td className="p-4 whitespace-nowrap">
@@ -82,7 +89,7 @@ const PlayerRow = ({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 px-2 flex items-center">
                 {player.program ? (
-                  <ProgramBadge programId={player.program} />
+                  <ProgramBadge program={player.program} />
                 ) : (
                   <span className="text-gray-500 text-xs">Nessun programma</span>
                 )}
@@ -95,7 +102,7 @@ const PlayerRow = ({
                   key={program} 
                   onClick={() => onChangeProgram(player, program)}
                 >
-                  <ProgramBadge programId={program} />
+                  <ProgramBadge program={program} />
                 </DropdownMenuItem>
               ))}
               {player.program && (
@@ -112,10 +119,10 @@ const PlayerRow = ({
           <div className="flex flex-wrap gap-1">
             {player.programs && player.programs.length > 0 ? (
               player.programs.map(program => (
-                <ProgramBadge key={program} programId={program} />
+                <ProgramBadge key={program} program={program} />
               ))
             ) : player.program ? (
-              <ProgramBadge programId={player.program} />
+              <ProgramBadge program={player.program} />
             ) : (
               <span className="text-gray-500 text-xs">Nessun programma</span>
             )}

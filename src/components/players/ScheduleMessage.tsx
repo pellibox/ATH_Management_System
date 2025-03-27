@@ -24,7 +24,7 @@ export function ScheduleMessage() {
     setMessagePlayer(null);
   };
 
-  // Fixed handleSendClick to wrap the handleSendMessage call with proper event handling
+  // Fixed handleSendClick to use the player's ID
   const handleSendClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (messagePlayer) {
       handleSendMessage(messagePlayer.id);

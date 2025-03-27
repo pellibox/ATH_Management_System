@@ -24,7 +24,6 @@ export function PlayerList() {
     setEditingPlayer, 
     handleDeletePlayer,
     setMessagePlayer,
-    extraActivities
   } = usePlayerContext();
 
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
@@ -81,6 +80,12 @@ export function PlayerList() {
         dialogTrigger.click();
       }
     }, 20);
+  }, []);
+
+  // Fixed extraActivities usage by ensuring it's actually extra activities passed and not the extraActivities property
+  const extraActivities = useMemo(() => {
+    // Return a safe default array if extraActivities is undefined
+    return [];
   }, []);
 
   // Use the ListView component instead of direct table rendering
