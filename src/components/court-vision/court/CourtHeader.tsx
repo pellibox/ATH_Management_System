@@ -27,10 +27,9 @@ export function CourtHeader({
   };
 
   return (
-    <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
+    <div className="absolute top-1 left-1 right-1 flex justify-between items-center z-30">
       <span className="text-xs font-medium bg-ath-black/70 text-white px-2 py-1 rounded">
-        {courtName} 
-        <span className="ml-1 cursor-pointer" onClick={(e) => {
+        <span className="cursor-pointer" onClick={(e) => {
           e.stopPropagation();
           setIsEditingNumber(true);
         }}>

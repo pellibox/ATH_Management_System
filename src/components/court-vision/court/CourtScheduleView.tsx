@@ -70,12 +70,32 @@ export function CourtScheduleView({
 
   return (
     <div className="flex-1 flex flex-col relative h-full overflow-hidden">
-      {/* Add horizontal time navigation at the top of the court */}
-      <HorizontalTimeNav 
-        timeSlots={timeSlots}
-        activeHour={activeHour}
-        onHourSelect={handleHourNavigation}
-      />
+      {/* Court name header - more space and prominence */}
+      <div className="py-2 px-3 bg-white bg-opacity-90 z-30 border-b border-gray-200 text-center mb-1">
+        <h3 className="font-bold text-lg truncate">
+          {courtName} <span className="text-sm font-medium">#{courtNumber}</span>
+        </h3>
+      </div>
+      
+      {/* Floating time navigation - positioned absolutely within the court */}
+      <div className="absolute right-1 top-12 z-40">
+        <div className="time-nav-floating">
+          {timeSlots.map((slot) => {
+            const hour = slot.split(':')[0];
+            return (
+              <button
+                key={`nav-${hour}`}
+                className={`time-selection-button ${
+                  activeHour === hour ? 'bg-ath-red-clay/10 text-ath-red-clay font-semibold' : ''
+                }`}
+                onClick={() => handleHourNavigation(hour)}
+              >
+                {hour}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       
       <div className="flex flex-1 relative">
         {/* Time labels column - always visible but smaller on mobile */}
