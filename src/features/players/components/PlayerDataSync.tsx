@@ -91,6 +91,7 @@ export const PlayerDataSync = memo(() => {
   }, [sharedPlayers, players, setPlayers]);
   
   // PRIMARY SYNC: Players → Shared Context (one-way sync)
+  // This sends data FROM Players TO Court Vision, but preserves player core data
   useEffect(() => {
     // Skip if we don't have players
     if (players.length === 0) return;
@@ -110,7 +111,9 @@ export const PlayerDataSync = memo(() => {
         console.log("PlayerDataSync: Running throttled sync of players to shared context");
         
         // Primary sync: update all active players to shared context
+        // Only send player data TO Court Vision (one-way sync)
         players.forEach(player => {
+          // Preserve programs, status, etc.
           updatePlayer(player);
         });
         
@@ -120,14 +123,13 @@ export const PlayerDataSync = memo(() => {
             if (!currentPlayerIds.has(playerId)) {
               console.log(`PlayerDataSync: Player ${playerId} was deleted, removing from shared context`);
               // Player was deleted from Players section, update with inactive status
-              // Fix: Add the required 'level' property to the deleted player object
               updatePlayer({
                 id: playerId,
                 name: "Deleted Player",
                 status: 'inactive',
                 email: "",
                 phone: "",
-                level: "" // Add the required level property
+                level: ""
               });
             }
           });
@@ -167,14 +169,13 @@ export const PlayerDataSync = memo(() => {
         if (!currentPlayerIds.has(playerId)) {
           console.log(`PlayerDataSync: Player ${playerId} was deleted, removing from shared context`);
           // Player was deleted from Players section, update with inactive status
-          // Fix: Add the required 'level' property to the deleted player object
           updatePlayer({
             id: playerId,
             name: "Deleted Player",
             status: 'inactive',
             email: "",
             phone: "",
-            level: "" // Add the required level property
+            level: ""
           });
         }
       });

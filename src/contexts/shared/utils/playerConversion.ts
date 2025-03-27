@@ -30,7 +30,7 @@ export const convertPlayerToPerson = (player: Player): PersonData => {
   };
 };
 
-// Convert PersonData back to Player
+// Convert PersonData back to Player but only update specific fields
 export const convertPersonToPlayer = (person: PersonData): Player => {
   return {
     id: person.id,
@@ -38,13 +38,12 @@ export const convertPersonToPlayer = (person: PersonData): Player => {
     email: person.email || "",
     phone: person.phone || "",
     level: "",
-    program: person.programId,
-    programs: person.programIds,
-    sports: person.sportTypes,
-    notes: person.notes,
-    // Convert status back to active/inactive format
-    status: person.status === "pending" ? 'inactive' : 'active',
-    // Hours tracking
+    // We don't sync program or status back to avoid overwriting Player data
+    // program: person.programId,
+    // programs: person.programIds,
+    // sports: person.sportTypes,
+    // status: person.status === "pending" ? 'inactive' : 'active',
+    // Only sync hours data
     completedHours: person.completedHours,
     trainingHours: person.trainingHours,
     extraHours: person.extraHours,

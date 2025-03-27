@@ -52,18 +52,35 @@ export function useSharedPlayerActions() {
     // Update timestamp
     lastUpdateRef.current[player.id] = now;
     
-    const updatedPerson = convertPlayerToPerson(player);
+    // Convert the Player to PersonData while preserving existing data in sharedPlayers
     setSharedPlayers((prevPlayers) => {
-      // Check if player exists
-      const exists = prevPlayers.some(p => p.id === player.id);
+      // Find existing player to preserve any Court Vision specific data
+      const existingPlayer = prevPlayers.find(p => p.id === player.id);
       
-      console.log(`SharedPlayerContext: ${exists ? 'Updating' : 'Adding'} player ${player.name} (${player.id}), status: ${player.status}`);
+      // Convert the player to PersonData
+      const updatedPerson = convertPlayerToPerson(player);
       
-      if (!exists) {
-        return removeDuplicates([...prevPlayers, updatedPerson]);
+      // Preserve existing Court Vision data if it exists
+      if (existingPlayer) {
+        // Keep Court Vision specifics like position, courtId, etc.
+        const preservedPerson = {
+          ...updatedPerson,
+          position: existingPlayer.position,
+          courtId: existingPlayer.courtId,
+          timeSlot: existingPlayer.timeSlot,
+          endTimeSlot: existingPlayer.endTimeSlot,
+          // Preserve any other Court Vision specific data
+        };
+        
+        const updated = prevPlayers.map((p) => 
+          (p.id === player.id ? preservedPerson : p)
+        );
+        
+        return removeDuplicates(updated);
       }
-      const updated = prevPlayers.map((p) => (p.id === player.id ? updatedPerson : p));
-      return removeDuplicates(updated);
+      
+      // If player doesn't exist, just add the new one
+      return removeDuplicates([...prevPlayers, updatedPerson]);
     });
   }, [removeDuplicates]);
 

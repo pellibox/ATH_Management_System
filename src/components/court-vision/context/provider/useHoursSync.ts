@@ -1,89 +1,78 @@
 
 import { useEffect, useRef } from "react";
 import { PersonData } from "../../types";
-import { CourtProps } from "../../types";
 
-/**
- * Hook to sync hours between Court Vision and Players context
- * Only syncs completed and missed hours, nothing else
- */
 export function useHoursSync(
   playersList: PersonData[],
-  courts: CourtProps[],
+  courts: any[],
   isInitialized: boolean,
   syncHours: (id: string, completedHours: number, missedHours: number) => void
 ) {
-  // Keep track of last sync to prevent excessive updates
+  // Track last sync to avoid too frequent updates
   const lastSyncRef = useRef<Record<string, number>>({});
-  const playerHoursRef = useRef<Record<string, { completed: number, missed: number }>>({});
-
-  // Sync hours whenever courts change
+  
+  // Sync hours data from Court Vision to Players page
   useEffect(() => {
-    // Only sync if we're fully initialized and have courts and players
-    if (!isInitialized || courts.length === 0 || playersList.length === 0) {
-      console.log("useHoursSync: Skipping sync - not initialized or missing data");
-      return;
-    }
-
-    console.log("useHoursSync: Checking for hours to sync", {
-      playersCount: playersList.length,
-      courtsCount: courts.length
-    });
-
+    if (!isInitialized || playersList.length === 0 || courts.length === 0) return;
+    
     // Calculate hours for each player from court assignments
     playersList.forEach(player => {
-      // Get current timestamp
-      const now = Date.now();
+      // Skip if not a player or doesn't have an ID
+      if (player.type !== "player" || !player.id) return;
       
-      // Skip if we've synced this player recently (2 second throttle)
-      if (now - (lastSyncRef.current[player.id] || 0) < 2000) {
-        return;
-      }
+      // Find all occurrences of this player in courts
+      let totalAssignedHours = 0;
+      let totalMissedHours = player.missedHours || 0; // Preserve missed hours
       
-      // Calculate hours from court assignments
-      let assignedHours = 0;
-      let missedHours = player.missedHours || 0;
-      
-      // Look through all courts and time slots for player assignments
+      // Count how many hours this player is assigned
       courts.forEach(court => {
-        court.occupants
-          .filter(occupant => occupant.id === player.id)
-          .forEach(occupant => {
-            // Add hours for this assignment
-            const hours = occupant.durationHours || 1;
-            assignedHours += hours;
-          });
+        court.occupants.forEach((occupant: PersonData) => {
+          if (occupant.id === player.id && occupant.timeSlot) {
+            // Calculate hours from assigned time slots
+            if (occupant.endTimeSlot && occupant.timeSlot) {
+              // If we have both start and end time slots, calculate duration
+              const startTime = occupant.timeSlot.split(":").map(Number);
+              const endTime = occupant.endTimeSlot.split(":").map(Number);
+              
+              // Convert to minutes and calculate difference
+              const startMinutes = startTime[0] * 60 + startTime[1];
+              const endMinutes = endTime[0] * 60 + endTime[1];
+              const durationHours = (endMinutes - startMinutes) / 60;
+              
+              totalAssignedHours += durationHours;
+            } else if (occupant.durationHours) {
+              // If we have explicit duration hours
+              totalAssignedHours += occupant.durationHours;
+            } else {
+              // Default to 1 hour per assignment
+              totalAssignedHours += 1;
+            }
+          }
+        });
       });
       
-      // Convert assignedHours to completedHours (simple mapping for now)
-      const completedHours = assignedHours;
+      // Only sync if hours have changed and not too frequently
+      const now = Date.now();
+      const lastSync = lastSyncRef.current[player.id] || 0;
       
-      // Store current hours in ref for comparison
-      const previousHours = playerHoursRef.current[player.id];
-      const hasChanged = !previousHours || 
-                        previousHours.completed !== completedHours || 
-                        previousHours.missed !== missedHours;
-      
-      // Only sync if hours have changed to avoid unnecessary updates
-      if (hasChanged) {
-        console.log(`useHoursSync: Syncing hours for player ${player.name}`, {
-          completedHours,
-          missedHours,
-          previous: previousHours || 'none'
+      if (
+        (totalAssignedHours !== player.completedHours || 
+         totalMissedHours !== player.missedHours) && 
+        now - lastSync > 1000
+      ) {
+        console.log(`useHoursSync: Syncing hours for ${player.name}`, {
+          previousCompleted: player.completedHours,
+          newCompleted: totalAssignedHours,
+          previousMissed: player.missedHours,
+          newMissed: totalMissedHours
         });
         
-        // Update timestamp for this player
+        // Update last sync time
         lastSyncRef.current[player.id] = now;
         
-        // Update ref with new values
-        playerHoursRef.current[player.id] = {
-          completed: completedHours,
-          missed: missedHours
-        };
-        
-        // Sync ONLY hours back to shared context
-        syncHours(player.id, completedHours, missedHours);
+        // Only sync hours data back to Players page
+        syncHours(player.id, totalAssignedHours, totalMissedHours);
       }
     });
-  }, [courts, playersList, isInitialized, syncHours]);
+  }, [playersList, courts, isInitialized, syncHours]);
 }
