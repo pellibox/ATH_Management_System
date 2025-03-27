@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import CourtVisionHeader from "@/components/court-vision/CourtVisionHeader";
@@ -12,32 +12,28 @@ import { toast } from "sonner";
 export default function CourtVision() {
   const { sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
   const [syncComplete, setSyncComplete] = useState(false);
+  const lastPlayerCountRef = useRef(0);
   
-  // Sync players once when the component mounts
+  // Request player update once when the component mounts
   useEffect(() => {
     console.log("CourtVision: Initial load - requesting player update");
     updateSharedPlayerList();
-    
-    // Show a notification only once after initial load
-    const timeoutId = setTimeout(() => {
-      if (sharedPlayers.length > 0 && !syncComplete) {
-        toast.info("Dati dei giocatori sincronizzati", {
-          description: `${sharedPlayers.length} giocatori caricati correttamente`,
-          id: "player-sync-toast" // Use an ID to prevent duplicate toasts
-        });
-        setSyncComplete(true);
-      }
-    }, 500);
-    
-    return () => clearTimeout(timeoutId);
   }, []);
   
-  // Log player count when it changes, but don't show notification
+  // Show notification when players are loaded
   useEffect(() => {
-    if (sharedPlayers.length > 0) {
-      console.log("CourtVision: Player count updated:", sharedPlayers.length);
+    // Only show notification when players are loaded for the first time
+    if (sharedPlayers.length > 0 && !syncComplete && sharedPlayers.length !== lastPlayerCountRef.current) {
+      lastPlayerCountRef.current = sharedPlayers.length;
+      
+      toast.info("Dati dei giocatori sincronizzati", {
+        description: `${sharedPlayers.length} giocatori caricati correttamente`,
+        id: "player-sync-toast", // Use an ID to prevent duplicate toasts
+      });
+      
+      setSyncComplete(true);
     }
-  }, [sharedPlayers.length]);
+  }, [sharedPlayers.length, syncComplete]);
   
   return (
     <DndProvider backend={HTML5Backend}>

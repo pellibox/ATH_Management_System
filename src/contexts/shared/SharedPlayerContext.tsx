@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { PersonData } from "@/components/court-vision/types";
 import { Player } from "@/types/player";
@@ -114,16 +113,19 @@ const SharedPlayerContext = createContext<SharedPlayerContextType>({
 // Create provider component
 export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Initialize with mock players converted to PersonData
-  const [sharedPlayers, setSharedPlayers] = useState<PersonData[]>(
-    mockPlayers.map(convertPlayerToPerson)
-  );
+  const [sharedPlayers, setSharedPlayers] = useState<PersonData[]>([]);
   
   // Track last update to prevent excessive updates
   const lastUpdateRef = useRef<Record<string, number>>({});
+  const isInitializedRef = useRef(false);
 
-  // Log initial state
+  // Initialize with mock data on first load
   useEffect(() => {
-    console.log("SharedPlayerContext initialized with", sharedPlayers.length, "players");
+    if (!isInitializedRef.current) {
+      setSharedPlayers(mockPlayers.map(convertPlayerToPerson));
+      isInitializedRef.current = true;
+      console.log("SharedPlayerContext initialized with", mockPlayers.length, "players");
+    }
   }, []);
 
   // Add a new player
@@ -203,7 +205,14 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Force a refresh of the shared player list (useful when switching between pages)
   const updateSharedPlayerList = () => {
-    // This refreshes the shared player list without creating duplicate notifications
+    if (sharedPlayers.length === 0 && isInitializedRef.current) {
+      // If we have no players but we're initialized, reload from mock data
+      setSharedPlayers(mockPlayers.map(convertPlayerToPerson));
+      console.log("SharedPlayerContext: Reloaded players from mock data");
+      return;
+    }
+    
+    // Otherwise just trigger a refresh with current data
     setSharedPlayers(prev => [...prev]);
   };
 
