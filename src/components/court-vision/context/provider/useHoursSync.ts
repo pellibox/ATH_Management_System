@@ -15,6 +15,7 @@ export function useHoursSync(
 ) {
   // Keep track of last sync to prevent excessive updates
   const lastSyncRef = useRef<Record<string, number>>({});
+  const playerHoursRef = useRef<Record<string, { completed: number, missed: number }>>({});
 
   // Sync hours whenever courts change
   useEffect(() => {
@@ -57,15 +58,28 @@ export function useHoursSync(
       // Convert assignedHours to completedHours (simple mapping for now)
       const completedHours = assignedHours;
       
+      // Store current hours in ref for comparison
+      const previousHours = playerHoursRef.current[player.id];
+      const hasChanged = !previousHours || 
+                        previousHours.completed !== completedHours || 
+                        previousHours.missed !== missedHours;
+      
       // Only sync if hours have changed to avoid unnecessary updates
-      if (completedHours !== player.completedHours || missedHours !== player.missedHours) {
+      if (hasChanged) {
         console.log(`useHoursSync: Syncing hours for player ${player.name}`, {
           completedHours,
-          missedHours
+          missedHours,
+          previous: previousHours || 'none'
         });
         
         // Update timestamp for this player
         lastSyncRef.current[player.id] = now;
+        
+        // Update ref with new values
+        playerHoursRef.current[player.id] = {
+          completed: completedHours,
+          missed: missedHours
+        };
         
         // Sync ONLY hours back to shared context
         syncHours(player.id, completedHours, missedHours);

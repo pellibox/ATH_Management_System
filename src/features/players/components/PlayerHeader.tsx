@@ -13,9 +13,18 @@ export const PlayerHeader = memo(() => {
 
   const handleAddPlayerWithSync = (player) => {
     console.log("Players page: Adding new player and syncing to shared context", player.name);
-    const result = handleAddPlayer(player);
-    // Sync immediately for new players
-    addPlayer(player);
+    // Make sure status is set explicitly for new players
+    const playerWithStatus = {
+      ...player,
+      status: player.status || 'active' // Default to active if not specified
+    };
+    
+    // Add to Players context first
+    const result = handleAddPlayer(playerWithStatus);
+    
+    // Then sync to shared context for Court Vision
+    addPlayer(playerWithStatus);
+    
     return result;
   };
 

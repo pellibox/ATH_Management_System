@@ -16,7 +16,7 @@ export function useInitialization(
   const lastPlayerCountRef = useRef<number>(0);
   
   // Get the shared players context to sync changes back
-  const { syncHours, sharedPlayers } = useSharedPlayers();
+  const { syncHours, sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
 
   // Helper function to calculate daily limit based on program
   const calculateDailyLimit = (player: PersonData): number => {
@@ -31,6 +31,9 @@ export function useInitialization(
       "elite-full": 10,
       "junior-sit": 3,
       "junior-sat": 1.5,
+      "Future Champions": 4,
+      "Performance": 6,
+      "Elite": 8
     };
     
     return programLimits[player.programId] || 2;
@@ -49,38 +52,49 @@ export function useInitialization(
       "elite-full": 2,
       "junior-sit": 1,
       "junior-sat": 1,
+      "Future Champions": 1.5,
+      "Performance": 1.5,
+      "Elite": 2
     };
     
     return programDurations[player.programId] || 1;
   };
 
-  // First check if we have initialPlayers, otherwise try sharedPlayers
+  // Deduplicate players by ID
+  const removeDuplicates = (players: PersonData[]): PersonData[] => {
+    const uniquePlayers = new Map<string, PersonData>();
+    players.forEach(player => {
+      uniquePlayers.set(player.id, player);
+    });
+    return Array.from(uniquePlayers.values());
+  };
+
+  // First load from sharedPlayers, as that's the source of truth
   useEffect(() => {
-    // Get players from sharedPlayers first, then initialPlayers as fallback
-    // This ensures we always use the Players section's data
-    const players = sharedPlayers.length > 0 ? sharedPlayers : initialPlayers;
-    
-    if (players && players.length > 0) {
+    // Ensure we use sharedPlayers (from Player section) as the source of truth
+    if (sharedPlayers && sharedPlayers.length > 0) {
       const now = Date.now();
-      const playerCount = players.length;
-      
-      console.log("useInitialization: Processing players", {
-        count: playerCount,
-        source: sharedPlayers.length > 0 ? 'sharedPlayers' : 'initialPlayers'
-      });
+      const playerCount = sharedPlayers.length;
       
       // Prevent duplicate processing of the same data
       if (playerCount === lastPlayerCountRef.current && now - lastSyncRef.current < 3000) {
         return;
       }
       
+      console.log("useInitialization: Processing players", {
+        count: playerCount,
+        source: 'sharedPlayers'
+      });
+      
       // Update the refs
       lastSyncRef.current = now;
       lastPlayerCountRef.current = playerCount;
       
+      // Remove any potential duplicates in the sharedPlayers
+      const uniquePlayers = removeDuplicates(sharedPlayers);
+      
       // Map player data to include necessary properties for court vision
-      // Do NOT modify original player data structure
-      const mappedPlayers = players.map(player => {
+      const mappedPlayers = uniquePlayers.map(player => {
         // Calculate programColor based on program if not already set
         let programColor = player.programColor;
         if (!programColor && player.programId) {
@@ -104,22 +118,33 @@ export function useInitialization(
         };
       });
       
-      // Only include active players in the playersList (status !== "pending")
+      // Only include players with status !== "pending" in the playersList
       const activePlayers = mappedPlayers.filter(player => player.status !== "pending");
       
       console.log("useInitialization: Setting player list with", activePlayers.length, "active players");
+      
+      // Set playersList with unique active players
       setPlayersList(activePlayers);
       setIsInitialized(true);
       
       // Also update people list to include these players
       setPeople(prevPeople => {
-        // Filter out existing players
+        // Filter out existing players from people list
         const nonPlayerPeople = prevPeople.filter(p => p.type !== "player");
         // Add mapped active players
         return [...nonPlayerPeople, ...activePlayers];
       });
     }
-  }, [initialPlayers, sharedPlayers, programs, setPlayersList, setPeople]);
+  }, [sharedPlayers, programs, setPlayersList, setPeople]);
+
+  // When component mounts, make sure to update the shared player list once
+  // to clean up any potential duplicates
+  useEffect(() => {
+    // Call once after initialization to clean up any duplicates
+    if (!isInitialized && sharedPlayers.length > 0) {
+      updateSharedPlayerList();
+    }
+  }, [isInitialized, sharedPlayers.length, updateSharedPlayerList]);
 
   return {
     isInitialized,

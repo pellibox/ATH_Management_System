@@ -10,7 +10,15 @@ import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 import { toast } from "sonner";
 
 export default function CourtVision() {
-  const { sharedPlayers } = useSharedPlayers();
+  const { sharedPlayers, updateSharedPlayerList } = useSharedPlayers();
+  
+  // Ensure shared players list is clean (no duplicates) when this page loads
+  useEffect(() => {
+    // Clean up any potential duplicates when Court Vision page loads
+    if (sharedPlayers.length > 0) {
+      updateSharedPlayerList();
+    }
+  }, []);
   
   // Show notification when players are loaded
   useEffect(() => {

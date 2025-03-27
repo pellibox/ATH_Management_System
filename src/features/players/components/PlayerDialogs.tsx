@@ -4,6 +4,7 @@ import { memo } from "react";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { ScheduleMessage } from "@/components/players/ScheduleMessage";
 import { usePlayerContext } from "@/contexts/player/PlayerContext";
+import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
 export const PlayerDialogs = memo(() => {
   const { 
@@ -13,10 +14,25 @@ export const PlayerDialogs = memo(() => {
     setEditingPlayer,
     setMessagePlayer
   } = usePlayerContext();
+  
+  const { updatePlayer } = useSharedPlayers();
 
   const handleUpdatePlayerWithSync = (player) => {
     console.log("Players page: Updating player and syncing to shared context", player.name);
-    return handleUpdatePlayer(player);
+    
+    // Make sure status is set explicitly
+    const playerWithStatus = {
+      ...player,
+      status: player.status || 'active' // Default to active if not specified
+    };
+    
+    // Update in Players context first
+    const result = handleUpdatePlayer(playerWithStatus);
+    
+    // Then sync to shared context for Court Vision
+    updatePlayer(playerWithStatus);
+    
+    return result;
   };
 
   return (

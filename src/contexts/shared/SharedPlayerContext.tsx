@@ -33,9 +33,9 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
     updateSharedPlayerList
   } = useSharedPlayerActions();
 
-  // Initialize with mock data on first load
+  // Initialize with mock data on first load ONLY if sharedPlayers is empty
   useEffect(() => {
-    if (!isInitializedRef.current) {
+    if (!isInitializedRef.current && sharedPlayers.length === 0) {
       // Remove duplicates from mock data before initializing
       const uniquePlayers = Array.from(
         new Map(mockPlayers.map(player => [player.id, player])).values()
@@ -43,9 +43,9 @@ export const SharedPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const initialPlayers = uniquePlayers.map(convertPlayerToPerson);
       setSharedPlayers(initialPlayers);
       isInitializedRef.current = true;
-      console.log("SharedPlayerContext initialized with", initialPlayers.length, "players");
+      console.log("SharedPlayerContext initialized with", initialPlayers.length, "unique players");
     }
-  }, [setSharedPlayers]);
+  }, [setSharedPlayers, sharedPlayers.length]);
 
   // Create memoized context value to prevent unnecessary renders
   const contextValue = useMemo(() => ({
