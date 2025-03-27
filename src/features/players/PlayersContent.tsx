@@ -1,13 +1,16 @@
 
 import { memo, useEffect } from "react";
 import { usePlayerContext } from "@/contexts/player/PlayerContext";
-import { MemoizedPlayerList } from "@/components/players/PlayerList";
+import { PlayerList } from "@/components/players/PlayerList";
 import { 
   PlayerFiltersSection, 
   PlayerDialogs, 
   PlayerHeader,
   PlayerDataSync
 } from "./components";
+
+// Use React.memo with a custom comparator to prevent unnecessary re-renders
+const MemoizedPlayerList = memo(PlayerList, () => true);
 
 // Utilizziamo React.memo con un comparatore personalizzato per evitare re-render non necessari
 const PlayersContent = memo(() => {
@@ -34,4 +37,4 @@ const PlayersContent = memo(() => {
 
 PlayersContent.displayName = "PlayersContent";
 
-export { PlayersContent };
+export { PlayersContent, MemoizedPlayerList };
