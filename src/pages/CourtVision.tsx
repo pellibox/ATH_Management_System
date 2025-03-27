@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import CourtVisionHeader from "@/components/court-vision/CourtVisionHeader";
@@ -10,6 +10,14 @@ import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
 export default function CourtVision() {
   const { sharedPlayers } = useSharedPlayers();
+  
+  // Log the shared players for debugging
+  useEffect(() => {
+    console.log("CourtVision: Received sharedPlayers count:", sharedPlayers.length);
+    if (sharedPlayers.length > 0) {
+      console.log("CourtVision: First shared player:", sharedPlayers[0].name);
+    }
+  }, [sharedPlayers]);
   
   return (
     <DndProvider backend={HTML5Backend}>

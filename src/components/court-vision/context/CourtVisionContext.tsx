@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CourtVisionContextType } from "./CourtVisionTypes";
 import { useCourtVisionState } from "./useCourtVisionState";
@@ -8,6 +7,7 @@ import { useProgramHandlers } from "./useProgramHandlers";
 import { ExtraHoursConfirmationDialog } from "../ExtraHoursConfirmationDialog";
 import { CourtVisionProviderProps } from "./types";
 import { CourtProps, PersonData } from "../types";
+import { useSharedPlayers } from "@/contexts/shared/SharedPlayerContext";
 
 export const CourtVisionContext = createContext<CourtVisionContextType | undefined>(undefined);
 
@@ -29,15 +29,14 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   children, 
   initialPlayers = [] 
 }) => {
-  console.log("CourtVisionProvider rendering with children:", !!children);
+  console.log("CourtVisionProvider rendering with initialPlayers:", initialPlayers.length);
   
   // Get state from hook
   const initialState = useCourtVisionState();
   
-  console.log("CourtVisionProvider initializing with state:", { 
-    courtsCount: initialState.courts.length 
-  });
-
+  // Get the shared players context to sync changes back
+  const { syncHours } = useSharedPlayers();
+  
   // Set up state setters
   const [courts, setCourts] = useState(initialState.courts);
   const [people, setPeople] = useState(initialState.people);
@@ -59,7 +58,8 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
   // Sync with initialPlayers whenever it changes
   useEffect(() => {
     if (initialPlayers && initialPlayers.length > 0) {
-      console.log("Setting playersList from initialPlayers:", initialPlayers.length);
+      console.log("Court Vision: Setting playersList from initialPlayers:", initialPlayers.length);
+      
       // Map player data to include necessary properties for court vision
       const mappedPlayers = initialPlayers.map(player => {
         // Calculate programColor based on program if not already set
@@ -96,6 +96,16 @@ export const CourtVisionProvider: React.FC<ExtendedCourtVisionProviderProps> = (
       });
     }
   }, [initialPlayers, programs]);
+
+  // Sync back court assignments to shared context
+  useEffect(() => {
+    // When courts or people change, sync hours back to shared context
+    playersList.forEach(player => {
+      if (player.completedHours !== undefined && player.missedHours !== undefined) {
+        syncHours(player.id, player.completedHours, player.missedHours || 0);
+      }
+    });
+  }, [courts, playersList, syncHours]);
 
   // Helper function to calculate daily limit based on program
   const calculateDailyLimit = (player: PersonData): number => {

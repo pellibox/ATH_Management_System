@@ -52,7 +52,10 @@ function PlayersContent() {
   } = usePlayerContext();
   
   // Get shared player context
-  const { addPlayer, updatePlayer } = useSharedPlayers();
+  const { addPlayer, updatePlayer, sharedPlayers } = useSharedPlayers();
+  
+  // Log shared players count for debugging
+  console.log("Players page: SharedPlayers count:", sharedPlayers.length);
   
   // Set available programs from TENNIS_PROGRAMS
   useEffect(() => {
@@ -62,13 +65,10 @@ function PlayersContent() {
   
   // Memorizziamo questa funzione per evitare sincronizzazioni eccessive
   const syncPlayersWithSharedContext = useCallback(() => {
-    console.log("PlayersContent: Syncing players with shared context", players);
+    console.log("PlayersContent: Syncing ALL players with shared context", players.length);
     
-    // Implementiamo un batch più efficiente per evitare aggiornamenti troppo frequenti
-    const lastThreePlayers = players.slice(-3);
-    
-    // Limitiamo gli aggiornamenti solo ai player recenti per ridurre il carico
-    lastThreePlayers.forEach(player => {
+    // Sync ALL players rather than just the last 3
+    players.forEach(player => {
       updatePlayer(player);
     });
   }, [players, updatePlayer]);
@@ -85,16 +85,18 @@ function PlayersContent() {
   
   // Memorizziamo queste funzioni per evitare la creazione di nuove ad ogni render
   const handleAddPlayerWithSync = useCallback((player) => {
+    console.log("Players page: Adding new player and syncing to shared context", player.name);
     const result = handleAddPlayer(player);
-    // Utilizziamo un delay maggiore per evitare aggiornamenti troppo frequenti
-    setTimeout(() => addPlayer(player), 200);
+    // Sync immediately for new players
+    addPlayer(player);
     return result;
   }, [handleAddPlayer, addPlayer]);
   
   const handleUpdatePlayerWithSync = useCallback((player) => {
+    console.log("Players page: Updating player and syncing to shared context", player.name);
     const result = handleUpdatePlayer(player);
-    // Utilizziamo un delay maggiore per evitare aggiornamenti troppo frequenti
-    setTimeout(() => updatePlayer(player), 200);
+    // Sync immediately for updated players
+    updatePlayer(player);
     return result;
   }, [handleUpdatePlayer, updatePlayer]);
   
