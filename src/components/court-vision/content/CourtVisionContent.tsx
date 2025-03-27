@@ -4,6 +4,7 @@ import CourtGrid from "@/components/court-vision/court-grid/CourtGrid";
 import { useCourtVision } from "../context/CourtVisionContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import "../TimeSlotStyles.css";
+import { PersonData, ActivityData } from "../types";
 
 export function CourtVisionContent() {
   const { 
@@ -37,6 +38,23 @@ export function CourtVisionContent() {
     activeHour
   });
 
+  // Create adapter functions that convert between the two function signatures
+  const handleDropAdapter = (courtId: string, personId: string, timeSlot?: string) => {
+    // Find the person in playersList by ID
+    const person = playersList.find(p => p.id === personId);
+    if (person) {
+      handleDrop(courtId, person, undefined, timeSlot);
+    }
+  };
+
+  const handleActivityDropAdapter = (courtId: string, activityId: string, timeSlot?: string) => {
+    // Find the activity in activities by ID
+    const activity = activities.find(a => a.id === activityId);
+    if (activity) {
+      handleActivityDrop(courtId, activity, timeSlot);
+    }
+  };
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col ml-0">
       <div className="py-4 px-4 bg-white border-b border-gray-200">
@@ -52,8 +70,8 @@ export function CourtVisionContent() {
           timeSlots={timeSlots}
           availablePeople={playersList}
           availableActivities={activities}
-          onDrop={handleDrop}
-          onActivityDrop={handleActivityDrop}
+          onDrop={handleDropAdapter}
+          onActivityDrop={handleActivityDropAdapter}
           onRemovePerson={handleRemovePerson}
           onRemoveActivity={handleRemoveActivity}
           onRenameCourt={handleRenameCourt}

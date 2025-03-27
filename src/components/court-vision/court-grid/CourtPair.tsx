@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Court } from "../Court";
 import { VerticalTimeSlotSelector } from "../time-slot/VerticalTimeSlotSelector";
 import { CourtPairProps } from "./types";
+import { PersonData, ActivityData } from "../types";
 
 export function CourtPair({
   courtPair: pair,
@@ -34,6 +35,15 @@ export function CourtPair({
   // Get visible court index for this pair (mobile only)
   const key = `${type}-${pairIndex}`;
   const visibleCourtIndex = isMobile ? (visibleCourtIndices[key] || 0) : -1;
+  
+  // Create adapter functions to bridge the type mismatches
+  const handlePersonDrop = (courtId: string, person: PersonData, position?: { x: number, y: number }, time?: string) => {
+    onDrop(courtId, person.id, time);
+  };
+
+  const handleActivityDrop = (courtId: string, activity: ActivityData, time?: string) => {
+    onActivityDrop(courtId, activity.id, time);
+  };
   
   return (
     <div key={`pair-${type}-${pairIndex}`} className="flex gap-4 md:gap-6 px-4">
@@ -81,8 +91,8 @@ export function CourtPair({
               key={pair[visibleCourtIndex].id}
               court={pair[visibleCourtIndex]}
               timeSlots={timeSlots}
-              onDrop={onDrop}
-              onActivityDrop={onActivityDrop}
+              onDrop={handlePersonDrop}
+              onActivityDrop={handleActivityDrop}
               onRemovePerson={onRemovePerson}
               onRemoveActivity={onRemoveActivity}
               onRename={onRenameCourt}
@@ -98,8 +108,8 @@ export function CourtPair({
                 key={court.id}
                 court={court}
                 timeSlots={timeSlots}
-                onDrop={onDrop}
-                onActivityDrop={onActivityDrop}
+                onDrop={handlePersonDrop}
+                onActivityDrop={handleActivityDrop}
                 onRemovePerson={onRemovePerson}
                 onRemoveActivity={onRemoveActivity}
                 onRename={onRenameCourt}

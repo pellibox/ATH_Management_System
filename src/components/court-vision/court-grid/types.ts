@@ -54,3 +54,11 @@ export interface CourtGridProps {
   onChangeCourtNumber: (courtId: string, newNumber: number) => void;
   activeHour?: string | null;
 }
+
+export interface GlobalControlsProps {
+  timeSlots: string[];
+  syncAllSliders: (hour: string) => void;
+  currentBusinessHour: string | undefined;
+  diagnosticMode: boolean;
+  setDiagnosticMode: (mode: boolean) => void;
+}

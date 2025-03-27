@@ -59,8 +59,6 @@ export function GlobalControls({
           </Button>
         )}
       </div>
-      
-      {/* Test button for generating random assignments - removed */}
     </div>
   );
 }
