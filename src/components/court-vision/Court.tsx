@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CourtProps, PersonData, ActivityData } from "./types";
@@ -79,74 +80,83 @@ export function Court({
     : (isSidebarCollapsed ? "h-[675px]" : "h-[600px]");
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <div
-          id={`court-${court.id}`}
-          className={`relative rounded-lg border-2 ${getCourtStyles(court.type)} 
-            transition-all ${courtHeight} w-full flex flex-col cursor-pointer animate-fade-in overflow-hidden`}
-        >
-          <CourtDrop
-            courtId={court.id}
-            viewMode="schedule"
-            onDrop={onDrop}
-            onActivityDrop={onActivityDrop}
+    <div className="relative">
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <div 
+            className="absolute top-2 right-2 z-30 bg-white rounded-full p-1 shadow-md cursor-pointer"
+            onClick={() => setIsOpen(true)}
           >
-            <NewCourtHeader 
-              courtName={court.name} 
-              courtNumber={court.number} 
-              courtType={court.type}
-              occupants={court.occupants}
-              onValidate={handleValidateCourt}
-              onChangeNumber={handleChangeNumber}
-            />
-
-            <div className="flex-1 overflow-hidden relative">
-              <CourtScheduleView
-                courtId={court.id}
-                courtName={court.name}
-                courtNumber={court.number}
-                courtType={court.type}
-                timeSlots={timeSlots}
-                occupants={court.occupants}
-                activities={court.activities}
-                onDrop={onDrop}
-                onActivityDrop={onActivityDrop}
-                onRemovePerson={onRemovePerson || (() => {})}
-                onRemoveActivity={onRemoveActivity || (() => {})}
-              />
-            </div>
-
-            <CourtFooter occupants={court.occupants} />
-          </CourtDrop>
-        </div>
-      </PopoverTrigger>
-      
-      <PopoverContent className="w-full max-w-[320px] p-0 bg-white shadow-lg rounded-lg border border-gray-200" sideOffset={5}>
-        <OriginalCourtHeader 
-          courtName={courtName}
-          courtNumber={court.number}
-          type={court.type}
-          setIsOpen={setIsOpen}
-          setIsEditing={setIsEditing}
-          isEditing={isEditing}
-          handleSaveCourtName={handleSaveCourtName}
-          setCourtName={setCourtName}
-        />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </div>
+        </PopoverTrigger>
         
-        <CourtSettings
-          court={court}
-          timeSlots={timeSlots}
-          onRename={onRename}
-          onChangeType={onChangeType}
-          onChangeNumber={onChangeNumber}
-          onCourtRemove={onCourtRemove}
-          onRemovePerson={onRemovePerson}
-          onRemoveActivity={onRemoveActivity}
-          onSetIsOpen={setIsOpen}
-          onChangePersonTimeSlot={handleChangePersonTimeSlot}
-        />
-      </PopoverContent>
-    </Popover>
+        <PopoverContent className="w-full max-w-[320px] p-0 bg-white shadow-lg rounded-lg border border-gray-200" sideOffset={5}>
+          <OriginalCourtHeader 
+            courtName={courtName}
+            courtNumber={court.number}
+            type={court.type}
+            setIsOpen={setIsOpen}
+            setIsEditing={setIsEditing}
+            isEditing={isEditing}
+            handleSaveCourtName={handleSaveCourtName}
+            setCourtName={setCourtName}
+          />
+          
+          <CourtSettings
+            court={court}
+            timeSlots={timeSlots}
+            onRename={onRename}
+            onChangeType={onChangeType}
+            onChangeNumber={onChangeNumber}
+            onCourtRemove={onCourtRemove}
+            onRemovePerson={onRemovePerson}
+            onRemoveActivity={onRemoveActivity}
+            onSetIsOpen={setIsOpen}
+            onChangePersonTimeSlot={handleChangePersonTimeSlot}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <div
+        id={`court-${court.id}`}
+        className={`relative rounded-lg border-2 ${getCourtStyles(court.type)} 
+          transition-all ${courtHeight} w-full flex flex-col cursor-pointer animate-fade-in overflow-hidden`}
+      >
+        <CourtDrop
+          courtId={court.id}
+          viewMode="schedule"
+          onDrop={onDrop}
+          onActivityDrop={onActivityDrop}
+        >
+          <NewCourtHeader 
+            courtName={court.name} 
+            courtNumber={court.number} 
+            courtType={court.type}
+            occupants={court.occupants}
+            onValidate={handleValidateCourt}
+            onChangeNumber={handleChangeNumber}
+          />
+
+          <div className="flex-1 overflow-hidden relative">
+            <CourtScheduleView
+              courtId={court.id}
+              courtName={court.name}
+              courtNumber={court.number}
+              courtType={court.type}
+              timeSlots={timeSlots}
+              occupants={court.occupants}
+              activities={court.activities}
+              onDrop={onDrop}
+              onActivityDrop={onActivityDrop}
+              onRemovePerson={onRemovePerson || (() => {})}
+              onRemoveActivity={onRemoveActivity || (() => {})}
+            />
+          </div>
+
+          <CourtFooter occupants={court.occupants} />
+        </CourtDrop>
+      </div>
+    </div>
   );
 }

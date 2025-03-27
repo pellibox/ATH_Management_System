@@ -49,12 +49,28 @@ export function HorizontalTimeNav({
     return index >= 0 ? index : 0;
   };
 
+  // Get time range labels for display
+  const getTimeRangeLabels = () => {
+    if (hours.length === 0) return { start: "08:00", mid: "15:00", end: "21:00" };
+    
+    const start = hours[0] + ":00";
+    const end = hours[hours.length - 1] + ":00";
+    
+    // Find middle hour
+    const midIndex = Math.floor(hours.length / 2);
+    const mid = hours[midIndex] + ":00";
+    
+    return { start, mid, end };
+  };
+  
+  const timeLabels = getTimeRangeLabels();
+
   return (
     <div className="w-full mb-1 space-y-2">
       {/* Hour buttons for quick selection */}
       <Carousel
         opts={{
-          align: "start",
+          align: "center",
           loop: false,
         }}
         className="w-full"
@@ -73,7 +89,7 @@ export function HorizontalTimeNav({
                   onClick={() => onHourSelect(hour)}
                   variant={isActive ? "default" : "outline"}
                   size="sm"
-                  className={`${isMobile ? 'h-7 min-w-12 text-xs px-2' : 'h-8 min-w-16 text-sm px-3'} font-medium
+                  className={`${isMobile ? 'h-8 min-w-14 text-xs px-2' : 'h-8 min-w-16 text-sm px-3'} font-medium
                     ${isActive ? 'bg-blue-600' : 'hover:bg-blue-50'}`}
                 >
                   <Clock className="h-3 w-3 mr-1" />
@@ -83,8 +99,8 @@ export function HorizontalTimeNav({
             );
           })}
         </CarouselContent>
-        <CarouselPrevious className={`${isMobile ? 'h-5 w-5 -left-1' : 'h-6 w-6 -left-2'}`} />
-        <CarouselNext className={`${isMobile ? 'h-5 w-5 -right-1' : 'h-6 w-6 -right-2'}`} />
+        <CarouselPrevious className={`${isMobile ? 'h-5 w-5 -left-1' : 'h-6 w-6 -left-2'} absolute`} />
+        <CarouselNext className={`${isMobile ? 'h-5 w-5 -right-1' : 'h-6 w-6 -right-2'} absolute`} />
       </Carousel>
       
       {/* Slider for continuous time selection */}
@@ -98,9 +114,9 @@ export function HorizontalTimeNav({
           className="w-full"
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>08:00</span>
-          <span>15:00</span>
-          <span>21:00</span>
+          <span>{timeLabels.start}</span>
+          <span>{timeLabels.mid}</span>
+          <span>{timeLabels.end}</span>
         </div>
       </div>
     </div>

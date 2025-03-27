@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { forwardRef } from "react";
 import { TimeSlot } from "../time-slot/TimeSlot";
 import { PersonData, ActivityData } from "../types";
 
@@ -17,7 +17,8 @@ interface TimeSlotGridProps {
   getActivitiesForTimeSlot: (time: string) => ActivityData[];
 }
 
-export function TimeSlotGrid({ 
+// Use forwardRef to properly pass the ref from parent component
+export const TimeSlotGrid = forwardRef<HTMLDivElement, TimeSlotGridProps>(({ 
   courtId,
   timeSlots,
   occupants,
@@ -29,19 +30,20 @@ export function TimeSlotGrid({
   onRemoveActivity,
   getOccupantsForTimeSlot,
   getActivitiesForTimeSlot
-}: TimeSlotGridProps) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
+}, ref) => {
+  // Create a set of unique hour values to prevent duplication
+  const uniqueTimeSlots = [...new Set(timeSlots)];
+  
   return (
     <div 
-      ref={scrollContainerRef} 
+      ref={ref}
       className="overflow-auto flex-1 h-full relative"
     >
       <div className="min-h-full pb-16">
-        {timeSlots.map((time, index) => {
+        {uniqueTimeSlots.map((time, index) => {
           const hasConflicts = conflicts[time] && conflicts[time].length > 0;
           // Determine if this time slot starts a new hour
-          const isHourStart = index === 0 || timeSlots[index-1].split(':')[0] !== time.split(':')[0];
+          const isHourStart = index === 0 || uniqueTimeSlots[index-1].split(':')[0] !== time.split(':')[0];
           
           return (
             <TimeSlot
@@ -62,4 +64,6 @@ export function TimeSlotGrid({
       </div>
     </div>
   );
-}
+});
+
+TimeSlotGrid.displayName = "TimeSlotGrid";

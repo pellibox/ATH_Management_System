@@ -6,6 +6,7 @@ import { TimeSlotActivities } from "./TimeSlotActivities";
 import { TimeSlotDropArea } from "./TimeSlotDropArea";
 import { AlertTriangle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TimeSlotProps {
   courtId: string;
@@ -33,10 +34,18 @@ export function TimeSlot({
   isHourStart = false
 }: TimeSlotProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Calculate if this is a primary time slot (where an assignment starts)
   const hasPrimaryAssignments = occupants.some(p => p.timeSlot === time) || 
                                activities.some(a => a.startTime === time);
+  
+  // Get time parts for display
+  const [hour, minute] = time.split(':');
+  const hourInt = parseInt(hour);
+  const isPM = hourInt >= 12;
+  const displayHour = hourInt > 12 ? hourInt - 12 : hourInt;
+  const amPm = isPM ? 'PM' : 'AM';
   
   // Determine background color based on state
   let bgColor = "";
@@ -48,14 +57,21 @@ export function TimeSlot({
     bgColor = "bg-blue-50/20"; // Continuation slots in very light blue
   }
 
+  const slotHeight = isMobile ? 'h-[90px]' : 'h-[110px]';
+
   return (
     <div 
       className={`relative flex border-b ${
         isHourStart ? 'border-gray-300' : 'border-gray-100'
-      } py-1 h-[110px] ${bgColor} transition-colors duration-200 ${
+      } py-1 ${slotHeight} ${bgColor} transition-colors duration-200 ${
         isHourStart ? 'border-t-2 border-t-gray-300' : ''
       }`}
     >
+      {/* Time indicator (visible on hover for clarity) */}
+      <div className="absolute left-2 top-1 text-xs font-semibold text-gray-500 group-hover:opacity-100 opacity-70">
+        {displayHour}:{minute} {amPm}
+      </div>
+      
       {hasConflicts && (
         <div className="absolute right-2 top-1 z-30">
           <AlertTriangle className="h-4 w-4 text-orange-500" />

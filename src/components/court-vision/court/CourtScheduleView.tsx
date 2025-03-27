@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { PersonData, ActivityData } from "../types";
 import { isTimeSlotOccupied } from "./CourtStyleUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -41,6 +41,14 @@ export function CourtScheduleView({
   const [conflicts, setConflicts] = useState<Record<string, string[]>>({});
   const isMobile = useIsMobile();
   const { toast } = useToast();
+
+  // Initialize activeHour from the first time slot on component mount
+  useEffect(() => {
+    if (timeSlots.length > 0 && !activeHour) {
+      const firstHour = timeSlots[0].split(':')[0];
+      setActiveHour(firstHour);
+    }
+  }, [timeSlots, activeHour]);
 
   const getOccupantsForTimeSlot = (time: string) => {
     return occupants.filter(person => 
@@ -122,17 +130,8 @@ export function CourtScheduleView({
 
   return (
     <div className="flex-1 flex flex-col relative h-full overflow-hidden">
-      {/* Court header with metadata and validation controls */}
-      <CourtHeader 
-        courtName={courtName}
-        courtNumber={courtNumber}
-        courtType={courtType}
-        occupants={occupants}
-        onValidate={detectCoachConflicts}
-      />
-      
-      {/* Time navigation - sticky at the top of scroll area */}
-      <div className="sticky top-[60px] bg-white bg-opacity-95 z-20 border-b border-gray-200 shadow-sm py-2 px-2">
+      {/* Time navigation - always visible at the top */}
+      <div className="sticky top-0 bg-white bg-opacity-95 z-20 border-b border-gray-200 shadow-sm pt-1 px-2">
         <HorizontalTimeNav 
           timeSlots={timeSlots}
           activeHour={activeHour}
@@ -146,6 +145,7 @@ export function CourtScheduleView({
 
         {/* Time slots grid */}
         <TimeSlotGrid
+          ref={scrollContainerRef}
           courtId={courtId}
           timeSlots={timeSlots}
           occupants={occupants}
